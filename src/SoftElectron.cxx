@@ -150,11 +150,11 @@ StatusCode SoftElectron::finalize()
 StatusCode SoftElectron::execute() 
 {
     MsgStream mlog( messageService(), name() );
-    mlog << MSG::DEBUG << "SoftElectron::execute()" << endreq;
+    mlog << MSG::INFO<< "SoftElectron::execute()" << endreq;
     StatusCode sc = StatusCode::SUCCESS;
 
     /** Testing HFOR **/
-    if ( hfor_tool->execute().isSuccess() )
+    /*if ( hfor_tool->execute().isSuccess() )
     {
         std::string hfor_type = hfor_tool->getDecision();
         mlog <<MSG::INFO<<"Hfortool Decision: "<<hfor_type <<endreq;
@@ -164,7 +164,7 @@ StatusCode SoftElectron::execute()
         mlog <<MSG::INFO<<"CQuarks ME:"<<hfor_tool->get_cQuarks_ME().size() <<endreq;
         mlog <<MSG::INFO<<"CQuarks GS:"<<hfor_tool->get_cQuarks_GS().size() <<endreq;
         mlog <<MSG::INFO<<"CQuarks MEin:"<<hfor_tool->get_cQuarks_MEin().size() <<endreq;
-    }
+    }*/
 
 
     
@@ -187,152 +187,190 @@ StatusCode SoftElectron::execute()
     
     mlog << MSG::DEBUG << "--- Run " << m_irun << " Event " << m_ievt <<endreq;
 
-
-    /** Primary vertex: */
-    int npvx = m_vxContainer->size();
-    VxContainer::const_iterator fz = m_vxContainer->begin();
-    const Trk::RecVertex& primaryVertex = (*fz)->recVertex();
-    double pvx = primaryVertex.position().x();
-    double pvy = primaryVertex.position().y();
-    double pvz = primaryVertex.position().z();
-    
-    m_h1_nvtx->Fill((float)npvx);
-    m_h1_pvx_x->Fill(pvx);
-    m_h1_pvx_y->Fill(pvy);
-    m_h1_pvx_z->Fill(pvz);
-
-    mlog << MSG::VERBOSE << "--- Primary vertex: " << pvx << " " << pvy << " " << pvz << endreq;
-    // Check for undefined PV (when no PV is reconstructed, a dummy one is stored):
-    if( pvx == 0 && pvy == 0 && pvz == 0 ) 
-    {
-        mlog << MSG::WARNING << "Primary Vertex is (0,0,0): skipping event." << endreq;
-        return StatusCode::SUCCESS;
-    }
-
     /** True primary vertex: */
     double xpvxt = 0.;
     double ypvxt = 0.;
     double zpvxt = 0.;
     
-    const HepMC::GenEvent* genEvent = *(m_mcEventCollection->begin());
-    if(genEvent) 
+    const HepMC::GenEvent* GenEvent = *(m_mcEventCollection->begin());
+    if(GenEvent) 
     {
         /** Primary Vertex **/
-        HepMC::GenEvent::vertex_const_iterator vitr = genEvent->vertices_begin();
+        HepMC::GenEvent::vertex_const_iterator vitr = GenEvent->vertices_begin();
         xpvxt = (*vitr)->position().x();
         ypvxt = (*vitr)->position().y();
         zpvxt = (*vitr)->position().z(); 
-
-        m_h1_primvtxresx->Fill(pvx-xpvxt);
-        m_h1_primvtxresy->Fill(pvy-ypvxt);
-        m_h1_primvtxresz->Fill(pvz-zpvxt);
-
-        /** Particle **/
-    }
     
-    /** MC Truth container: */
-    int nmcp = 0;
-    nmcp = (*m_mcpartTES).size();
-    
-    // fill some information about b and c particles:
-    TruthParticleContainer::const_iterator mcItr  = (*m_mcpartTES).begin();
-    TruthParticleContainer::const_iterator mcEnd = (*m_mcpartTES).end();
-    int nbbq = 0;
-    int nbcq = 0;
-    int nbbh = 0;
-    int nbch = 0;
-    for (; mcItr != mcEnd; ++mcItr) 
-    {
-        int mpdg = (*mcItr)->pdgId();    
-        double pt = (*mcItr)->pt();
-        double eta = (*mcItr)->eta();
-        if(5==abs(mpdg)) 
+
+        // fill some information about b and c particles:
+        const HepMC::GenEvent * GenEvent = *(m_mcEventCollection->begin());
+
+
+        std::vector<const HepMC::GenParticle*> MEPartonVector;
+        std::vector<const HepMC::GenParticle*> bcpartVector;
+
+        HepMC::GenEvent::particle_const_iterator pitr = GenEvent->particles_begin();
+        for (; pitr != GenEvent->particles_end(); ++pitr) 
         {
-            nbbq++;
-        }
-        if(4==abs(mpdg)) 
-        {
-            nbcq++;
-        }
-        if(this->isBHadron(mpdg)) {
-            nbbh++;
-        }
-        if(this->isDHadron(mpdg)) {
-            nbch++;
-        }
-    }
- 
-    //The Signal.. 
-    // The signal event requires atleast a single b-quark in the hard event (ME b-quark)
-    int MEPartonBarcode= this->GetMEPartonBarcode();
-
-    if(MEPartonBarcode)
-    {
-        /** Jet container: */
-        int njtag = (*m_jetCollection).size();
-
-        // Iterate of the electron container
-        ElectronContainer::const_iterator elecItr  = m_electronCollection->begin();
-        ElectronContainer::const_iterator elecItrE = m_electronCollection->end();
-
-        int nElTot  = 0;
-        int nElSoft = 0;
-        int nElHard = 0;
-
-        for(; elecItr != elecItrE; ++elecItr) 
-        {
-        }
-
-        // --- iterate over the Jet container 
-        JetCollection::const_iterator jetItr = (*m_jetCollection).begin();
-        JetCollection::const_iterator jetEnd = (*m_jetCollection).end();
-      
-        int ntotal = 0;
-        
-        int nlabelb = 0;
-        int nlabelc = 0;
-        int nlabelt = 0;
-        int icount =0;
-
-  
-        for (; jetItr != jetEnd; ++jetItr) 
-        {
-            HepLorentzVector p4( (*jetItr)->px(),(*jetItr)->py(),(*jetItr)->pz(),(*jetItr)->e());
-            int ntag = (*jetItr)->jetTagInfoVector().size();
-            ntotal++;
-  
-            //Jet TruthMatching 
-            std::string label("N/A");
-            const Analysis::TruthInfo* mcinfo = (*jetItr)->tagInfo<Analysis::TruthInfo>("TruthInfo");
-            if(mcinfo) 
+            int pdg = (*pitr)->pdg_id();
+            int apdg = std::abs(pdg) ;
+            if (apdg == 5 || apdg == 4) 
             {
-                mlog <<MSG::INFO <<" Got MC INfo " << endreq;
-                label = mcinfo->jetTruthLabel();
-                if(label=="B")
+                // b or c quark
+                const HepMC::GenParticle * bcpart = (*pitr) ;
+                mlog<<MSG::INFO<<"pdg = " << pdg << ": " << *bcpart <<endreq;
+                // find the production vertex and parents
+                HepMC::GenVertex * prodvtx = bcpart->production_vertex() ;
+                bool hasbchadronparent(false) ;
+                bool hasmpiparent(false) ;
+                bool hastopparent(false) ;
+                bool hasWparent(false) ;
+                if ( prodvtx ) 
                 {
-                    nlabelb++; }
-                if(label=="C") {nlabelc++; }
-                if(label=="T") {nlabelt++; }  
-                // --- get jet basic kinematics:
-                mlog << MSG::INFO << "BJet # " << icount << " Eta= " << p4.pseudoRapidity()
-                    << " Phi= " << p4.phi() << " pT= " << p4.perp()
-                    << "  #Tags= " << ntag << " MCLabel= " << label 
-                    << " Barcode : "<< MEPartonBarcode 
-                    << endreq;
+                    mlog<<MSG::DEBUG<<"  prod vtx: " << *prodvtx <<endreq;
+                    // check that there is no b/c-hadron as a parent
+                    // also find mpi and top parents
+                    HepMC::GenVertex::particle_iterator pin =  prodvtx->particles_begin(HepMC::parents);
+                    for (; pin != prodvtx->particles_end(HepMC::parents) && !hasbchadronparent; pin++) 
+                    {
+                        mlog<<MSG::DEBUG<<"    incoming: " << *(*pin) <<endreq;
+                        int pdgin(abs((*pin)->pdg_id())) ;
+      
+                        if ( (pdgin%10000)/1000 == apdg || (pdgin%1000)/100 == apdg ) 
+                        hasbchadronparent = true ;
+                        // also reject the c-quarks from a b-quark/hadron decay
+                        if ( apdg == 4 && ( pdgin == 5 || (pdgin%10000)/1000 == 5 ||  (pdgin%1000)/100 == 5 ) )
+                            hasbchadronparent = true ;
+                        if ( pdgin == 0 && (*pin)->status() == 120 )
+                            hasmpiparent = true ;
+                        if ( pdgin == 6 ) 
+                        {  
+                            hastopparent = true ;
+                            mlog<<MSG::DEBUG<<"  b/c parton with a top parent"<<endreq;
+                        }
+                        if ( pdgin == 24 ) 
+                        {
+                            hasWparent = true ;
+                            mlog <<MSG::DEBUG <<"  b/c parton with a W parent" <<endreq;
+                        }
+                    }
+                } 
+                else 
+                {
+                    mlog<<MSG::DEBUG<<"  b/c parton without production vertex"<<endreq;
+                }
+                if ( hasbchadronparent )
+                    mlog<<MSG::DEBUG<<"  b/c parton with a b/c quark/hadron parent"<<endreq;
+                // find the decay vertex and children
+                HepMC::GenVertex * decayvtx = bcpart->end_vertex();
+                bool hasbcquarkdaughter(false) ;
+                if ( !hasbchadronparent && decayvtx ) 
+                {
+                    mlog<<MSG::DEBUG<<"  decay vtx: " << *decayvtx  <<endreq;
+                    // check whether there are only non-b/c-quark daughters
+                    HepMC::GenVertex::particle_iterator pout =    decayvtx->particles_begin(HepMC::children) ;
+                    for (; pout != decayvtx->particles_end(HepMC::children) && !hasbcquarkdaughter; pout++) 
+                    {
+                        mlog<<MSG::DEBUG <<"    outgoing: " << *(*pout) <<endreq;
+                        int pdgout(abs((*pout)->pdg_id())) ;
+                        if ( pdgout == apdg )
+                            hasbcquarkdaughter = true ;
+                    }
+                }
+                else if ( !decayvtx ) 
+                {
+                    mlog<<MSG::DEBUG <<"  b/c parton without decay vertex" <<endreq;
+                }
+                if (!hasbchadronparent && !hasbcquarkdaughter) 
+                {
+                    bcpartVector.push_back(bcpart);
+                    if(bcpart->status()==123 or bcpart->status()==124)
+                    {
+                        mlog<<MSG::INFO <<"ME PARTON IN: "<< bcpart->pdg_id() <<endreq;
+                    }
+                }
             }
-            else 
-            {
-                mlog << MSG::VERBOSE << "could not find TruthInfo for matching jet" << endreq;
-            }
-            icount++;
-        } // end loop jets
-        m_h1_nBjets->Fill(nlabelb);
-        m_h1_nCjets->Fill(nlabelc);
-        m_h1_nLightJets->Fill(ntotal - (nlabelb + nlabelc + nlabelt) );
-    }
-    return StatusCode::SUCCESS;
-}
+        }
+        for(std::vector<const HepMC::GenParticle*>::const_iterator iter = bcpartVector.begin(); iter != bcpartVector.end(); ++iter)
+        {
+            const HepMC::GenParticle* bcpart = *iter;
+            int apdg = bcpart->pdg_id();
+            
+            HepMC::GenVertex * prodvtx(bcpart->production_vertex()) ;
 
+            bool isMPI(false) ;
+            bool isGS(false); 
+            bool isME(false) ; 
+            bool isPDF(false) ; 
+            bool isTopDecay(false) ; 
+            bool isWDecay(false) ; // subset of top-decays, for hadronic top-decays
+            bool iscquarkfromb(false) ;
+
+           // if the final state quark is a PDF parton, ignore it 
+           //(in AOD, descendants of these partons may be filtered out)
+           if ( bcpart->status() == 141 || bcpart->status() == 142 ) 
+           {
+               isPDF = true ;
+           }
+           if ( !isPDF && prodvtx ) 
+           {           
+                //Loop throught the ancestors 
+                HepMC::GenVertex::particle_iterator pin = prodvtx->particles_begin(HepMC::ancestors) ;
+                for(; pin != prodvtx->particles_end(HepMC::ancestors) && !iscquarkfromb && !isPDF; ++pin)
+                {
+                    int apdgin = std::abs((*pin)->pdg_id()) ;
+                    if (apdgin != apdg ) 
+                    {
+                        if ( (*pin)->status() == 121 || (*pin)->status() == 122 ) 
+                        {
+                            isGS = true ;
+                        }
+                        if ( apdgin == 0 && (*pin)->status() == 120 ) 
+                        {
+                            isMPI = true ;
+                        }
+                        // c quark from a b quark (in b-hadron decays)
+                        if ( apdg == 4 && ( apdgin == 5 || (apdgin%10000)/1000 == 5 || (apdgin%1000)/100 == 5 ) ) 
+                        {
+                            mlog<<MSG::DEBUG <<"  c quark from b quark or b hadron" <<endreq;
+                            iscquarkfromb = true ;
+                        }
+                        // b quark from a b-hadron decay 
+                        //(b directly from b-hadron already rejected)
+                        if ( apdg == 5 && ( (apdgin%10000)/1000 == 5 || (apdgin%1000)/100 == 5 ) ) 
+                        {
+                            mlog<<MSG::DEBUG<<"  b quark from b hadron" <<endreq;
+                            iscquarkfromb = true ;
+                        }
+                    }
+                    else
+                    {
+                        if((*pin)->status() == 123 || (*pin)->status() == 124 ) 
+                        {
+                            isME = true ;
+                        }
+                        if ( (*pin)->status() == 141 || (*pin)->status() == 142 ) 
+                        {
+                            isPDF = true ;
+                        }
+                    }
+                }
+           }
+           if(!iscquarkfromb && !isPDF)
+           {
+               if(isME)
+               {
+                   mlog<<MSG::DEBUG<< "  ME !!" <<endreq;
+                   mlog <<MSG::INFO << "ME Partons:" 
+                       << "pdgID: " << bcpart->pdg_id() 
+                       << "status: "<< bcpart->status() 
+                       <<endreq;
+               }
+           }
+        }
+    }
+    return sc;
+}
 // ============================================================
 StatusCode SoftElectron::checkTrackqualforSET(Rec::TrackParticleContainer::const_iterator trackItr, double *trackpt) 
 {
@@ -413,188 +451,30 @@ void SoftElectron::BookHistograms()
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
 
-    m_h1_mcn                   = new TH1F("mcn","MonteCarlo mc_n distribution",20000,0,10000);
-    m_h1_nvtx                  = new TH1F("nvtx","Number of primary vertices; nvtx",200,0,20);
-    m_h1_pvx_x                 = new TH1F("pvx_x","Primary Vertex X; [mm]",200,-10,10);
-    m_h1_pvx_y                 = new TH1F("pvx_y","Primary Vertex Y; [mm]",200,-10,10);
-    m_h1_pvx_z                 = new TH1F("pvx_z","Primary Vertex Z; [mm]",200,-250,250);
-    m_h1_primvtxresx           = new TH1F("pvx_xRes","Primary Vertex X Resolution; [mm]",200,-10,10);
-    m_h1_primvtxresy           = new TH1F("pvx_yRes","Primary Vertex X Resolution; [mm]",200,-10,10);
-    m_h1_primvtxresz           = new TH1F("pvx_zRes","Primary Vertex X Resolution; [mm]",200,-10,10);
-
-    m_h1_nJets                 = new TH1F("nJets"," # jets",100,0,100);                                    
-    m_h1_nBjets                = new TH1F("nBjets"," # b-jets",10,0,10);                                   
-    m_h1_bJetPt                = new TH1F("bjetPt", " b-jet pt;[GeV]",1000,0,500);                         
-    m_h1_bJetEta               = new TH1F("bjetEta", "#eta b-jet",1000,-5,5);                              
-    m_h1_bJetPhi               = new TH1F("bjetPhi", " #phi b-jet",800,-4,4);                              
-    m_h1_nCjets                = new TH1F("nCjets","# c-jets",10,0,10);                                    
-    m_h1_cJetPt                = new TH1F("cjetPt", " b-jet pt;[GeV]",1000,0,500);                         
-    m_h1_cJetEta               = new TH1F("cjetEta", "#eta b-jet",1000,-5,5);                              
-    m_h1_cJetPhi               = new TH1F("cjetPhi", " #phi b-jet",800,-4,4);                              
-    m_h1_nLightJets            = new TH1F("nLightJets","# l-jet",70,0,70);                                 
-    m_h1_lJetPt                = new TH1F("ljetPt", " b-jet pt;[GeV]",1000,0,500);                         
-    m_h1_lJetEta               = new TH1F("ljetEta", "#eta b-jet",1000,-5,5);                              
-    m_h1_lJetPhi               = new TH1F("ljetPhi", " #phi b-jet",800,-4,4);                              
-
-    m_h1_NElectrons            = new TH1F("NElectrons","# Electrons", 50,0,50);                            
+    h1Hists["h1_nEvents"]     = new TH1F("nEvents","",4,0,4);
+    h1Hists["h1_nBHadron"]    = new TH1F("nBHadron","",4,0,4);
+    h1Hists["h1_nCHadron"]    = new TH1F("nCHadron","",4,0,4);
+    h1Hists["h1_nBHadronSemilept"]    = new TH1F("nBHadronSemilept","",4,0,4);
+    h1Hists["h1_nCHadronSemilept"]    = new TH1F("nCHadronSemilept","",4,0,4);
     
-    m_h1_nSoftEl               = new TH1F("nSoftEl","# soft el",10,0,10);                                  
-    m_h1_SoftElPt              = new TH1F("SoftElPt"," Soft El pt; [GeV]",100,0,25);                       
-    m_h1_SoftElEta             = new TH1F("SoftElEta"," Soft El Eta",1000,-5,5);                           
-    m_h1_SoftElPhi             = new TH1F("SoftElPhi"," Soft El Phi",800,-4,4);                            
-    m_h1_ThreeProngNSoftEl     = new TH1F("ThreeProngNSoftEl"," # soft el; (3 prong)", 10,0,10);           
-    m_h1_ThreeProngSoftElPt    = new TH1F("ThreeProngSoftElPt"," Soft El pt;  [GeV] (3 prong)",100,0,25);  
-    m_h1_ThreeProngSoftElEta   = new TH1F("ThreeProngSoftElEta"," SOft El Eta; (3 prong) ",1000,-5,5);     
-    m_h1_ThreeProngSoftElPhi   = new TH1F("ThreeProngSoftElPhi","Soft El phi; (3 prong)",800,-4,4);        
-    m_h1_FourProngNSoftEl      = new TH1F("FourProngNSoftEl"," # soft el; (4 prong)", 10,0,10);            
-    m_h1_FourProngSoftElPt     = new TH1F("FourProngSoftElPt"," Soft El pt;  [GeV] (4 prong)",100,0,25);   
-    m_h1_FourProngSoftElEta    = new TH1F("FourProngSoftElEta"," SOft El Eta ; (4 prong)",1000,-5,5);      
-    m_h1_FourProngSoftElPhi    = new TH1F("FourProngSoftElPhi","Soft El phi; (4 prong)",800,-4,4);         
-
-    m_h1_nHardEl               = new TH1F("nHardEl","# Hard El",10,0,10);                                  
-    m_h1_HardElPt              = new TH1F("HardElPt","Hard El Pt ; [GeV]",1000,0,500);                     
-    m_h1_HardElEta             = new TH1F("HardElEta","Hard El Eta",1000,-5,5);                            
-    m_h1_HardElPhi             = new TH1F("HardElPhi","Hard El Phi",800,-4,4);                             
-    m_h1_ThreeProngNHardEl     = new TH1F("ThreeProngNHardEl","# Hard Electrons ; (3 prong )",10,0,10);    
-    m_h1_ThreeProngHardElPt    = new TH1F("ThreeProngHardElPt","Hard Electron pt;[GeV] (3 prong)",1000,0,500);
-    m_h1_ThreeProngHardElEta   = new TH1F("ThreeProngHardElEta","Hard Electron Eta; (3 prong)",1000,-5,5); 
-    m_h1_ThreeProngHardElPhi   = new TH1F("ThreePRongHardElPhi","Hard Electron Phi; (3 prong)",800,-4,4);  
-    m_h1_FourProngNHardEl      = new TH1F("FourProngNHardEl","# Hard Electrons ; (4 prong )",10,0,10);     
-    m_h1_FourProngHardElPt     = new TH1F("FourProngHardElPt","Hard Electron pt ; [GeV] (4 prong)",1000,0,500); 
-    m_h1_FourProngHardElEta    = new TH1F("FourProngHardElEta","Hard Electron Eta; (4 prong)",1000,-5,5);  
-    m_h1_FourProngHardElPhi    = new TH1F("FourPRongHardElPhi","Hard Electron Phi; (4 prong)",800,-4,4);   
-
-    m_h1_ThreeProngNBjets      = new TH1F("ThreeProngNBjets"," # b-jets ; (3 prong)", 10,0,10);            
-    m_h1_ThreeProngBjetPt      = new TH1F("ThreeProngBjetPt","b-jet pt; p_{T} [GeV] (3 prong)",1000,0,500);
-    m_h1_ThreeProngBjetEta     = new TH1F("ThreeProngBjetEta","b-jet #eta; (3 prong)", 1000,-5,5);         
-    m_h1_ThreeProngBjetPhi     = new TH1F("ThreeProngBjetPhi","b-jet #phi; (3 prong)", 800,-4,4);          
-    m_h1_ThreeProngNCjets      = new TH1F("ThreeProngNCjets","# c-jets; (3 prong)", 10,0,10);              
-    m_h1_ThreeProngCjetPt      = new TH1F("ThreeProngCjetPt","c-jet pt; p_{T} [GeV](3 prong)",1000,0,500); 
-    m_h1_ThreeProngCjetEta     = new TH1F("ThreeProngCjetEta","c-jet #eta; (3 prong)",1000,-5,5);          
-    m_h1_ThreeProngCjetPhi     = new TH1F("ThreeProngCjetPhi","c-jet #phi ; (3 prong)",10,0,10);           
-    m_h1_ThreeProngNLjets      = new TH1F("ThreeProngNLjets","# l-jets;(3 prong)",10,0,10);                
-    m_h1_ThreeProngLjetPt      = new TH1F("ThreeProngLjetPt","l-jet pt; p_{T} [GeV] (3 prong)",1000,0,500);
-    m_h1_ThreeProngLjetEta     = new TH1F("ThreeProngLjetEta","l-jet #eta; (3 prong)",1000,-5,5);          
-    m_h1_ThreeProngLjetPhi     = new TH1F("ThreeProngLjetPhi","l-jet #phi; (3 prong)",800,-4,4);           
-
-    m_h1_FourProngNBjets       = new TH1F("FourProngNBjets"," # b-jets ; ( 4 prong)", 10,0,10);            
-    m_h1_FourProngBjetPt       = new TH1F("FourProngBjetPt","b-jet pt; p_{T} [GeV]( 4 prong)",1000,0,500); 
-    m_h1_FourProngBjetEta      = new TH1F("FourProngBjetEta","b-jet #eta; ( 4 prong)", 1000,-5,5);         
-    m_h1_FourProngBjetPhi      = new TH1F("FourProngBjetPhi","b-jet #phi; ( 4 prong)", 800,-4,4);          
-    m_h1_FourProngNCjets       = new TH1F("FourProngNCjets","# c-jets; ( 4 prong)", 10,0,10);              
-    m_h1_FourProngCjetPt       = new TH1F("FourProngCjetPt","c-jet pt; p_{T} [GeV] ( 4 prong)",1000,0,500);
-    m_h1_FourProngCjetEta      = new TH1F("FourProngCjetEta","c-jet #eta; ( 4 prong)",1000,-5,5);          
-    m_h1_FourProngCjetPhi      = new TH1F("FourProngCjetPhi","c-jet #phi ; ( 4 prong)",10,0,10);           
-    m_h1_FourProngNLjets       = new TH1F("FourProngNLjets","# l-jets;( 4 prong)",10,0,10);                
-    m_h1_FourProngLjetPt       = new TH1F("FourProngLjetPt","l-jet pt; p_{T} [GeV] ( 4 prong)",1000,0,500);
-    m_h1_FourProngLjetEta      = new TH1F("FourProngLjetEta","l-jet #eta; ( 4 prong)",1000,-5,5);          
-    m_h1_FourProngLjetPhi      = new TH1F("FourProngLjetPhi","l-jet #phi; ( 4 prong)",800,-4,4);           
-
-
-    m_h1_JetPt                 = new TH1F("JetPt"," jet pt ;[GeV]",1000,0,500);                            
-    m_h1_JetEta                = new TH1F("JetEta"," jet Eta ",1000,-5,5);                                 
-    m_h1_JetPhi                = new TH1F("JetPhi"," jet Phi ",800,-4,4);                                  
+    h2Hists["h2_ElHardVsSoft"]= new TH2F("ElHardVsSoft",";# Hard el; #Soft el",100,0,50,100,0,50);
+    h2Hists["h2_BMatching"]   = new TH2F("BMatching",";|p|[GeV];#Delta R",500,0,500,100,0,3);
+    h2Hists["h2_CMatching"]   = new TH2F("CMatching",";|p|[GeV];#Delta R",500,0,500,100,0,3);
     
-    m_h1_bQuarkPt              = new TH1F("bQuarkPt","p_{T} of b-quark before hadronization",1000,0,500);  
-    m_h1_bQuarkEta             = new TH1F("bQuarkEta","#eta of b-quark before hadronization",1000,-5,5);   
-    m_h1_bQuarkPhi             = new TH1F("bQuarkPhi","#phi of b-quark before hadronization",800,-4,4);    
+    h1Hists["h1_MEbQuarkDr"]  = new TH1F("MEbQuarkDeltaR","",100,0,3);
+    h1Hists["h1_MEcQuarkDr"]  = new TH1F("MEcQuarkDeltaR","",100,0,3);
+    h1Hists["h1_ElPt"]        = new TH1F("ElPt",";[GeV]",500,0,500);
+    h1Hists["h1_ElEta"]       = new TH1F("ElEta","",200,-5,5);
+    h1Hists["h1_ElPhi"]       = new TH1F("ElPhi","",200,-5,5);
+    h1Hists["h1_BHadElPt"]    = new TH1F("bHadronElPt",";[GeV]",500,0,500);
+    h1Hists["h1_CHadElPt"]    = new TH1F("cHadronElPt",";[GeV]",500,0,500);
 
-    m_h1_bHadronPdgId          = new TH1F("bHadronPdgId","pdg id of the b-hadron",100,0,100);
+    for(std::map<std::string,TH1F*>::iterator iter = h1Hists.begin(); iter != h1Hists.end(); ++iter)
+        iter->second->Sumw2();
 
-    //register histograms 
-    StatusCode sc; 
-    std::string histDir("/SoftElectron/");
-
-    sc = m_histos->regHist(histDir + "mcn",m_h1_mcn);
-   
-    sc = m_histos->regHist(histDir + "nvtx", m_h1_nvtx);
-    sc = m_histos->regHist(histDir + "pvx_x", m_h1_pvx_x);
-    sc = m_histos->regHist(histDir + "pvx_y",m_h1_pvx_y);
-    sc = m_histos->regHist(histDir + "pvx_z",m_h1_pvx_z);
-    sc = m_histos->regHist(histDir + "pvx_xRes",m_h1_primvtxresx);
-    sc = m_histos->regHist(histDir + "pvx_yRes",m_h1_primvtxresy);
-    sc = m_histos->regHist(histDir + "pvx_zRes",m_h1_primvtxresz);
+    for(std::map<std::string,TH2F*>::iterator iter = h2Hists.begin(); iter != h2Hists.end(); ++iter)
+        iter->second->Sumw2();
     
-    sc = m_histos->regHist(histDir + "nJets",m_h1_nJets);
-    sc = m_histos->regHist(histDir + "nBjets",m_h1_nBjets);
-    sc = m_histos->regHist(histDir + "bjetPt",m_h1_bJetPt);
-    sc = m_histos->regHist(histDir + "bjetEta",m_h1_bJetEta);
-    sc = m_histos->regHist(histDir + "bjetPhi",m_h1_bJetPhi);
-    sc = m_histos->regHist(histDir + "nCjets",m_h1_nCjets);
-    sc = m_histos->regHist(histDir + "cjetPt",m_h1_cJetPt);
-    sc = m_histos->regHist(histDir + "cjetEta",m_h1_cJetEta);
-    sc = m_histos->regHist(histDir + "cjetPhi",m_h1_cJetPhi);
-    sc = m_histos->regHist(histDir + "nLightJets",m_h1_nLightJets);
-    sc = m_histos->regHist(histDir + "ljetPt",m_h1_lJetPt);
-    sc = m_histos->regHist(histDir + "ljetEta",m_h1_lJetEta);
-    sc = m_histos->regHist(histDir + "ljetPhi",m_h1_lJetPhi);
-    
-    sc = m_histos->regHist(histDir + "NElectrons",m_h1_NElectrons);
-    
-    sc = m_histos->regHist(histDir + "nSoftEl",m_h1_nSoftEl);
-    sc = m_histos->regHist(histDir + "SoftElPt",m_h1_SoftElPt);
-    sc = m_histos->regHist(histDir + "SoftElEta",m_h1_SoftElEta);
-    sc = m_histos->regHist(histDir + "SoftElPhi",m_h1_SoftElPhi);
-    sc = m_histos->regHist(histDir + "ThreeProngNSoftEl",m_h1_ThreeProngNSoftEl);
-    sc = m_histos->regHist(histDir + "ThreeProngSoftElPt",m_h1_ThreeProngSoftElPt);
-    sc = m_histos->regHist(histDir + "ThreeProngSoftElEta",m_h1_ThreeProngSoftElEta);
-    sc = m_histos->regHist(histDir + "ThreeProngSoftElPhi",m_h1_ThreeProngSoftElPhi);
-    sc = m_histos->regHist(histDir + "FourProngNSoftEl", m_h1_FourProngNSoftEl );
-    sc = m_histos->regHist(histDir + "FourProngSoftElPt", m_h1_FourProngSoftElPt);
-    sc = m_histos->regHist(histDir + "FourProngSoftElEta", m_h1_FourProngSoftElEta);
-    sc = m_histos->regHist(histDir + "FourProngSoftElPhi",m_h1_FourProngSoftElPhi);
-    
-    sc = m_histos->regHist(histDir + "nHardEl",m_h1_nHardEl);
-    sc = m_histos->regHist(histDir + "HardElPt",m_h1_HardElPt);
-    sc = m_histos->regHist(histDir + "HardElEta", m_h1_HardElEta);
-    sc = m_histos->regHist(histDir + "HardElPhi", m_h1_HardElPhi);
-    sc = m_histos->regHist(histDir + "ThreeProngNHardEl", m_h1_ThreeProngNHardEl);
-    sc = m_histos->regHist(histDir + "ThreeProngHardElPt", m_h1_ThreeProngHardElPt);
-    sc = m_histos->regHist(histDir + "ThreeProngHardElEta", m_h1_ThreeProngHardElEta);
-    sc = m_histos->regHist(histDir + "ThreePRongHardElPhi", m_h1_ThreeProngHardElPhi);
-    sc = m_histos->regHist(histDir + "FourProngNHardEl", m_h1_FourProngNHardEl );
-    sc = m_histos->regHist(histDir + "FourProngHardElPt", m_h1_FourProngHardElPt);
-    sc = m_histos->regHist(histDir + "FourProngHardElEta", m_h1_FourProngHardElEta);
-    sc = m_histos->regHist(histDir + "FourPRongHardElPhi", m_h1_FourProngHardElPhi);
-    
-    sc = m_histos->regHist(histDir + "ThreeProngNBjets", m_h1_ThreeProngNBjets );
-    sc = m_histos->regHist(histDir + "ThreeProngBjetPt", m_h1_ThreeProngBjetPt );
-    sc = m_histos->regHist(histDir + "ThreeProngBjetEta", m_h1_ThreeProngBjetEta);
-    sc = m_histos->regHist(histDir + "ThreeProngBjetPhi", m_h1_ThreeProngBjetPhi);
-    sc = m_histos->regHist(histDir + "ThreeProngNCjets", m_h1_ThreeProngNCjets );
-    sc = m_histos->regHist(histDir + "ThreeProngCjetPt", m_h1_ThreeProngCjetPt );
-    sc = m_histos->regHist(histDir + "ThreeProngCjetEta", m_h1_ThreeProngCjetEta);
-    sc = m_histos->regHist(histDir + "ThreeProngCjetPhi",m_h1_ThreeProngCjetPhi);
-    sc = m_histos->regHist(histDir + "ThreeProngNLjets",  m_h1_ThreeProngNLjets );
-    sc = m_histos->regHist(histDir + "ThreeProngLjetPt",  m_h1_ThreeProngLjetPt );
-    sc = m_histos->regHist(histDir + "ThreeProngLjetEta", m_h1_ThreeProngLjetEta);
-    sc = m_histos->regHist(histDir + "ThreeProngLjetPhi",  m_h1_ThreeProngLjetPhi);
-    
-    sc = m_histos->regHist(histDir + "FourProngNBjets",   m_h1_FourProngNBjets  );
-    sc = m_histos->regHist(histDir + "FourProngBjetPt",   m_h1_FourProngBjetPt  );
-    sc = m_histos->regHist(histDir + "FourProngBjetEta", m_h1_FourProngBjetEta );
-    sc = m_histos->regHist(histDir + "FourProngBjetPhi",m_h1_FourProngBjetPhi );
-    sc = m_histos->regHist(histDir + "FourProngNCjets", m_h1_FourProngNCjets  );
-    sc = m_histos->regHist(histDir + "FourProngCjetPt",   m_h1_FourProngCjetPt  );
-    sc = m_histos->regHist(histDir + "FourProngCjetEta", m_h1_FourProngCjetEta );
-    sc = m_histos->regHist(histDir + "FourProngCjetPhi",m_h1_FourProngCjetPhi );
-    sc = m_histos->regHist(histDir + "FourProngNLjets",   m_h1_FourProngNLjets  );
-    sc = m_histos->regHist(histDir + "FourProngLjetPt",  m_h1_FourProngLjetPt  );
-    sc = m_histos->regHist(histDir + "FourProngLjetEta", m_h1_FourProngLjetEta );
-    sc = m_histos->regHist(histDir + "FourProngLjetPhi",   m_h1_FourProngLjetPhi );
-    
-    sc = m_histos->regHist(histDir + "JetPt",m_h1_JetPt );
-    sc = m_histos->regHist(histDir + "JetEta",m_h1_JetEta );
-    sc = m_histos->regHist(histDir + "JetPhi", m_h1_JetPhi );
-    
-    sc = m_histos->regHist(histDir + "bQuarkPt", m_h1_bQuarkPt );
-    sc = m_histos->regHist(histDir + "bQuarkEta",m_h1_bQuarkEta );
-    sc = m_histos->regHist(histDir + "bQuarkPhi",m_h1_bQuarkPhi );
-    sc = m_histos->regHist(histDir + "bHadronPdgId", m_h1_bHadronPdgId );
-
-    //Sumw2()
-
-    if (sc.isFailure() ) {}
 }
 
 bool SoftElectron::isBHadron(int pdg) 
@@ -667,46 +547,218 @@ const HepMC::GenParticle* SoftElectron::getTruth(const Rec::TrackParticle* myTra
   return GenPart;
 }
 
-int SoftElectron::GetMEPartonBarcode()
+std::vector<const HepMC::GenParticle*> SoftElectron::GetMEPartons()
 {
-    int bQuarkBarcode  = -1;
-    
-    const HepMC::GenEvent* GenEvent = *(m_mcEventCollection->begin());
-    HepMC::GenEvent::particle_const_iterator pitr = GenEvent->particles_begin();
+    std::vector<const HepMC::GenParticle*> MEPartonVector;
 
-    for (; pitr != GenEvent->particles_end(); ++pitr) 
-    {
-        int pdg = (*pitr)->pdg_id();
-        int apdg = std::abs(pdg) ;
-        
-        if (apdg == 5 || apdg == 4 || apdg == 3 || apdg == 2 || apdg == 1)
-        {
-            // b quark
-            const HepMC::GenParticle * bpart = (*pitr) ;
-           
-            // find the production vertex and parents
-            HepMC::GenVertex * prodvtx = bpart->production_vertex() ;
-            bool hasbhadronparent(false) ;
-            bool hasmpiparent(false) ;
-            bool isME(false);
-
-            if ( prodvtx ) 
-            {
-                HepMC::GenVertex::particle_iterator pin = prodvtx->particles_begin(HepMC::parents) ;
-                for (; pin != prodvtx->particles_end(HepMC::parents) && !hasbhadronparent; pin++) 
-                {
-                   // if the status of a b-quark is 123 or 124, then it is a ME b-quark
-                   if ( (*pin)->status() == 123 || (*pin)->status() == 124 ) 
-                   {
-                       isME = true ;
-                       bQuarkBarcode  = (*pin)->barcode();
-                   }
-               }
-            }
-        } 
-    }
-    return bQuarkBarcode;
+    return MEPartonVector;
 }
+
+
+////////////////////////////////////////////////////////////////////////
+// Find the Heavy Flavour Quarks in this event
+void SoftElectron::findHFQuarks()
+////////////////////////////////////////////////////////////////////////
+{
+    MsgStream mlog( messageService(), name() );
+
+  // Get the event / run number from StoreGate
+  const EventInfo * currentEvent(NULL) ;
+  StatusCode sc = m_storeGate->retrieve(currentEvent) ;
+  if ( sc.isFailure() ) {
+      mlog<<MSG::DEBUG<<"Couldnt retrieve EventInfo from StoreGateSvc"<<endreq;
+    return ;
+  }
+
+  // Make sure that we haven't processed this event before
+  EventType* eventType = currentEvent->event_type();
+  EventID::number_type run_number(eventType->mc_channel_number()) ;
+  //EventID::number_type run_number(currentEvent->event_ID()->run_number()) ;
+  EventID::number_type event_number(currentEvent->event_ID()->event_number()) ;
+  if ( run_number == m_prev_run_number && 
+       event_number == m_prev_event_number )
+    return ;
+
+  mlog<<MSG::DEBUG<<"runnumber " << run_number << ", eventnumber " << event_number <<endreq;
+
+  m_prev_run_number = run_number ;
+  m_prev_event_number = event_number ;
+
+  // clean up from previous event
+  m_Quarks_MPI.clear() ;
+  m_Quarks_GS.clear() ;
+  m_Quarks_ME.clear() ;
+  m_Quarks_MEin.clear() ;
+  m_Quarks_unknown.clear() ;
+
+  // vectors with the initial and final state b/c quarks; ie, initial or final 
+  // in the parton shower; ignore b/c quarks from b/c-hadron decays
+  std::map< int,std::vector<const HepMC::GenParticle*> > finalstate_q ;
+
+  // get the GenEvent, assume it's the first one in the McEventCollection
+  const HepMC::GenEvent* GenEvent = *(m_mcEventCollection->begin());
+  HepMC::GenEvent::particle_const_iterator pitr = GenEvent->particles_begin();
+  for (; pitr != GenEvent->particles_end(); ++pitr) {
+    int pdg = (*pitr)->pdg_id();
+    int apdg = std::abs(pdg) ;
+    if (apdg == 5 || apdg == 4) { // b or c quark
+      const HepMC::GenParticle * bcpart = (*pitr) ;
+      mlog<<MSG::DEBUG<<"pdg = " << pdg << ": " << *bcpart<<endreq;
+
+      // find the production vertex and parents
+      HepMC::GenVertex * prodvtx = bcpart->production_vertex() ;
+      bool hasbchadronparent(false) ;
+      bool hasmpiparent(false) ;
+      if ( prodvtx ) {
+        mlog<<MSG::DEBUG<<"  prod vtx: " << *prodvtx<<endreq;
+
+        // check that there is no b/c-hadron as a parent
+        // also find mpi parent
+        HepMC::GenVertex::particle_iterator pin = 
+          prodvtx->particles_begin(HepMC::parents) ;
+        for (; pin != prodvtx->particles_end(HepMC::parents) && !hasbchadronparent; pin++) {
+          mlog<<MSG::DEBUG<<"    incoming: " << *(*pin)<<endreq;
+          int pdgin(abs((*pin)->pdg_id())) ;
+
+          if ( (pdgin%10000)/1000 == apdg || (pdgin%1000)/100 == apdg ) 
+            hasbchadronparent = true ;
+          // also reject the c-quarks from a b-quark/hadron decay
+          if ( apdg == 4 && ( pdgin == 5 || (pdgin%10000)/1000 == 5 || 
+                              (pdgin%1000)/100 == 5 ) )
+            hasbchadronparent = true ;
+          if ( pdgin == 0 && (*pin)->status() == 120 )
+            hasmpiparent = true ;
+        }
+      } else {
+        mlog<<MSG::DEBUG<<"  b/c parton without production vertex"<<endreq;
+      }
+
+      // find the decay vertex and children
+      HepMC::GenVertex * decayvtx = bcpart->end_vertex() ;
+      bool hasbcquarkdaughter(false) ;
+      if ( decayvtx ) {
+        mlog<<MSG::DEBUG<<"  decay vtx: " << *decayvtx<<endreq;
+        
+        // check whether there are only non-b/c-quark daughters
+        HepMC::GenVertex::particle_iterator pout =
+          decayvtx->particles_begin(HepMC::children) ;
+        for (; pout != decayvtx->particles_end(HepMC::children) && !hasbcquarkdaughter; pout++) {
+          mlog<<MSG::DEBUG<<"    outgoing: " << *(*pout)<<endreq;
+          int pdgout(abs((*pout)->pdg_id())) ;
+          if ( pdgout == apdg )
+            hasbcquarkdaughter = true ;
+        }
+      } else {
+        mlog<<MSG::DEBUG<<"  b/c parton without decay vertex"<<endreq;
+      }
+      
+      // if no b/c-hadron parent and no b/c-quark daughter, keep it!
+      if (!hasbchadronparent && !hasbcquarkdaughter) {
+        mlog<<MSG::DEBUG<<"  final state b/c-quark, barcode = "<< bcpart->barcode()<<endreq;
+        finalstate_q[apdg].push_back(bcpart) ;
+      }
+
+      // if no b/c-hadron parent, check it to see whether it comes from the ME
+      // but ignore the ones with an MPI parent
+      if (!hasbchadronparent && !hasmpiparent && 
+          ( bcpart->status() == 123 || bcpart->status() == 124 ) ) {
+        mlog<<MSG::DEBUG<<"  b/c-quark from ME"<<endreq;
+        m_Quarks_MEin[apdg].push_back(bcpart) ;
+      }
+
+    } // particle is a b or a c quark
+    
+  } // loop over all particles in the GenEvent
+
+  // loop over all the final state b/c-quarks and find out where they come from
+  // first loop over quarks flavours that were stored (b,c)
+  for ( std::map< int,std::vector<const HepMC::GenParticle*> >::const_iterator ipdg = finalstate_q.begin() ;
+        ipdg != finalstate_q.end(); ipdg++ ) {
+    int apdg(ipdg->first) ;
+    msg<<MSG::DEBUG<<"looking for ancestors of pdg " << apdg<<endreq;
+
+    // second loop over the final state quarks
+    for ( std::vector<const HepMC::GenParticle*>::const_iterator ibcpart = finalstate_q[apdg].begin() ;
+          ibcpart != finalstate_q[apdg].end(); ibcpart++ ) {
+      const HepMC::GenParticle * bcpart(*(ibcpart)) ;
+      mlog<<MSG::DEBUG<<"final state b/c " << *bcpart<<endreq;
+      HepMC::GenVertex * prodvtx(bcpart->production_vertex()) ;
+      bool isMPI(false) ;
+      bool isGS(false) ;
+      bool isME(false) ;
+      bool isPDF(false) ;
+      bool iscquarkfromb(false) ;
+      // if the final state quark is a PDF parton, ignore it 
+      // (in AOD, descendants of these partons may be filtered out)
+      if ( bcpart->status() == 141 || bcpart->status() == 142 ) {
+        mlog<<MSG::DEBUG<<"PDF !!"<<endreq;
+        isPDF = true ;
+      }
+      if ( !isPDF && prodvtx ) {
+        HepMC::GenVertex::particle_iterator pin = prodvtx->particles_begin(HepMC::ancestors) ;
+        for ( ; pin != prodvtx->particles_end(HepMC::ancestors) && !iscquarkfromb && !isPDF ; pin++ ) {
+          int apdgin = std::abs((*pin)->pdg_id()) ;
+          if (apdgin != apdg ) {
+            mlog<<MSG::DEBUG<<"  non b/c parent " << *(*pin)<<endreq;
+            // if MPI as a non-b parent, label it
+            if ( apdgin == 0 && (*pin)->status() == 120 ) {
+              mlog<<MSG::DEBUG<<"  MPI !!"<<endreq;
+              isMPI = true ;
+            }
+            // gluon splitting or ME origin: in evgen files, 
+            // proton (id 2212) seems to be saved in all events; not so in 
+            // AOD files... Thus look for non-HF origin with status 121 or 122
+            if ( (*pin)->status() == 121 || (*pin)->status() == 122 ) {
+              mlog<<MSG::DEBUG<<"  GS !!"<<endreq;
+              isGS = true ;
+            }     
+            // c quark from a b quark (in b-hadron decays)
+            if ( apdg == 4 && ( apdgin == 5 || (apdgin%10000)/1000 == 5 ||
+                                (apdgin%1000)/100 == 5 ) ) {
+              mlog<<MSG::DEBUG<<"  c quark from b quark"<<endreq;
+              iscquarkfromb = true ;
+            }
+          } else {
+            mlog<<MSG::DEBUG<<"  b/c parent " << *(*pin)<<endreq;
+            // if the status of a b-quark is 123 or 124, then it is a ME b-quark
+            if ( (*pin)->status() == 123 || (*pin)->status() == 124 ) {
+              mlog<<MSG::DEBUG<<"  ME !!"<<endreq;
+              isME = true ;
+            }
+            // if status 141 or 142 then it came from the PDF, ignore those!!
+            if ( (*pin)->status() == 141 || (*pin)->status() == 142 ) {
+              mlog<<MSG::DEBUG<<"  PDF !!"<<endreq;
+              isPDF = true ;
+            }
+          } // b/c or non-b/c quark
+        } // loop over all ancestors
+      } // final state b/c-quark with a production vertex
+      
+      // MPI output is also status 123,124 so MPI comes before anything else
+      // ME parents have status 121 or 122, so ME comes before GS
+      if ( !iscquarkfromb && !isPDF ) {
+        if ( isMPI )
+          m_Quarks_MPI[apdg].push_back( bcpart) ;
+        else if ( isME )
+          m_Quarks_ME[apdg].push_back( bcpart ) ;
+        else if ( isGS ) {
+          // in AOD, incoming ME partons may look like GS partons if
+          // their descendants are filtered out
+          if ( ! (bcpart->status() == 123 || bcpart->status() == 124) )
+            m_Quarks_GS[apdg].push_back( bcpart ) ;
+          else
+            mlog<<MSG::DEBUG<<"ME b/c-quark identified as GS"<<endreq;
+        }
+        else {
+          mlog<<MSG::DEBUG<<"Unidentified b/c-quark"<<endreq;
+          m_Quarks_unknown[apdg].push_back( bcpart-> ) ;
+        }
+      } // not a c-quark from a b decay or a PDF c-quark
+      
+    } // loop over final state b/c-quarks
+  }   // loop over quark flavours
+
+} // findHFQuarks()
 
 StatusCode SoftElectron::LoadContainers()
 {
