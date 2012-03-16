@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE LumiRangeCollection SYSTEM "http://atlas-runquery.cern.ch/LumiRangeCollection.dtd">
+<!--This document is created by GoodRunsListWriter.-->
+<LumiRangeCollection>
+  <NamedLumiRange>
+    <Name>LumiBlocks_GoodDQ0</Name>
+    <Version>10</Version>
+    <Metadata Name="Description">luminosity_uniquegrlselector</Metadata>
+    <LumiBlockCollection>
+      <Run>189751</Run>
+      <LBRange Start="116" End="138"/>
+    </LumiBlockCollection>
+  </NamedLumiRange>
+  <NamedLumiRange>
+    <Name>IncompleteLumiBlocks_GoodDQ0</Name>
+    <Version>10</Version>
+    <Metadata Name="Description">incomplete_luminosity_uniquegrlselector</Metadata>
+    <LumiBlockCollection>
+      <Run>186169</Run>
+      <LBRange Start="153" End="156"/>
+    </LumiBlockCollection>
+  </NamedLumiRange>
+</LumiRangeCollection>

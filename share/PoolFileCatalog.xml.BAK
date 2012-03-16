@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Edited By POOL -->
+<!DOCTYPE POOLFILECATALOG SYSTEM "InMemory">
+<POOLFILECATALOG>
+  <File ID="B685B23D-B10D-E111-8A72-003048C82ABE">
+    <physical>
+      <pfn filetype="ROOT_All" name="/tmp/narayan/AOD.582308._000002.pool.root.1"/>
+    </physical>
+    <logical/>
+  </File>
+
+  <File ID="DC582C10-0547-E111-80DA-001E4F19CA16">
+    <physical>
+      <pfn filetype="ROOT_All" name="/tmp/narayan/mc11_7TeV.109300.AlpgenJimmyZeebbNp0_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993_tid679741_00/AOD.679741._000076.pool.root.1"/>
+    </physical>
+    <logical/>
+  </File>
+
+</POOLFILECATALOG>
