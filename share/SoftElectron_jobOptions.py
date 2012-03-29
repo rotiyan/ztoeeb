@@ -11,15 +11,19 @@ ToolSvc.hforTool.RemovalSchema = "angularbased"     # "jetbased","angularbased",
 # parameters used for the jetbased method
 #ToolSvc.hforTool.MinJetPt = 15000
 
+import MCTruthClassifier.MCTruthClassifierBase
+
 from ZeeB.ZeeBConf import SoftElectron
 MySoftElectron = SoftElectron(
 	name="MySoftElectron",
         #SelectBFromRun = run_number # use only u-jets from this run
         #SelectUFromRun = run_number # use only u-jets from this run
-        JetContainer= "AntiKt4TruthJets",
         PrimaryVertexContainer = "VxPrimaryCandidate",
         MCParticleContainer = "SpclMC",
-        MCEventContainer = "GEN_AOD"
+        MCEventContainer = "GEN_AOD",
+        HardElLowPtcut  = 30,
+        SoftElHighPtcut = 30,
+        SoftElLowPtcut = 5
         )
 
 from AthenaCommon.AlgSequence import AlgSequence
@@ -28,4 +32,4 @@ topSequence += MySoftElectron
 		
 from GaudiSvc.GaudiSvcConf import THistSvc
 ServiceMgr += THistSvc()
-ServiceMgr.THistSvc.Output = ["SoftElectron DATAFILE='softElectron.root' OPT='RECREATE'"]
+ServiceMgr.THistSvc.Output = ["AANT DATAFILE='softElectron.root' OPT='RECREATE'"]

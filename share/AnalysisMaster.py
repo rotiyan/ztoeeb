@@ -7,8 +7,9 @@
 # We use "jp" to pass the input file to the userAlgs jO file defined below
 # if you want to run over multiple files locally, use glob as shown below
 
+import glob
 from AthenaCommon.AthenaCommonFlags import jobproperties as jp
-jp.AthenaCommonFlags.FilesInput = ['/tmp/narayan/mc11_7TeV.109300.AlpgenJimmyZeebbNp0_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993_tid679741_00/AOD.679741._000076.pool.root.1']
+jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.109300.AlpgenJimmyZeebbNp0_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993_tid679741_00/*root*')
 
 # to run over multiple input files
 ##################

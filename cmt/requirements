@@ -22,6 +22,7 @@ use AnalysisTools		AnalysisTools-*			PhysicsAnalysis/AnalysisCommon
 use UserAnalysisUtils	UserAnalysisUtils-*		PhysicsAnalysis/AnalysisCommon
 use SpecialUtils		SpecialUtils-*			PhysicsAnalysis/AnalysisCommon
 use ParticleJetTools    ParticleJetTools-*      PhysicsAnalysis/AnalysisCommon
+use MCTruthClassifier   MCTruthClassifier-*     PhysicsAnalysis
 
 use TruthUtils          TruthUtils-*            Generators/GenAnalysisTools
 use JetTagEvent         JetTagEvent-*           PhysicsAnalysis/JetTagging
@@ -46,6 +47,7 @@ use TrkTrackSummary 	TrkTrackSummary-* 		Tracking/TrkEvent
 use VxVertex 			VxVertex-* 			    Tracking/TrkEvent
 use TrkEventPrimitives  TrkEventPrimitives-*    Tracking/TrkEvent
 use TrkParameters       TrkParameters-*         Tracking/TrkEvent
+use TrkParticleBase     TrkParticleBase-*       Tracking/TrkEvent
 
 # use BPhysAnalysisObjects    BPhysAnalysisObjects-*  PhysicsAnalysis/BPhys
 # use BPhysAnalysisTools      BPhysAnalysisTools-*    PhysicsAnalysis/BPhys
