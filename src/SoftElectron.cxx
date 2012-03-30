@@ -1,4 +1,5 @@
 #include "ZeeB/SoftElectron.h"
+#include "ZeeB/HerwigTruthClassifier.h"
 
 #include "GaudiKernel/MsgStream.h"
 #include "GaudiKernel/AlgFactory.h"
@@ -246,7 +247,7 @@ void SoftElectron::FindTruthParticle()
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
     {
         const HepMC::GenParticle* part = (*pitr);
-        if(part->status() == 200)
+        if(part->status() == 199)
         {
             if(isBHadron(part)) 
             {
@@ -310,108 +311,118 @@ void SoftElectron::DoElectronMatch()
         double el_truth_eta = -100;
         double el_truth_phi = -100;
 
+        //Identified Gen Particle
         const HepMC::GenParticle* particle  = m_mcTruthClassifier->getGenPart();
         if(particle)
         {
             el_truth_pt  = particle->momentum().perp()/1000;
             el_truth_eta = particle->momentum().eta();
             el_truth_phi = particle->momentum().phi();
-        }
+    
+            HerwigTruthClassifier myTruthClassfier(particle);
+            
+            HepMC::GenParticle*  myParent= myTruthClassfier.GetParent();
+            mlog <<MSG::INFO <<"Herwig Truth Classifer: " << myParent->pdg_id() <<", " <<myParent->status() <<endreq;
+            if(this->isBHadron(myParent))
+                m_h1Hists["h1_nBSemilept"]->Fill(1);
+
         
         //Soft Electrons
-        if( (*elItr)->author(egammaParameters::AuthorSofte) && !(*elItr)->author(egammaParameters::AuthorElectron) && el_truth_pt < m_softElHighPtCut && el_truth_pt > m_softElLowPtcut)
-        {
-            if((std::abs(el_trk_eta) >2.5 ))
-                continue;
-
-            m_h1Hists["h1_softElPt"]->Fill(el_trk_pt);
-            m_h1Hists["h1_softElPtResol"]->Fill(el_trk_pt - el_truth_pt);
-
-            m_h1Hists["h1_softElEta"]->Fill(el_trk_eta);
-            m_h1Hists["h1_softElEtaResol"]->Fill(el_trk_eta - el_truth_eta);
-
-            m_h1Hists["h1_softElPhi"]->Fill(el_trk_phi);
-            m_h1Hists["h1_softElPhiResol"]->Fill(el_trk_phi - el_truth_phi);
-
-            m_h1Hists["h1_softElOrigin"]->Fill(partOrigin.c_str(),1);
-
-            m_nSoftEl++;
-            if(partOrigin == "ZBoson")
+            if( (*elItr)->author(egammaParameters::AuthorSofte) 
+                    && !(*elItr)->author(egammaParameters::AuthorElectron)
+                    && el_truth_pt < m_softElHighPtCut && el_truth_pt > m_softElLowPtcut)
             {
-                m_nSoftZEl++;
-            }
-            else if(partOrigin == "BottomMeson")
-            {
-                m_nSoftBEl++;
-                m_h1Hists["h1_nBSemilept"]->Fill(1);
-            }
-            else if(partOrigin =="CharmedMeson")
-            {
-                HepMC::GenVertex *pvtx = mother->production_vertex();
-                if(pvtx)
+                if((std::abs(el_trk_eta) >2.5 ))
+                    continue;
+
+                m_h1Hists["h1_softElPt"]->Fill(el_trk_pt);
+                m_h1Hists["h1_softElPtResol"]->Fill(el_trk_pt - el_truth_pt);
+
+                m_h1Hists["h1_softElEta"]->Fill(el_trk_eta);
+                m_h1Hists["h1_softElEtaResol"]->Fill(el_trk_eta - el_truth_eta);
+
+                m_h1Hists["h1_softElPhi"]->Fill(el_trk_phi);
+                m_h1Hists["h1_softElPhiResol"]->Fill(el_trk_phi - el_truth_phi);
+
+                m_h1Hists["h1_softElOrigin"]->Fill(partOrigin.c_str(),1);
+
+                m_nSoftEl++;
+                if(myParent->pdg_id() == 23)
                 {
-                    HepMC::GenVertex::particle_iterator itr = pvtx->particles_begin(HepMC::parents);
-                    bool parentBHadron(false);
-                    for(; itr != pvtx->particles_end(HepMC::parents); ++itr)
+                    m_nSoftZEl++;
+                }
+                else if(isBHadron(myParent))
+                {
+                    m_nSoftBEl++;
+                }
+                else if(isCHadron(myParent))
+                {
+                    HepMC::GenVertex *pvtx = mother->production_vertex();
+                    if(pvtx)
                     {
-                        HepMC::GenParticle* gp = (*itr);
-                        if(isBHadron(gp))
+                        HepMC::GenVertex::particle_iterator itr = pvtx->particles_begin(HepMC::parents);
+                        bool parentBHadron(false);
+                        for(; itr != pvtx->particles_end(HepMC::parents); ++itr)
                         {
-                           parentBHadron = true;
+                            HepMC::GenParticle* gp = (*itr);
+                            if(isBHadron(gp))
+                            {
+                               parentBHadron = true;
+                            }
                         }
-                    }
-                    if(!parentBHadron)
-                    {
-                        m_nSoftBEl++;
+                        if(!parentBHadron)
+                        {
+                            m_nSoftBEl++;
+                        }
                     }
                 }
             }
-        }
-        //Hard Electrons
-        else if((*elItr)->author(egammaParameters::AuthorElectron) && el_truth_pt> m_hardElLowPtCut)
-        {
-            if(!(std::abs(el_cl_eta) <2.47  || 1.37 < std::abs(el_cl_eta) || std::abs(el_cl_eta) < 1.52))
-                continue;
-
-            m_h1Hists["h1_hardElPt"]->Fill(el_cl_pt);
-            m_h1Hists["h1_hardElPtResol"]->Fill(el_cl_pt - el_truth_pt);
-
-            m_h1Hists["h1_hardElEta"]->Fill(el_cl_eta);
-            m_h1Hists["h1_hardElEtaResol"]->Fill(el_cl_eta - el_truth_eta);
-
-            m_h1Hists["h1_hardElPhi"]->Fill(el_cl_phi);
-            m_h1Hists["h1_hardElPhiResol"]->Fill(el_cl_phi - el_truth_phi);
-
-            m_h1Hists["h1_hardElOrigin"]->Fill(partOrigin.c_str(),1);
-
-            m_nHardEl++;
-            if(partOrigin == "ZBoson")
+            //Hard Electrons
+            else if((*elItr)->author(egammaParameters::AuthorElectron) && el_truth_pt> m_hardElLowPtCut)
             {
-                m_nHardZEl++;
-            }
-            else if(partOrigin == "BottomMeson")
-            {
-                m_nHardBEl++;
-                m_h1Hists["h1_nBSemilept"]->Fill(1);
-            }
-            else if(partOrigin == "CharmedMeson")
-            {
-                HepMC::GenVertex *pvtx = mother->production_vertex();
-                if(pvtx)
+                if(!(std::abs(el_cl_eta) <2.47  || 1.37 < std::abs(el_cl_eta) || std::abs(el_cl_eta) < 1.52))
+                    continue;
+
+                m_h1Hists["h1_hardElPt"]->Fill(el_cl_pt);
+                m_h1Hists["h1_hardElPtResol"]->Fill(el_cl_pt - el_truth_pt);
+
+                m_h1Hists["h1_hardElEta"]->Fill(el_cl_eta);
+                m_h1Hists["h1_hardElEtaResol"]->Fill(el_cl_eta - el_truth_eta);
+
+                m_h1Hists["h1_hardElPhi"]->Fill(el_cl_phi);
+                m_h1Hists["h1_hardElPhiResol"]->Fill(el_cl_phi - el_truth_phi);
+
+                m_h1Hists["h1_hardElOrigin"]->Fill(myParent->pdg_id());
+
+                m_nHardEl++;
+                if(myParent->pdg_id() ==23)
                 {
-                    HepMC::GenVertex::particle_iterator itr = pvtx->particles_begin(HepMC::parents);
-                    bool parentBHadron(false);
-                    for(; itr != pvtx->particles_end(HepMC::parents); ++itr)
+                    m_nHardZEl++;
+                }
+                else if(this->isBHadron(myParent))
+                {
+                    m_nHardBEl++;
+                    m_h1Hists["h1_nBSemilept"]->Fill(1);
+                }
+                else if(this->isCHadron(myParent))
+                {
+                    HepMC::GenVertex *pvtx = mother->production_vertex();
+                    if(pvtx)
                     {
-                        HepMC::GenParticle* gp = (*itr);
-                        if(isBHadron(gp))
+                        HepMC::GenVertex::particle_iterator itr = pvtx->particles_begin(HepMC::parents);
+                        bool parentBHadron(false);
+                        for(; itr != pvtx->particles_end(HepMC::parents); ++itr)
                         {
-                           parentBHadron = true;
+                            HepMC::GenParticle* gp = (*itr);
+                            if(isBHadron(gp))
+                            {
+                               parentBHadron = true;
+                            }
                         }
-                    }
-                    if(!parentBHadron)
-                    {
-                        m_nHardBEl++;
+                        if(!parentBHadron)
+                        {
+                            m_nHardBEl++;
+                        }
                     }
                 }
             }
