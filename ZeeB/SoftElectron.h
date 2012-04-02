@@ -28,6 +28,7 @@
 #include "TruthUtils/IHforTool.h"
 
 namespace Rec { class TrackParticleContainer; }
+namespace HepMC {class GenParticle; }
 class ElectronContainer;
 class IMCTruthClassifier;
 class McEventCollection;
@@ -54,8 +55,11 @@ class SoftElectron : public Algorithm
         bool isCHadron(const HepMC::GenParticle* p);
         void FindTruthParticle();
         void DoElectronMatch();
+        HepMC::GenParticle* GetElectronParent(Analysis::Electron*  el);
         StatusCode LoadContainers(); //retrieves the containers from the store gate
-        void ClearContainers();
+        void ClearCounters();
+        void FillCounters(std::string type, HepMC::GenParticle* parent);
+        void FillHistograms();
         StatusCode BookHistograms();
     
     private:
@@ -71,8 +75,13 @@ class SoftElectron : public Algorithm
         int m_irun;
         int m_ievt;
 
+        int m_nBHadrons;
+        int m_nCHadrons;
+
         int m_nHardEl;
         int m_nSoftEl;
+        int m_nBEl;
+        int m_nZEl;
         int m_nHardZEl;
         int m_nHardBEl;
         int m_nSoftZEl;
@@ -90,11 +99,17 @@ class SoftElectron : public Algorithm
 
         std::map<std::string,TH1F*> m_h1Hists;
         std::map<std::string,TH2F*> m_h2Hists;
+
+        std::vector<const HepMC::GenParticle* >m_BHadronContainer;
+        std::vector<const HepMC::GenParticle* >m_CHadronContainer;
         
         float m_hardElLowPtCut;
         float m_softElLowPtcut;
         float m_softElHighPtCut;
 
+        float m_etaMax;
+        float m_crackEtaMin;
+        float m_crackEtaMax;
 };
   
 
