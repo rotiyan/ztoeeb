@@ -12,6 +12,13 @@ ToolSvc.hforTool.RemovalSchema = "angularbased"     # "jetbased","angularbased",
 #ToolSvc.hforTool.MinJetPt = 15000
 
 import MCTruthClassifier.MCTruthClassifierBase
+from  MCTruthClassifier.MCTruthClassifierConf import MCTruthClassifier
+ToolSvc += MCTruthClassifier()
+
+#Loose cuts
+MCTruthClassifier.deltaRMatchCut   = 20
+MCTruthClassifier.deltaPhiMatchCut = 20
+MCTruthClassifier.NumOfSiHitsCut   = 3
 
 from ZeeB.ZeeBConf import SoftElectron
 MySoftElectron = SoftElectron(
@@ -21,8 +28,8 @@ MySoftElectron = SoftElectron(
         PrimaryVertexContainer = "VxPrimaryCandidate",
         MCParticleContainer = "SpclMC",
         MCEventContainer = "GEN_AOD",
-        HardElLowPtcut  = 30,
-        SoftElHighPtcut = 30,
+        HardElLowPtcut  = 25,
+        SoftElHighPtcut = 25,
         SoftElLowPtcut = 5
         )
 
