@@ -350,8 +350,7 @@ void SoftElectron::DoElectronMatch()
 
 
         //Soft Electrons
-        if( (*elItr)->author(egammaParameters::AuthorSofte) && !(*elItr)->author(egammaParameters::AuthorElectron)
-                && el_trk_pt< m_softElHighPtCut && el_trk_pt> m_softElLowPtcut)
+        if( (*elItr)->author(egammaParameters::AuthorSofte) && el_trk_pt< m_softElHighPtCut && el_trk_pt> m_softElLowPtcut)
         {
 
             if(!(std::abs(el_trk_eta) <m_etaMax))
