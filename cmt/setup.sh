@@ -1,7 +1,7 @@
 # echo "setup ZeeB ZeeB-00-00-00 in /afs/cern.ch/user/n/narayan/testarea/17.0.5"
 
 if test "${CMTROOT}" = ""; then
-  CMTROOT=/afs/cern.ch/atlas/software/releases/17.0.5/CMT/v1r23; export CMTROOT
+  CMTROOT=/cvmfs/atlas.cern.ch/repo/sw/software/i686-slc5-gcc43-opt/17.0.5/CMT/v1r23; export CMTROOT
 fi
 . ${CMTROOT}/mgr/setup.sh
 cmtZeeBtempfile=`${CMTROOT}/mgr/cmt -quiet build temporary_name`

@@ -1,4 +1,6 @@
 *.__afs*
 i686-slc5-gcc43-opt/
 genConf/
-
+*.root
+cmt/*.sh
+cmt/*.csh

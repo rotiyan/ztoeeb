@@ -1,7 +1,7 @@
 # echo "cleanup ZeeB ZeeB-00-00-00 in /afs/cern.ch/user/n/narayan/testarea/17.0.5"
 
 if ( $?CMTROOT == 0 ) then
-  setenv CMTROOT /afs/cern.ch/atlas/software/releases/17.0.5/CMT/v1r23
+  setenv CMTROOT /cvmfs/atlas.cern.ch/repo/sw/software/i686-slc5-gcc43-opt/17.0.5/CMT/v1r23
 endif
 source ${CMTROOT}/mgr/setup.csh
 set cmtZeeBtempfile=`${CMTROOT}/mgr/cmt -quiet build temporary_name`

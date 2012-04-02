@@ -1,19 +1,23 @@
-#ifndef HerwigTruthClassifer
-#define HerwigTruthClassifer
+#ifndef ZeeB_HerwigTruthClassifier
+#define ZeeB_HerwigTruthClassifier
 
 namespace HepMC{
     class GenParticle;
 }
-class HerwigTruthClassifer
+class HerwigTruthClassifier
 {
     public:
-        HerwigTruthClassifer(HepMC::GenParticle* part);
-        ~HerwigTruthClassifer();
+        HerwigTruthClassifier(const HepMC::GenParticle* );
+        ~HerwigTruthClassifier();
 
     public:
         HepMC::GenParticle* GetParent();
 
     private:
-        std::vector<HepMC::GenParticle* >* m_parntVec;
+        HepMC::GenParticle* GetMother(const HepMC::GenParticle*);
+
+    private:
+        HepMC::GenParticle*  m_parent;
 };
+
 #endif
