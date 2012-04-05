@@ -16,4 +16,11 @@
     <logical/>
   </File>
 
+  <File ID="A2A89412-413A-E111-9690-0026B92E0FE4">
+    <physical>
+      <pfn filetype="ROOT_All" name="/tmp/narayan/mc11_7TeV.109300.AlpgenJimmyZeebbNp0_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993_tid645621_00/AOD.645621._000017.pool.root.1"/>
+    </physical>
+    <logical/>
+  </File>
+
 </POOLFILECATALOG>
