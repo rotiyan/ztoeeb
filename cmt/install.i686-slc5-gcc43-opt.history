@@ -12,12 +12,12 @@ p5
 sS'../../ZeeB/genConf/ZeeB'
 p6
 (dp7
-S'../../../ZeeB/genConf/ZeeB/ZeeB_confDb.py'
+S'../../../ZeeB/genConf/ZeeB/ZeeBConf.py'
 p8
-S'../../InstallArea/python/ZeeB/ZeeB_confDb.py'
-p9
-sS'../../../ZeeB/genConf/ZeeB/ZeeBConf.py'
-p10
 S'../../InstallArea/python/ZeeB/ZeeBConf.py'
+p9
+sS'../../../ZeeB/genConf/ZeeB/ZeeB_confDb.py'
+p10
+S'../../InstallArea/python/ZeeB/ZeeB_confDb.py'
 p11
 sssb.
