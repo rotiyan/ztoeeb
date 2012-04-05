@@ -51,16 +51,102 @@ class SoftElectron : public Algorithm
       
     
     private:
-        bool isBHadron(const HepMC::GenParticle* p);
-        bool isCHadron(const HepMC::GenParticle* p);
-        void FindTruthParticle();
-        void DoElectronMatch();
-        HepMC::GenParticle* GetElectronParent(Analysis::Electron*  el);
-        StatusCode LoadContainers(); //retrieves the containers from the store gate
-        void ClearCounters();
-        void FillCounters(std::string type, HepMC::GenParticle* parent);
-        void FillHistograms();
+
+        /**
+         * Book the histograms at the 
+         * begining of the loop. 
+         * The histograms are contained 
+         * in an stl map which 
+         * can be indexed by strings (names)
+         */
         StatusCode BookHistograms();
+
+        /**
+         * Checks if the GenParticle is a B-hadron
+         * based on the pdg id
+         */
+        bool isBHadron(const HepMC::GenParticle* p);
+
+        /**
+         * Checks if the Genparticle 
+         * is a C-hadrons
+         * based on the pdg id
+         */
+        bool isCHadron(const HepMC::GenParticle* p);
+
+        /**
+         * Loop through the GenEvent 
+         * containers and Identifies 
+         * the truth particles of interest
+         */
+        void FindTruthParticle();
+
+        /**
+         * Match the Reco electron with 
+         * the truth electrons
+         * using MCTruthClassifier and 
+         * a custom class HerwigTruthclassifier
+         */
+        void DoElectronMatch();
+
+        /**
+         * Returns the parent of the Truth Electrons
+         */
+        HepMC::GenParticle* GetElectronParent(Analysis::Electron*  el);
+
+        /**
+         * Load the AOD containers 
+         * which are required for 
+         * the analysis
+         */
+        StatusCode LoadContainers(); 
+
+        /**
+         * Clear the counters and 
+         * containers at the begining of 
+         * an event loop
+         */
+        void ClearCounters();
+
+        /** 
+         * At the end of the event 
+         * loop Increment the private 
+         * counters
+         */
+        void FillCounters(std::string type, HepMC::GenParticle* parent);
+
+        /**
+         * Called at the end of an 
+         * event loop to fill event 
+         * specific variables
+         * and counters
+         */
+        void FillHistograms();
+
+
+        /**
+         * Returns the parents of 
+         * the particles in GenEvent
+         * container
+         */
+        std::vector<const HepMC::GenParticle*> GetParents(const HepMC::GenParticle* part);
+
+        /**
+         * Returns the childrens of
+         * the particles in the GenEvent
+         * container
+         */
+        std::vector<const HepMC::GenParticle*> GetChildren(const HepMC::GenParticle* part);
+
+        /**
+         * Function to count and 
+         * retrieve Hadrons from 
+         * the GenEvent containers.
+         * Ignores hadrons which 
+         * have same flavour parents. 
+         */
+        void GetTruthHadrons(const HepMC::GenParticle* part, std::vector<const HepMC::GenParticle*> &hdrnHolder,
+                TH1F* prodHist,TH1F* semiHist, int &counter);
     
     private:
         StoreGateSvc* m_storeGate;
