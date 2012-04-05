@@ -121,16 +121,6 @@ StatusCode SoftElectron::initialize()
     return StatusCode::SUCCESS;
 }		 
 
-double phiCorr(double phi)
-{
-  double newphi = phi;
-  if (phi<-M_PI) newphi += 2*M_PI;
-  if (phi> M_PI) newphi -= 2*M_PI;
-  return newphi;
-}
-
-
-
 StatusCode SoftElectron::execute() 
 {
     MsgStream mlog( msgSvc(), name() );
@@ -165,6 +155,8 @@ StatusCode SoftElectron::execute()
 
 StatusCode SoftElectron::finalize() 
 {
+    m_h1Hists["MatchEffVsPt"]->Divide(m_h1Hists["MatchedElPt"],m_h1Hists["RecoElPt"]);
+
   return StatusCode::SUCCESS;
 }
 
@@ -182,9 +174,12 @@ StatusCode SoftElectron::BookHistograms()
 
     m_h1Hists["nBHadrons"]   = new TH1F("nBHadrons","",4,0,4);
     m_h1Hists["nBSemilept"]  = new TH1F("nBSemilept","",4,0,4);
+    m_h1Hists["nBSemileptTrue"] = new TH1F("nBSemileptTrue","",4,0,4);
+
 
     m_h1Hists["nCHadrons"]   = new TH1F("nCHadrons","",4,0,4);
     m_h1Hists["nCSemilept"]  = new TH1F("nCSemilept","",4,0,4);
+    m_h1Hists["nCSemileptTrue"] = new TH1F("nCSemileptTrue","",4,0,4);
 
     m_h1Hists["BMultplcty"]  = new TH1F("BMultplcty","B Hadron  multiplicity",10,0,10);
     m_h1Hists["CMultplcty"]  = new TH1F("CMultplcty","C Hadron multiplicity",10,0,10);
@@ -199,10 +194,12 @@ StatusCode SoftElectron::BookHistograms()
 
     m_h1Hists["hardEl_cntr"]        = new TH1F("hardEl_cntr","Number of Hard Electrons after cuts",4,0,4);
     m_h1Hists["hardElMatched_cntr"] = new TH1F("hardElMatched_cntr","Number of Hard Electrons truth matched",4,0,4);
+
+    m_h1Hists["el_cntr"]        = new TH1F("el_cntr","Electron Counter",4,0,4);
+    m_h1Hists["elMatched_cntr"] = new TH1F("elMatched_cntr","Truth matched Electron Counter",4,0,4);
     
     m_h1Hists["softEl_cntr"]        = new TH1F("softEl_cntr","Number of Soft Electrons after cuts",4,0,4);
     m_h1Hists["softElMatched_cntr"] = new TH1F("softElMatched_cntr","Number of Soft Electrons truth matched",4,0,4);
-
 
     m_h1Hists["softElEtaResol"]   = new TH1F("softElEtaResol","AuthorSofte",500,-1,1);
     m_h1Hists["softElPtResol"]    = new TH1F("softElPtResol","AuthorSofte;p_{T} [GeV]",500,-1,1);
@@ -218,7 +215,15 @@ StatusCode SoftElectron::BookHistograms()
 
     m_h1Hists["softElOrigin"]    = new TH1F("softElOrigin","Mother of  soft Electron",1000,0,1000);
     m_h1Hists["hardElOrigin"]    = new TH1F("hardElOrigin","Mother of  hard Electron",1000,0,1000);
- 
+
+    //Reconstruction
+    m_h1Hists["RecoElPt"]       = new TH1F("RecoElPt","Reco Electron Pt [GeV]",500,0,500);
+    m_h1Hists["MatchedElPt"]    = new TH1F("MatchedElPt","Truth Matched Electron Pt(Reco); [GeV]",500,0,500);
+    //m_h1Hists["MatchedTruthElPt"]= new TH1F("MatchedTruthElPt","Truth Matched Electron Pt( Gen); [GeV]",500,0,500);
+    //m_h1Hists["MatchEffVsPt"]   = new TH1F("MatchEffVsPt","Truth Match EffVsPt;[GeV]",500,0,500);
+
+    //m_h2Hists["ElERatio"]       = new TH2F("ElERatio","Electron Energy ratio; #eta; E_reco/E_gen",-5,5,10,500,0,500);
+    //m_h2Hists["ElPRatio"]       = new TH2F("ElPRatio","Electron momentum Ratio; #eta; p_reco/p_gen",-5,5,10,500,0,500);
     m_h2Hists["ElHardVsSoft"]    = new TH2F("ElHardVsSoft",";# Hard el; #Soft el",10,0,10,10,0,10);
     m_h2Hists["ElHardVsSoftTrue"]= new TH2F("ElHardVsSoftTrue",";# Hard Z el; #soft B el",10,0,10,10,0,10);
 
@@ -278,24 +283,16 @@ void SoftElectron::FindTruthParticle()
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
     {
         const HepMC::GenParticle* part = (*pitr);
-        if(std::abs(part->momentum().eta()) > m_etaMax)
-            continue ;
         int status = part->status();
-        if(status == 196 || status == 197 || status ==198)
+        //if(status == 196 || status == 197 || status ==198)
         {
             if(isBHadron(part)) 
             {
-                m_BHadronContainer.push_back(part);
-                mlog<<MSG::INFO <<"B Particle: "<<part->status() <<endreq;
-                m_h1Hists["nBHadrons"]->Fill(1);
-
-                m_nBHadrons++;
+                this->GetTruthHadrons(part,m_BHadronContainer,m_h1Hists["nBHadrons"],m_h1Hists["nBSemileptTrue"],m_nBHadrons);
             }
             if(isCHadron(part))
             {
-                m_CHadronContainer.push_back(part);
-                m_h1Hists["nCHadrons"]->Fill(1);
-                m_nCHadrons++;
+                this->GetTruthHadrons(part,m_CHadronContainer,m_h1Hists["nCHadrons"],m_h1Hists["nCSemileptTrue"],m_nCHadrons);
             }
         }
     }
@@ -310,16 +307,16 @@ void SoftElectron::DoElectronMatch()
     for(;elItr != m_electronCollection->end(); ++elItr)
     {
         Analysis::Electron* Electron = (*elItr);
-        HepMC::GenParticle* myParent = this->GetElectronParent(Electron);
+        HepMC::GenParticle* elParent = this->GetElectronParent(Electron);
 
         double el_truth_pt  = -100;
         double el_truth_eta = -100;
         double el_truth_phi = -100;
-        if(myParent)
+        if(elParent)
         {
-            el_truth_pt     = myParent->momentum().perp()/1000;
-            el_truth_eta    = myParent->momentum().eta();
-            el_truth_phi    = myParent->momentum().phi();
+            el_truth_pt     = elParent->momentum().perp()/1000;
+            el_truth_eta    = elParent->momentum().eta();
+            el_truth_phi    = elParent->momentum().phi();
         }
         
         //Track Particle 
@@ -350,15 +347,15 @@ void SoftElectron::DoElectronMatch()
 
 
         //Soft Electrons
-        if( (*elItr)->author(egammaParameters::AuthorSofte) && el_trk_pt< m_softElHighPtCut && el_trk_pt> m_softElLowPtcut)
+        if( ((*elItr)->author(egammaParameters::AuthorSofte) 
+                    || ( (*elItr)->author(egammaParameters::AuthorSofte) &&(*elItr)->author(egammaParameters::AuthorElectron)))
+                && el_trk_pt< m_softElHighPtCut && el_trk_pt> m_softElLowPtcut)
         {
 
             if(!(std::abs(el_trk_eta) <m_etaMax))
                 continue;
  
-            mlog <<MSG::INFO<< "IN SOFT ELECTRON " <<endreq;
-
-            if(myParent)
+            if(elParent)
             {
                 m_h1Hists["softElPt"]->Fill(el_trk_pt);
                 m_h1Hists["softElPtResol"]->Fill(el_trk_pt - el_truth_pt);
@@ -369,18 +366,17 @@ void SoftElectron::DoElectronMatch()
                 m_h1Hists["softElPhi"]->Fill(el_trk_phi);
                 m_h1Hists["softElPhiResol"]->Fill(el_trk_phi - el_truth_phi);
 
-                this->FillCounters("soft",myParent);
+                this->FillCounters("soft",elParent);
             }
 
         }
         //Hard Electrons
         else if((*elItr)->author(egammaParameters::AuthorElectron) && el_cl_pt> m_hardElLowPtCut)
         {
-            if( !(std::abs(el_cl_eta) < m_etaMax && !(std::abs(el_cl_eta)> m_crackEtaMin && std::abs(el_cl_eta))< m_crackEtaMax)) 
+            if( !(std::abs(el_cl_eta) < m_etaMax && (std::abs(el_cl_eta) < m_crackEtaMin || std::abs(el_cl_eta)> m_crackEtaMax) ) )
                 continue;
-            mlog <<MSG::INFO<< "IN HARD ELECTRON " <<endreq;
 
-            if(myParent)
+            if(elParent)
             {
                 m_h1Hists["hardElPt"]->Fill(el_cl_pt);
                 m_h1Hists["hardElPtResol"]->Fill(el_cl_pt - el_truth_pt);
@@ -391,14 +387,14 @@ void SoftElectron::DoElectronMatch()
                 m_h1Hists["hardElPhi"]->Fill(el_cl_phi);
                 m_h1Hists["hardElPhiResol"]->Fill(el_cl_phi - el_truth_phi);
 
-                this->FillCounters("hard",myParent);
+                this->FillCounters("hard",elParent);
             }
 
         }
     }
 }
 
-void SoftElectron::FillCounters(std::string type,HepMC::GenParticle* myParent)
+void SoftElectron::FillCounters(std::string type,HepMC::GenParticle* elParent)
 {
     int ElCntr  = 0;
     int ZElCntr = 0;
@@ -413,27 +409,26 @@ void SoftElectron::FillCounters(std::string type,HepMC::GenParticle* myParent)
     ElCntr ++;
     m_h1Hists[ElCntrKey]->Fill(1);
 
-    if(myParent)
+    if(elParent)
     {
 
         m_h1Hists[ElMatchedCntrKey]->Fill(1);
-        m_h1Hists[ElOrignKey]->Fill(myParent->pdg_id());
+        m_h1Hists[ElOrignKey]->Fill(elParent->pdg_id());
 
         ElCntr ++;
-        if(myParent->pdg_id() ==23)
+        if(elParent->pdg_id() ==23)
         {
             m_nZEl++;
             ZElCntr++;
         }
-        else if(this->isBHadron(myParent))
+        else if(this->isBHadron(elParent))
         {
             m_nBEl++;
             BElCntr++;
-            m_h1Hists["nBSemilept"]->Fill(1);
         }
-        else if(this->isCHadron(myParent))
+        else if(this->isCHadron(elParent))
         {
-            HepMC::GenVertex *pvtx = myParent->production_vertex();
+            HepMC::GenVertex *pvtx = elParent->production_vertex();
             if(pvtx)
             {
                 HepMC::GenVertex::particle_iterator itr = pvtx->particles_begin(HepMC::parents);
@@ -556,28 +551,115 @@ void SoftElectron::FillHistograms()
 
 HepMC::GenParticle* SoftElectron::GetElectronParent(Analysis::Electron* Electron)
 {
+    m_h1Hists["el_cntr"]->Fill(1);
+    
+    const CaloCluster* ElCluster = Electron->cluster();
+    m_h1Hists["RecoElPt"]->Fill(ElCluster->pt()/1000);
+ 
+    HepMC::GenParticle* elParent = 0;
+
     m_mcTruthClassifier->particleTruthClassifier(Electron);
     const HepMC::GenParticle* particle  = m_mcTruthClassifier->getGenPart();
-
-
-    HepMC::GenParticle* myParent = 0;
     if(particle)
     {
+        
+        //Account for the Reco Electron Pt in corresponding histograms
+        //m_h1Hists["MatchedElPt"]->Fill(Electron->cluster()->pt()/1000);
+        //m_h1Hists["MatchedTruthElPt"]->Fill(particle->momentum().perp()/1000);
+
+        //m_h2Hists["ElERatio"]->Fill(particle->momentum().eta(),ElCluster->e()/particle->momentum().e());
+        //m_h2Hists["ElPRatio"]->Fill(particle->momentum().eta(),ElCluster->pt()/particle->momentum().perp());
+
         HerwigTruthClassifier myTruthClassifier(particle);
-        myParent= myTruthClassifier.GetParent();
-        if(myParent)
+        elParent= myTruthClassifier.GetParent();
+        if(elParent)
         {
-            if(this->isBHadron(myParent))
+            m_h1Hists["elMatched_cntr"]->Fill(1);
+            if(this->isBHadron(elParent))
             {
                 m_h1Hists["nBSemilept"]->Fill(1);
-                m_h1Hists["BStatus"]->Fill(myParent->status());
+                m_h1Hists["BStatus"]->Fill(elParent->status());
             }
-            else if(this->isCHadron(myParent))
+            else if(this->isCHadron(elParent))
             {
                 m_h1Hists["nCSemilept"]->Fill(1);
-                m_h1Hists["CStatus"]->Fill(myParent->status());
+                m_h1Hists["CStatus"]->Fill(elParent->status());
             }
         }
     }
-    return myParent;
+    return elParent;
+}
+
+std::vector<const HepMC::GenParticle* > SoftElectron::GetParents(const HepMC::GenParticle* p)
+{
+    HepMC::GenVertex* pvtx = p->production_vertex();
+    std::vector<const HepMC::GenParticle*> parentVec;
+    if(pvtx)
+    {
+        HepMC::GenVertex::particle_iterator pin = pvtx->particles_begin(HepMC::parents);
+        for(; pin != pvtx->particles_end(HepMC::parents); ++pin)
+        {
+            const HepMC::GenParticle* parent = (*pin);
+            parentVec.push_back(parent);
+        }
+    }
+    return parentVec;
+}
+
+std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::GenParticle* p)
+{
+    HepMC::GenVertex* evtx = p->end_vertex();
+    std::vector<const HepMC::GenParticle*> daughterVec;
+    if (evtx)
+    {
+        HepMC::GenVertex::particle_iterator pout = evtx->particles_begin(HepMC::children);
+        for(; pout != evtx->particles_end(HepMC::children); ++pout)
+        {
+            const HepMC::GenParticle* daughter = (*pout);
+            daughterVec.push_back(daughter);
+        }
+    }
+    return daughterVec;
+}
+
+void SoftElectron::GetTruthHadrons(const HepMC::GenParticle* part,std::vector<const HepMC::GenParticle*> &hdrnContainer,
+        TH1F* prodHist,TH1F* semiHist,int &hdrnCounter)
+{
+    std::vector<const HepMC::GenParticle*> parentVec = this->GetParents(part);
+    std::vector<const HepMC::GenParticle*> childVec  = this->GetChildren(part);
+    
+    bool hasbdaughter(false),hasbmother(false);
+    bool hascdaughter(false),hascmother(false);
+    
+    std::vector<const HepMC::GenParticle*>::const_iterator piter; 
+    for(piter = parentVec.begin(); piter != parentVec.end(); ++piter)
+    {
+        const HepMC::GenParticle* p= (*piter);
+        if(isBHadron(p))
+            hasbmother = true;
+        if(isCHadron(p))
+            hascmother = true;
+    }
+    for(piter = childVec.begin(); piter != childVec.end(); ++piter)
+    {
+        const HepMC::GenParticle* p = (*piter);
+        if(isBHadron(p))
+            hasbdaughter = true;
+        if(isCHadron(p))
+            hascdaughter = true;
+    }
+    if(!((hasbdaughter && hasbmother) || (hascdaughter && hascmother)))
+    {
+        hdrnCounter++;
+        prodHist->Fill(1);
+        hdrnContainer.push_back(part);
+        bool hasDaughterElectron(false);
+        for(piter = childVec.begin(); piter != childVec.end(); ++piter)
+        {
+            if(std::abs((*piter)->pdg_id())== 11 && (*piter)->momentum().eta() < m_etaMax)
+                hasDaughterElectron = true;
+        }
+        if(hasDaughterElectron)
+            semiHist->Fill(1);
+    }
 }
