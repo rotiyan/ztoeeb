@@ -219,11 +219,11 @@ StatusCode SoftElectron::BookHistograms()
     //Reconstruction
     m_h1Hists["RecoElPt"]       = new TH1F("RecoElPt","Reco Electron Pt [GeV]",500,0,500);
     m_h1Hists["MatchedElPt"]    = new TH1F("MatchedElPt","Truth Matched Electron Pt(Reco); [GeV]",500,0,500);
-    //m_h1Hists["MatchedTruthElPt"]= new TH1F("MatchedTruthElPt","Truth Matched Electron Pt( Gen); [GeV]",500,0,500);
-    //m_h1Hists["MatchEffVsPt"]   = new TH1F("MatchEffVsPt","Truth Match EffVsPt;[GeV]",500,0,500);
+    m_h1Hists["MatchedTruthElPt"]= new TH1F("MatchedTruthElPt","Truth Matched Electron Pt( Gen); [GeV]",500,0,500);
+    m_h1Hists["MatchEffVsPt"]   = new TH1F("MatchEffVsPt","Truth Match EffVsPt;[GeV]",500,0,500);
 
-    //m_h2Hists["ElERatio"]       = new TH2F("ElERatio","Electron Energy ratio; #eta; E_reco/E_gen",-5,5,10,500,0,500);
-    //m_h2Hists["ElPRatio"]       = new TH2F("ElPRatio","Electron momentum Ratio; #eta; p_reco/p_gen",-5,5,10,500,0,500);
+    m_h2Hists["ElERatio"]       = new TH2F("ElERatio","Electron Energy ratio; #eta; E_reco/E_gen",-5,5,10,500,0,500);
+    m_h2Hists["ElPRatio"]       = new TH2F("ElPRatio","Electron momentum Ratio; #eta; p_reco/p_gen",-5,5,10,500,0,500);
     m_h2Hists["ElHardVsSoft"]    = new TH2F("ElHardVsSoft",";# Hard el; #Soft el",10,0,10,10,0,10);
     m_h2Hists["ElHardVsSoftTrue"]= new TH2F("ElHardVsSoftTrue",";# Hard Z el; #soft B el",10,0,10,10,0,10);
 
@@ -564,11 +564,11 @@ HepMC::GenParticle* SoftElectron::GetElectronParent(Analysis::Electron* Electron
     {
         
         //Account for the Reco Electron Pt in corresponding histograms
-        //m_h1Hists["MatchedElPt"]->Fill(Electron->cluster()->pt()/1000);
-        //m_h1Hists["MatchedTruthElPt"]->Fill(particle->momentum().perp()/1000);
+        m_h1Hists["MatchedElPt"]->Fill(Electron->cluster()->pt()/1000);
+        m_h1Hists["MatchedTruthElPt"]->Fill(particle->momentum().perp()/1000);
 
-        //m_h2Hists["ElERatio"]->Fill(particle->momentum().eta(),ElCluster->e()/particle->momentum().e());
-        //m_h2Hists["ElPRatio"]->Fill(particle->momentum().eta(),ElCluster->pt()/particle->momentum().perp());
+        m_h2Hists["ElERatio"]->Fill(particle->momentum().eta(),ElCluster->e()/particle->momentum().e());
+        m_h2Hists["ElPRatio"]->Fill(particle->momentum().eta(),ElCluster->pt()/particle->momentum().perp());
 
         HerwigTruthClassifier myTruthClassifier(particle);
         elParent= myTruthClassifier.GetParent();
@@ -616,7 +616,14 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::Ge
         for(; pout != evtx->particles_end(HepMC::children); ++pout)
         {
             const HepMC::GenParticle* daughter = (*pout);
-            daughterVec.push_back(daughter);
+            if(daughter->pdg_id() == p->pdg_id())
+            {
+                return this->GetChildren(daughter);
+            }
+            else
+            {
+                daughterVec.push_back(daughter);
+            }
         }
     }
     return daughterVec;
