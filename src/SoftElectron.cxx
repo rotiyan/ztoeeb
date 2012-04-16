@@ -146,6 +146,7 @@ StatusCode SoftElectron::execute()
     this->ClearCounters();
     this->FindTruthParticle();
     this->DoElectronMatch();
+    m_tree->Fill();
     this->FillHistograms();
     
 
