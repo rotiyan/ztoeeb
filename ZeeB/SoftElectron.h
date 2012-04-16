@@ -195,12 +195,26 @@ class SoftElectron : public Algorithm
         std::map<std::string,TH2F*> m_h2Hists;
 
         TTree* m_tree; 
-        std::vector<double>* m_elPtBr;
-        std::vector<double>* m_elEtaBr;
-        std::vector<double>* m_elPhiBr;
-        std::vector<int>*    m_elMtchd;
-        std::vector<int>*    m_BMtchd;
-        std::vector<int>*    m_CMtchd;
+        std::vector<int>*       m_elAuthor;
+        std::vector<int>*       m_elAuthorSofte;
+        std::vector<double>*    m_el_trk_PtBr;
+        std::vector<double>*    m_el_trk_EtaBr;
+        std::vector<double>*    m_el_trk_PhiBr;
+        std::vector<double>*    m_el_cl_PtBr;
+        std::vector<double>*    m_el_cl_EtaBr;
+        std::vector<double>*    m_el_cl_PhiBr;
+        std::vector<double>*    m_el_truth_PtBr;
+        std::vector<double>*    m_el_truth_EtaBr;
+        std::vector<double>*    m_el_truth_PhiBr;
+        std::vector<int>*       m_elMtchd;
+        std::vector<int>*       m_BMtchd;
+        std::vector<int>*       m_CMtchd;
+        std::vector<int>*       m_nBHadrons;
+        std::vector<int>*       m_BStatus;
+        std::vector<int>*       m_nBSemiElectron;
+        std::vector<int>*       m_nCHadrons;
+        std::vector<int>*       m_CStatus;
+        std::vector<int>*       m_nCSemiElectron;
 
         std::vector<const HepMC::GenParticle* >m_TruthBvec;
         std::vector<const HepMC::GenParticle* >m_TruthCvec;
