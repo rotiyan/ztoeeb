@@ -194,14 +194,6 @@ class SoftElectron : public Algorithm
         std::map<std::string,TH1F*> m_h1Hists;
         std::map<std::string,TH2F*> m_h2Hists;
 
-        TTree* m_tree; 
-        std::vector<double>* m_elPtBr;
-        std::vector<double>* m_elEtaBr;
-        std::vector<double>* m_elPhiBr;
-        std::vector<int>*    m_elMtchd;
-        std::vector<int>*    m_BMtchd;
-        std::vector<int>*    m_CMtchd;
-
         std::vector<const HepMC::GenParticle* >m_TruthBvec;
         std::vector<const HepMC::GenParticle* >m_TruthCvec;
         

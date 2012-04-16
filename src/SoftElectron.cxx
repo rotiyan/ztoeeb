@@ -66,7 +66,6 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     m_vxContainer(0),
     m_electronCollection(0),
     m_histos(0),
-    m_tree(0),
     m_mcTruthClassifier("MCTruthClassifier")
 {
   declareProperty("MCParticleContainer",m_truthParticleContainerName = "SpclMC");
@@ -168,17 +167,6 @@ StatusCode SoftElectron::BookHistograms()
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
 
-    /**
-     * TTree
-     */
-    m_tree  = new TTree("el","Electron Tree");
-    m_tree->Branch("elPt",m_elPtBr);
-    m_tree->Branch("elEta",m_elEtaBr);
-    m_tree->Branch("elPhi",m_elPhiBr);
-    m_tree->Branch("elIsMtchd",m_elMtchd);
-    m_tree->Branch("elIsBMtchd",m_BMtchd);
-    m_tree->Branch("elIsCMtchd",m_CMtchd);
-
     m_h1Hists["softElEta"]   = new TH1F("softElEta","AuthorSofte",100,-5,5);
     m_h1Hists["softElPt"]    = new TH1F("softElPt","AuthorSofte;p_{T} [GeV]",100,0,100);
     m_h1Hists["softElPhi"]   = new TH1F("softElPhi","AuthorSofte",80,-4,4);
@@ -263,8 +251,6 @@ StatusCode SoftElectron::BookHistograms()
             return StatusCode::FAILURE;
         }
     }
-    //Register TTree
-    m_histos->regTree("/AANT/Tree",m_tree);
     return StatusCode::SUCCESS;
 }
 
