@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TTree.h>
 #include "GaudiKernel/ITHistSvc.h"
 
 #include "ParticleTruth/TrackParticleTruth.h"
@@ -147,6 +148,13 @@ class SoftElectron : public Algorithm
          */
         void GetTruthHadrons(const HepMC::GenParticle* part, std::vector<const HepMC::GenParticle*> &hdrnHolder,
                 TH1F* prodHist,TH1F* semiHist, int &counter);
+
+        /**
+         * Miscellaneous function to 
+         * check if a particle is in 
+         * the supplied vector container
+         */
+        bool IsIn(const HepMC::GenParticle* part, std::vector<const HepMC::GenParticle*> vec );
     
     private:
         StoreGateSvc* m_storeGate;
@@ -186,8 +194,16 @@ class SoftElectron : public Algorithm
         std::map<std::string,TH1F*> m_h1Hists;
         std::map<std::string,TH2F*> m_h2Hists;
 
-        //std::vector<const HepMC::GenParticle >m_TruthBvec;
-        //std::vector<const HepMC::GenParticle >m_TruthCvec;
+        TTree* m_tree; 
+        std::vector<double>* m_elPtBr;
+        std::vector<double>* m_elEtaBr;
+        std::vector<double>* m_elPhiBr;
+        std::vector<int>*    m_elMtchd;
+        std::vector<int>*    m_BMtchd;
+        std::vector<int>*    m_CMtchd;
+
+        std::vector<const HepMC::GenParticle* >m_TruthBvec;
+        std::vector<const HepMC::GenParticle* >m_TruthCvec;
         
         float m_hardElLowPtCut;
         float m_softElLowPtcut;
