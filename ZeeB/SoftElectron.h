@@ -186,8 +186,8 @@ class SoftElectron : public Algorithm
         std::map<std::string,TH1F*> m_h1Hists;
         std::map<std::string,TH2F*> m_h2Hists;
 
-        std::vector<const HepMC::GenParticle* >m_BHadronContainer;
-        std::vector<const HepMC::GenParticle* >m_CHadronContainer;
+        //std::vector<const HepMC::GenParticle >m_TruthBvec;
+        //std::vector<const HepMC::GenParticle >m_TruthCvec;
         
         float m_hardElLowPtCut;
         float m_softElLowPtcut;

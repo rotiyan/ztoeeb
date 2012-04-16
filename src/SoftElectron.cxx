@@ -53,9 +53,9 @@
 #include <iostream>
 #include <algorithm>
 
-bool MomentumCompare(const HepMC::GenParticle* i,const HepMC::GenParticle* j)
+bool MomentumCompare(const HepMC::GenParticle i, const HepMC::GenParticle j)
 {
-    return (i->momentum().perp() < j->momentum().perp());
+    return (i.momentum().perp() < j.momentum().perp());
 }
 
 SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator) 
@@ -142,12 +142,11 @@ StatusCode SoftElectron::execute()
         return StatusCode::FAILURE;
     }
 
-    this->ClearCounters();
-
+    /*this->ClearCounters();
     this->FindTruthParticle();
     this->DoElectronMatch();
-
     this->FillHistograms();
+    */
 
 
     return sc;
@@ -187,10 +186,14 @@ StatusCode SoftElectron::BookHistograms()
 
     //TO be deleted
     m_h1Hists["BStatus"]     = new TH1F("BStatus","Status of semilept B hadron",100,150,250);
-    m_h1Hists["CStatus"]     = new TH1F("CStatus","Status of semilept C hadron",100,150,250);
     m_h1Hists["BLeadingPt"]  = new TH1F("BLeadingPt","Leading B Hadron Pt",500,0,500);
     m_h1Hists["BSubLeadingPt"]=new TH1F("BSubLeadingPt","Subleading B hadron Pt",500,0,500);
     m_h1Hists["BSubSubLeadingPt"] = new TH1F("BSubSubLeadingPt","SubSubleading B hadron",500,0,500);
+    m_h1Hists["CStatus"]     = new TH1F("CStatus","Status of semilept C hadron",100,150,250);
+    m_h1Hists["CLeadingPt"]  = new TH1F("CLeadingPt","Leading C Hadron Pt",500,0,500);
+    m_h1Hists["CSubLeadingPt"]=new TH1F("CSubLeadingPt","Subleading C hadron Pt",500,0,500);
+    m_h1Hists["CSubSubLeadingPt"] = new TH1F("CSubSubLeadingPt","SubSubleading C hadron",500,0,500);
+
 
     m_h1Hists["hardEl_cntr"]        = new TH1F("hardEl_cntr","Number of Hard Electrons after cuts",4,0,4);
     m_h1Hists["hardElMatched_cntr"] = new TH1F("hardElMatched_cntr","Number of Hard Electrons truth matched",4,0,4);
@@ -254,19 +257,23 @@ StatusCode SoftElectron::BookHistograms()
 bool SoftElectron::isBHadron(const HepMC::GenParticle* p) 
 {
     int mpdg = abs(p->pdg_id());
-    return (   ( 500 < mpdg && mpdg < 599 )   ||
+    return (mpdg ==511 || mpdg == 521 || mpdg == 531);
+    
+    /*return (   ( 500 < mpdg && mpdg < 599 )   ||
             ( 10500 < mpdg && mpdg < 10599 ) ||
             (  5000 < mpdg && mpdg < 5999  ) ||
-            ( 20500 < mpdg && mpdg < 20599 ) );
+            ( 20500 < mpdg && mpdg < 20599 ) );*/
 }
 
 bool SoftElectron::isCHadron(const HepMC::GenParticle* p) 
 {
     int mpdg = abs(p->pdg_id());
-    return (   ( 400 < mpdg && mpdg < 499 )   || 
+    return (mpdg == 411 || mpdg == 421 || mpdg == 431);
+
+    /*return (   ( 400 < mpdg && mpdg < 499 )   || 
             ( 10400 < mpdg && mpdg < 10499 ) ||
             (  4000 < mpdg && mpdg < 4999  ) ||
-            ( 20400 < mpdg && mpdg < 20499 ) );
+            ( 20400 < mpdg && mpdg < 20499 ) );*/
 }
 
 void SoftElectron::FindTruthParticle()
@@ -283,16 +290,53 @@ void SoftElectron::FindTruthParticle()
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
     {
         const HepMC::GenParticle* part = (*pitr);
-        int status = part->status();
-        //if(status == 196 || status == 197 || status ==198)
+        if(std::abs(part->momentum().eta()) < m_etaMax)
         {
             if(isBHadron(part)) 
             {
-                this->GetTruthHadrons(part,m_BHadronContainer,m_h1Hists["nBHadrons"],m_h1Hists["nBSemileptTrue"],m_nBHadrons);
+                //std::sort(m_TruthBvec.begin(),m_TruthBvec.end(),MomentumCompare);
+                //if(! std::binary_search(m_TruthBvec.begin(),m_TruthBvec.end(),(*part)))
+                {
+                    //m_TruthBvec.push_back((*part));
+                    m_h1Hists["nBHadrons"]->Fill(1);
+                    
+                    bool hasDaughterEl(false);
+                    std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
+                    for(std::vector<const HepMC::GenParticle*>::iterator Iter = children.begin(); Iter != children.end(); ++Iter)
+                    {
+                        if((*Iter)->pdg_id()==11)
+                        {
+                            hasDaughterEl = true;
+                        }
+                    }
+                    if(hasDaughterEl)
+                    {
+                        m_h1Hists["nBSemileptTrue"]->Fill(1);
+                    }
+                }
             }
             if(isCHadron(part))
             {
-                this->GetTruthHadrons(part,m_CHadronContainer,m_h1Hists["nCHadrons"],m_h1Hists["nCSemileptTrue"],m_nCHadrons);
+                //std::sort(m_TruthCvec.begin(), m_TruthCvec.end(),MomentumCompare);
+                //if(! std::binary_search(m_TruthCvec.begin(), m_TruthCvec.end(),(*part)))
+                {
+                    //m_TruthCvec.push_back((*part));
+                    m_h1Hists["nCHadrons"]->Fill(1);
+                    
+                    bool hasDaughterEl(false);
+                    std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
+                    for(std::vector<const HepMC::GenParticle*>::iterator Iter = children.begin(); Iter != children.end(); ++Iter)
+                    {
+                        if((*Iter)->pdg_id() ==11)
+                        {
+                            hasDaughterEl = true;
+                        }
+                    }
+                    if(hasDaughterEl)
+                    {
+                        m_h1Hists["nCSemileptTrue"]->Fill(1);
+                    }
+                }
             }
         }
     }
@@ -396,7 +440,7 @@ void SoftElectron::DoElectronMatch()
 
 void SoftElectron::FillCounters(std::string type,HepMC::GenParticle* elParent)
 {
-    int ElCntr  = 0;
+    /*int ElCntr  = 0;
     int ZElCntr = 0;
     int BElCntr = 0;
     int CElcntr = 0;
@@ -463,6 +507,7 @@ void SoftElectron::FillCounters(std::string type,HepMC::GenParticle* elParent)
         m_nSoftZEl  += ZElCntr;
         m_nHardBEl  += BElCntr;
     }
+    */
 }
 
 StatusCode SoftElectron::LoadContainers()
@@ -526,8 +571,8 @@ void SoftElectron::ClearCounters()
     m_nHardBEl = 0;
     m_nSoftBEl = 0;
 
-    m_BHadronContainer.clear();
-    m_CHadronContainer.clear();
+    //m_TruthBvec.clear();
+    //m_TruthCvec.clear();
 
 }
 
@@ -539,14 +584,25 @@ void SoftElectron::FillHistograms()
     m_h2Hists["ElHardVsSoft"]    -> Fill(m_nHardEl,m_nSoftEl);
     m_h2Hists["ElHardVsSoftTrue"]-> Fill(m_nHardZEl,m_nSoftBEl);
 
-    //Leading and sub leading and subsubleading
-    sort(m_BHadronContainer.begin(), m_BHadronContainer.end(),MomentumCompare);
-    if(m_BHadronContainer.size()>2)
+    //Leading, sub leading and subsubleading
+    //sort(m_TruthBvec.begin(), m_TruthBvec.end(),MomentumCompare);
+    //sort(m_TruthCvec.begin(), m_TruthCvec.end(),MomentumCompare);
+
+    /*
+    if(m_TruthBvec.size()>2)
     {
-        m_h1Hists["BLeadingPt"]->Fill(m_BHadronContainer.at(2)->momentum().perp()/1000);
-        m_h1Hists["BSubLeadingPt"]->Fill(m_BHadronContainer.at(1)->momentum().perp()/1000);
-        m_h1Hists["BSubSubLeadingPt"]->Fill(m_BHadronContainer.at(0)->momentum().perp()/1000);
+        m_h1Hists["BLeadingPt"]->Fill(m_TruthBvec.at(2).momentum().perp()/1000);
+        m_h1Hists["BSubLeadingPt"]->Fill(m_TruthBvec.at(1).momentum().perp()/1000);
+        m_h1Hists["BSubSubLeadingPt"]->Fill(m_TruthBvec.at(0).momentum().perp()/1000);
     }
+    if(m_TruthCvec.size()>2)
+    {
+        m_h1Hists["CLeadingPt"]->Fill(m_TruthCvec.at(2).momentum().perp()/1000);
+        m_h1Hists["CSubLeadingPt"]->Fill(m_TruthCvec.at(1).momentum().perp()/1000);
+        m_h1Hists["CSubSubLeadingPt"]->Fill(m_TruthCvec.at(0).momentum().perp()/1000);
+    }
+    */
+
 }
 
 HepMC::GenParticle* SoftElectron::GetElectronParent(Analysis::Electron* Electron)
@@ -627,46 +683,4 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::Ge
         }
     }
     return daughterVec;
-}
-
-void SoftElectron::GetTruthHadrons(const HepMC::GenParticle* part,std::vector<const HepMC::GenParticle*> &hdrnContainer,
-        TH1F* prodHist,TH1F* semiHist,int &hdrnCounter)
-{
-    std::vector<const HepMC::GenParticle*> parentVec = this->GetParents(part);
-    std::vector<const HepMC::GenParticle*> childVec  = this->GetChildren(part);
-    
-    bool hasbdaughter(false),hasbmother(false);
-    bool hascdaughter(false),hascmother(false);
-    
-    std::vector<const HepMC::GenParticle*>::const_iterator piter; 
-    for(piter = parentVec.begin(); piter != parentVec.end(); ++piter)
-    {
-        const HepMC::GenParticle* p= (*piter);
-        if(isBHadron(p))
-            hasbmother = true;
-        if(isCHadron(p))
-            hascmother = true;
-    }
-    for(piter = childVec.begin(); piter != childVec.end(); ++piter)
-    {
-        const HepMC::GenParticle* p = (*piter);
-        if(isBHadron(p))
-            hasbdaughter = true;
-        if(isCHadron(p))
-            hascdaughter = true;
-    }
-    if(!((hasbdaughter && hasbmother) || (hascdaughter && hascmother)))
-    {
-        hdrnCounter++;
-        prodHist->Fill(1);
-        hdrnContainer.push_back(part);
-        bool hasDaughterElectron(false);
-        for(piter = childVec.begin(); piter != childVec.end(); ++piter)
-        {
-            if(std::abs((*piter)->pdg_id())== 11 && (*piter)->momentum().eta() < m_etaMax)
-                hasDaughterElectron = true;
-        }
-        if(hasDaughterElectron)
-            semiHist->Fill(1);
-    }
 }
