@@ -93,7 +93,7 @@ class SoftElectron : public Algorithm
         /**
          * Returns the parent of the Truth Electrons
          */
-        HepMC::GenParticle* GetElectronParent(Analysis::Electron*  el);
+        HepMC::GenParticle* GetElectronParent(const Analysis::Electron*  el);
 
         /**
          * Load the AOD containers 
@@ -108,13 +108,6 @@ class SoftElectron : public Algorithm
          * an event loop
          */
         void ClearCounters();
-
-        /** 
-         * At the end of the event 
-         * loop Increment the private 
-         * counters
-         */
-        void FillCounters(std::string type, HepMC::GenParticle* parent);
 
         /**
          * Called at the end of an 
@@ -166,21 +159,6 @@ class SoftElectron : public Algorithm
         std::string m_electronContainerName;
         std::string m_muonContainerName;
         
-        int m_irun;
-        int m_ievt;
-
-        int m_nBHadrons;
-        int m_nCHadrons;
-
-        int m_nHardEl;
-        int m_nSoftEl;
-        int m_nBEl;
-        int m_nZEl;
-        int m_nHardZEl;
-        int m_nHardBEl;
-        int m_nSoftZEl;
-        int m_nSoftBEl;
-      
         const TruthParticleContainer*  m_mcTruthContainer;
         const EventInfo* m_eventInfo;
         const McEventCollection* m_mcEventCollection;
@@ -190,9 +168,6 @@ class SoftElectron : public Algorithm
 
         ToolHandle< IHforTool > m_hfor_tool;
         ToolHandle< IMCTruthClassifier> m_mcTruthClassifier;
-
-        std::map<std::string,TH1F*> m_h1Hists;
-        std::map<std::string,TH2F*> m_h2Hists;
 
         TTree* m_tree; 
         std::vector<int>*       m_elAuthor;
@@ -207,14 +182,15 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_el_truth_EtaBr;
         std::vector<double>*    m_el_truth_PhiBr;
         std::vector<int>*       m_elMtchd;
-        std::vector<int>*       m_BMtchd;
-        std::vector<int>*       m_CMtchd;
-        std::vector<int>*       m_nBHadrons;
+        std::vector<int>*       m_mtchdParent;
+        std::vector<int>*       m_BPDG;
         std::vector<int>*       m_BStatus;
-        std::vector<int>*       m_nBSemiElectron;
-        std::vector<int>*       m_nCHadrons;
+        std::vector<int>*       m_BSemiPDG;
+        std::vector<int>*       m_BSemiStatus;
+        std::vector<int>*       m_CPDG;
         std::vector<int>*       m_CStatus;
-        std::vector<int>*       m_nCSemiElectron;
+        std::vector<int>*       m_CSemiPDG;
+        std::vector<int>*       m_CSemiStatus;
 
         std::vector<const HepMC::GenParticle* >m_TruthBvec;
         std::vector<const HepMC::GenParticle* >m_TruthCvec;
