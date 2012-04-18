@@ -15,10 +15,9 @@ import MCTruthClassifier.MCTruthClassifierBase
 from  MCTruthClassifier.MCTruthClassifierConf import MCTruthClassifier
 ToolSvc += MCTruthClassifier()
 
-#Loose cuts
-#MCTruthClassifier.deltaRMatchCut   = 0.2
-#MCTruthClassifier.deltaPhiMatchCut = 0.2
-#MCTruthClassifier.NumOfSiHitsCut   = 4
+MCTruthClassifier.deltaRMatchCut   = 0.1
+MCTruthClassifier.deltaPhiMatchCut = 0.1
+MCTruthClassifier.NumOfSiHitsCut   = 4
 
 from ZeeB.ZeeBConf import SoftElectron
 MySoftElectron = SoftElectron(
