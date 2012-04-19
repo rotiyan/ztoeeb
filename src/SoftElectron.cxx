@@ -299,20 +299,20 @@ void SoftElectron::DoElectronMatch()
 {
     int ElSize      = m_electronCollection->size();
 
-    m_el_trk_PtBr   =   new std::vector<double>(ElSize,0);    
-    m_el_trk_EtaBr  =   new std::vector<double>(ElSize,0);    
-    m_el_trk_PhiBr  =   new std::vector<double>(ElSize,0);    
-    m_el_cl_PtBr    =   new std::vector<double>(ElSize,0);    
-    m_el_cl_EtaBr   =   new std::vector<double>(ElSize,0);    
-    m_el_cl_PhiBr   =   new std::vector<double>(ElSize,0);    
-    m_el_truth_PtBr =   new std::vector<double>(ElSize,0);    
-    m_el_truth_EtaBr=   new std::vector<double>(ElSize,0);    
-    m_el_truth_PhiBr=   new std::vector<double>(ElSize,0);    
+    m_el_trk_PtBr   =   new std::vector<double>(ElSize,-100);    
+    m_el_trk_EtaBr  =   new std::vector<double>(ElSize,-100);    
+    m_el_trk_PhiBr  =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_PtBr    =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_EtaBr   =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_PhiBr   =   new std::vector<double>(ElSize,-100);    
+    m_el_truth_PtBr =   new std::vector<double>(ElSize,-100);    
+    m_el_truth_EtaBr=   new std::vector<double>(ElSize,-100);    
+    m_el_truth_PhiBr=   new std::vector<double>(ElSize,-100);    
  
-    m_elAuthor      =   new std::vector<int>(ElSize,1);       
-    m_elAuthorSofte =   new std::vector<int>(ElSize,0);       
-    m_elMtchd       =   new std::vector<int>(ElSize,0);       
-    m_mtchdParent   =   new std::vector<int>(ElSize,0);       
+    m_elAuthor      =   new std::vector<int>(ElSize,-100);       
+    m_elAuthorSofte =   new std::vector<int>(ElSize,-100);       
+    m_elMtchd       =   new std::vector<int>(ElSize,-100);       
+    m_mtchdParent   =   new std::vector<int>(ElSize,-100);       
 
     MsgStream mlog(msgSvc(), name());
 
