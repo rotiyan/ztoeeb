@@ -83,17 +83,21 @@ class SoftElectron : public Algorithm
         void FindTruthParticle();
 
         /**
+         * Finds the last hadron in the decay 
+         * chain. Code from Georges Aaad
+         */
+        bool isFinalState(const HepMC::GenParticle* part, int type);
+
+        /**
          * Match the Reco electron with 
          * the truth electrons
-         * using MCTruthClassifier and 
-         * a custom class HerwigTruthclassifier
          */
         void DoElectronMatch();
 
         /**
          * Returns the parent of the Truth Electrons
          */
-        HepMC::GenParticle* GetElectronParent(const Analysis::Electron*  el);
+        const HepMC::GenParticle* GetElectronParent(const Analysis::Electron*  el);
 
         /**
          * Load the AOD containers 
@@ -117,13 +121,10 @@ class SoftElectron : public Algorithm
          */
         void FillHistograms();
 
-
         /**
-         * Returns the parents of 
-         * the particles in GenEvent
-         * container
+         * Return the mother of a particle in the HepMC records
          */
-        std::vector<const HepMC::GenParticle*> GetParents(const HepMC::GenParticle* part);
+        const HepMC::GenParticle* GetMother(const HepMC::GenParticle* part);
 
         /**
          * Returns the childrens of
@@ -147,7 +148,6 @@ class SoftElectron : public Algorithm
          * check if a particle is in 
          * the supplied vector container
          */
-        bool IsIn(const HepMC::GenParticle* part, std::vector<const HepMC::GenParticle*> vec );
     
     private:
         StoreGateSvc* m_storeGate;
@@ -183,25 +183,23 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_el_truth_PhiBr;
         std::vector<int>*       m_elMtchd;
         std::vector<int>*       m_mtchdParent;
+        std::vector<int>*       m_mtchdGrndParent;
         std::vector<int>*       m_BPDG;
         std::vector<int>*       m_BStatus;
-        std::vector<int>*       m_BSemiPDG;
-        std::vector<int>*       m_BSemiStatus;
+        std::vector<double>*    m_BPt;
+        std::vector<double>*    m_BEta;
+        std::vector<double>*    m_BPhi;
+        std::vector<int>*       m_BisSemiElectron;
         std::vector<int>*       m_CPDG;
         std::vector<int>*       m_CStatus;
-        std::vector<int>*       m_CSemiPDG;
-        std::vector<int>*       m_CSemiStatus;
+        std::vector<double>*    m_CPt;
+        std::vector<double>*    m_CEta;
+        std::vector<double>*    m_CPhi;
+        std::vector<int>*       m_CisSemiElectron;
 
         std::vector<const HepMC::GenParticle* >m_TruthBvec;
         std::vector<const HepMC::GenParticle* >m_TruthCvec;
         
-        float m_hardElLowPtCut;
-        float m_softElLowPtcut;
-        float m_softElHighPtCut;
-
-        float m_etaMax;
-        float m_crackEtaMin;
-        float m_crackEtaMax;
 };
   
 

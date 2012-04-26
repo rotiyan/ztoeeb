@@ -1,5 +1,4 @@
 #include "ZeeB/SoftElectron.h"
-#include "ZeeB/HerwigTruthClassifier.h"
 
 #include "GaudiKernel/MsgStream.h"
 #include "GaudiKernel/AlgFactory.h"
@@ -75,12 +74,6 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
   declareProperty("ElectronContainer", m_electronContainerName = "ElectronAODCollection");
   declareProperty("PrimaryVertexContainer", m_primaryVertexContainerName = "VxPrimaryCandidate");
   declareProperty("MCEventContainer", m_mcEventContainerName = "GEN_AOD");
-  declareProperty("HardElLowPtcut",m_hardElLowPtCut=25);
-  declareProperty("SoftElLowPtcut",m_softElLowPtcut=2);
-  declareProperty("SoftElHighPtcut",m_softElHighPtCut=25);
-  declareProperty("EtaCut",m_etaMax=2.47);
-  declareProperty("CrackEtaMin",m_crackEtaMin=1.37);
-  declareProperty("CrackEtaMax",m_crackEtaMax=1.52);
 }
 
 SoftElectron::~SoftElectron() {}
@@ -182,17 +175,23 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("el_truth_Eta",&m_el_truth_EtaBr);
     m_tree->Branch("el_truth_Phi",&m_el_truth_PhiBr);
     m_tree->Branch("elIsMtchd",&m_elMtchd);
-    m_tree->Branch("mtchdPrnt",&m_mtchdParent);
+    m_tree->Branch("mtchdParent",&m_mtchdParent);
+    m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
+    m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
     m_tree->Branch("BPDG",&m_BPDG);
-    m_tree->Branch("Bstatus",&m_BStatus);
-    m_tree->Branch("BSemiPDG",&m_BSemiPDG);
-    m_tree->Branch("BSemiStatus",&m_BSemiStatus);
+    m_tree->Branch("BStatus",&m_BStatus);
+    m_tree->Branch("BPt",&m_BPt);
+    m_tree->Branch("BEta",&m_BEta);
+    m_tree->Branch("BPhi",&m_BPhi);
+    m_tree->Branch("BisSemiElectron",&m_BisSemiElectron);
     m_tree->Branch("CPDG",&m_CPDG);
     m_tree->Branch("CStatus",&m_CStatus);
-    m_tree->Branch("CSemiPDG",&m_CSemiPDG);
-    m_tree->Branch("CSemiStatus",&m_CSemiStatus);
+    m_tree->Branch("CPt",&m_CPt);
+    m_tree->Branch("CEta",&m_CEta);
+    m_tree->Branch("CPhi",&m_CPhi);
+    m_tree->Branch("CisSemiElectron",&m_CisSemiElectron);
 
 
     //Register TTree
@@ -235,24 +234,41 @@ void SoftElectron::FindTruthParticle()
 
     m_BPDG          = new std::vector<int>();
     m_BStatus       = new std::vector<int>();
-    m_BSemiPDG      = new std::vector<int>();
-    m_BSemiStatus   = new std::vector<int>();
+    m_BPt           = new std::vector<double>();
+    m_BEta          = new std::vector<double>();
+    m_BPhi          = new std::vector<double>();
+    m_BisSemiElectron= new std::vector<int>();
     m_CPDG          = new std::vector<int>();
     m_CStatus       = new std::vector<int>();
-    m_CSemiPDG      = new std::vector<int>();
-    m_CSemiStatus   = new std::vector<int>();
+    m_CPt           = new std::vector<double>();
+    m_CEta          = new std::vector<double>();
+    m_CPhi          = new std::vector<double>();
+    m_CisSemiElectron= new std::vector<int>();
+
     HepMC::GenEvent::particle_const_iterator  pitr = GenEvent->particles_begin();
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
     {
         const HepMC::GenParticle* part = (*pitr);
+        if(part->barcode() > 10000)
+            continue;
+
         if(part->momentum().perp()/1000 > 2)
         {
-            if(isBHadron(part)) 
+            int pdgid   = part->pdg_id();
+            int rest1   = abs(pdgid) % 1000;
+            int rest2   = abs(pdgid) % 10000;
+           
+            if( (rest2 >=5000 && rest2 < 6000)  || (rest1 >=500 && rest1 < 600))
             {
-                if(part->status()==196 || part->status()==197 || part->status()==198 || part->status() ==199 || part->status()==200)
+                if(isFinalState(part,5))
                 {
                     m_BPDG->push_back(part->pdg_id());
                     m_BStatus->push_back(part->status());
+
+                    m_BPt->push_back(part->momentum().perp()/1000);
+                    m_BEta->push_back(part->momentum().eta());
+                    m_BPhi->push_back(part->momentum().phi());
+
                     bool hasDaughterEl(false);
                     std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
                     for(std::vector<const HepMC::GenParticle*>::iterator Iter = children.begin(); Iter != children.end(); ++Iter)
@@ -264,17 +280,25 @@ void SoftElectron::FindTruthParticle()
                     }
                     if(hasDaughterEl)
                     {
-                        m_BSemiPDG->push_back(part->pdg_id());
-                        m_BSemiStatus->push_back(part->status());
+                        m_BisSemiElectron->push_back(1);
+                    }
+                    else
+                    {
+                        m_BisSemiElectron->push_back(0);
                     }
                 }
             }
-            if(isCHadron(part))
+            if( (rest2 >=4000 && rest2 < 5000) || (rest1 >=400 && rest1 <500) )
             {
-                if(part->status()==196 || part->status()==197 || part->status()==198 || part->status() ==199 || part->status()==200)
+                if(isFinalState(part,4))
                 {
                     m_CPDG->push_back(part->pdg_id());
                     m_CStatus->push_back(part->status());
+
+                    m_CPt->push_back(part->momentum().perp()/1000);
+                    m_CEta->push_back(part->momentum().eta());
+                    m_CPhi->push_back(part->momentum().phi());
+
                     bool hasDaughterEl(false);
                     std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
                     for(std::vector<const HepMC::GenParticle*>::iterator Iter = children.begin(); Iter != children.end(); ++Iter)
@@ -286,13 +310,55 @@ void SoftElectron::FindTruthParticle()
                     }
                     if(hasDaughterEl)
                     {
-                        m_CSemiPDG->push_back(part->pdg_id());
-                        m_CSemiStatus->push_back(part->status());
+                        m_CisSemiElectron->push_back(1);
+                    }
+                    else
+                    {
+                        m_CisSemiElectron->push_back(0);
                     }
                 }
             }
         }
     }
+}
+
+bool SoftElectron::isFinalState(const HepMC::GenParticle* part, int type)
+{
+    if(part->end_vertex())
+    {
+        HepMC::GenVertex::particle_iterator pin = part->end_vertex()->particles_begin(HepMC::children);
+        for(; pin != part->end_vertex()->particles_end(HepMC::children); ++pin)
+        {
+            const HepMC::GenParticle* child = (*pin);
+            if(child->barcode() > 100000)
+                continue;
+            int pdgid   = child->pdg_id();
+            int rest1   = abs(pdgid)%1000;
+            int rest2   = abs(pdgid)%10000;
+
+            if(type==5)
+            {
+                if( (rest2 >= 5000 && rest2 < 6000) || (rest1>=500 && rest1 <600))
+                    return false;
+                if(child->barcode()<10000)
+                {
+                    if(!isFinalState(child,type))
+                        return false;
+                }
+            }
+            if(type==4)
+            {
+                if( (rest2 >=4000 && rest2 <5000) || (rest1>=400 && rest1 <500))
+                    return false;
+                if(child->barcode()<10000)
+                {
+                    if(!isFinalState(child,type))
+                        return false;
+                }
+            }
+        }            
+    }
+    return true;
 }
 
 void SoftElectron::DoElectronMatch()
@@ -313,17 +379,22 @@ void SoftElectron::DoElectronMatch()
     m_elAuthorSofte =   new std::vector<int>(ElSize,-100);       
     m_elMtchd       =   new std::vector<int>(ElSize,-100);       
     m_mtchdParent   =   new std::vector<int>(ElSize,-100);       
+    m_mtchdGrndParent=  new std::vector<int>(ElSize,-100);
 
     MsgStream mlog(msgSvc(), name());
 
     MCTruthPartClassifier::ParticleDef partDef;
-    for(int i = 0; i < m_electronCollection->size(); ++i)
+    for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
-        HepMC::GenParticle* elParent = this->GetElectronParent(Electron);
+        const HepMC::GenParticle* elParent = this->GetElectronParent(Electron);
 
         if(elParent)
         {
+            const HepMC::GenParticle* elgrndParent = this->GetMother(elParent);
+            if(elgrndParent)
+                m_mtchdGrndParent->at(i)    = elgrndParent->pdg_id();
+
             m_elMtchd->at(i)        = 1;
             m_mtchdParent->at(i)    = elParent->pdg_id();
             m_el_truth_PtBr->at(i)  = elParent->momentum().perp()/1000;
@@ -418,14 +489,19 @@ void SoftElectron::ClearCounters()
     delete m_el_truth_PhiBr;
     delete m_elMtchd;
     delete m_mtchdParent;
+    delete m_mtchdGrndParent;
     delete m_BPDG;
     delete m_BStatus;
-    delete m_BSemiPDG;
-    delete m_BSemiStatus;
+    delete m_BPt;
+    delete m_BEta;
+    delete m_BPhi;
+    delete m_BisSemiElectron;
     delete m_CPDG;
     delete m_CStatus;
-    delete m_CSemiPDG;
-    delete m_CSemiStatus;
+    delete m_CPt;
+    delete m_CEta;
+    delete m_CPhi;
+    delete m_CisSemiElectron;
 }
 
 void SoftElectron::FillHistograms()
@@ -433,38 +509,57 @@ void SoftElectron::FillHistograms()
 
 }
 
-HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)
+const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)
 {
     
     const CaloCluster* ElCluster = Electron->cluster();
  
-    HepMC::GenParticle* elParent = 0;
+    const HepMC::GenParticle* elParent = 0;
 
     m_mcTruthClassifier->particleTruthClassifier(Electron);
     const HepMC::GenParticle* particle  = m_mcTruthClassifier->getGenPart();
     if(particle)
     {
-        
-        HerwigTruthClassifier myTruthClassifier(particle);
-        elParent= myTruthClassifier.GetParent();
+        elParent= this->GetMother(particle);
     }
     return elParent;
 }
 
-std::vector<const HepMC::GenParticle* > SoftElectron::GetParents(const HepMC::GenParticle* p)
+const HepMC::GenParticle*  SoftElectron::GetMother(const HepMC::GenParticle* thePart)
 {
-    HepMC::GenVertex* pvtx = p->production_vertex();
-    std::vector<const HepMC::GenParticle*> parentVec;
-    if(pvtx)
-    {
-        HepMC::GenVertex::particle_iterator pin = pvtx->particles_begin(HepMC::parents);
-        for(; pin != pvtx->particles_end(HepMC::parents); ++pin)
+    const HepMC::GenVertex*   partOriVert = thePart->production_vertex();
+    long partPDG       = thePart->pdg_id();
+    int  partBarcode   = thePart->barcode()%1000000;
+    long MotherPDG(0);
+
+    const HepMC::GenVertex*   MothOriVert(0);
+    const HepMC::GenParticle* theMoth(0);
+
+    if(!partOriVert) return theMoth;
+
+    int itr=0;
+    do
+    { 
+        if(itr!=0)  partOriVert = MothOriVert;  
+   
+        for (HepMC::GenVertex::particles_in_const_iterator
+                itrMother = partOriVert->particles_in_const_begin();
+                itrMother!= partOriVert->particles_in_const_end(); ++itrMother)
         {
-            const HepMC::GenParticle* parent = (*pin);
-            parentVec.push_back(parent);
+            MotherPDG   = (*itrMother)->pdg_id();
+            MothOriVert = (*itrMother)->production_vertex();
+            theMoth     = (*itrMother); 
+            if(MotherPDG==partPDG) break;
         }
-    }
-    return parentVec;
+        itr++;
+        if(itr>100)
+        {
+            std::cout <<"getMother:: infinite while" << std::endl; 
+            break;
+        }
+    }while (MothOriVert !=0 &&MotherPDG==partPDG && partBarcode<200000);
+
+    return theMoth;
 }
 
 std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::GenParticle* p)
@@ -489,9 +584,4 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::Ge
         }
     }
     return daughterVec;
-}
-
-bool SoftElectron::IsIn(const HepMC::GenParticle* part , std::vector<const HepMC::GenParticle*> container)
-{
-    return 1;
 }
