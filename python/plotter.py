@@ -232,7 +232,8 @@ class MyPlotter(PlotBase):
 
 
 import ROOT 
-f = ROOT.TFile("../share/softElectron.root")
+import sys
+f = ROOT.TFile(sys.argv[1])
 t = f.Get("el")
 
 plotter = MyPlotter(t)
