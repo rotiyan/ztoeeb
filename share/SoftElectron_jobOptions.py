@@ -15,9 +15,9 @@ import MCTruthClassifier.MCTruthClassifierBase
 from  MCTruthClassifier.MCTruthClassifierConf import MCTruthClassifier
 ToolSvc += MCTruthClassifier()
 
-#MCTruthClassifier.deltaRMatchCut   = 0.1
-#MCTruthClassifier.deltaPhiMatchCut = 0.1
-#MCTruthClassifier.NumOfSiHitsCut   = 4
+MCTruthClassifier.deltaRMatchCut   = 0.1
+MCTruthClassifier.deltaPhiMatchCut = 0.1
+MCTruthClassifier.NumOfSiHitsCut   = 4
 
 from ZeeB.ZeeBConf import SoftElectron
 MySoftElectron = SoftElectron(
@@ -26,11 +26,7 @@ MySoftElectron = SoftElectron(
         #SelectUFromRun = run_number # use only u-jets from this run
         PrimaryVertexContainer = "VxPrimaryCandidate",
         MCParticleContainer = "SpclMC",
-        MCEventContainer = "GEN_AOD",
-        HardElLowPtcut  = 25,
-        SoftElHighPtcut = 25,
-        SoftElLowPtcut = 5
-        )
+        MCEventContainer = "GEN_AOD")
 
 from AthenaCommon.AlgSequence import AlgSequence
 topSequence = AlgSequence()
