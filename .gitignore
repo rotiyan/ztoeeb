@@ -2,5 +2,6 @@
 i686-slc5-gcc43-opt/
 genConf/
 *.root
+#.pyc
 cmt/*.sh
 cmt/*.csh
