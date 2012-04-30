@@ -177,7 +177,6 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("elIsMtchd",&m_elMtchd);
     m_tree->Branch("mtchdParent",&m_mtchdParent);
     m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
-    m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
     m_tree->Branch("BPDG",&m_BPDG);
