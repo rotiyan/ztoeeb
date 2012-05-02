@@ -5,6 +5,9 @@ class MyPlotter(PlotBase):
     def __init__(self,tree,hists = {}):
         self.hists  = hists
         self.myTree   = tree
+        self.barrelEtacut   = 2.47
+        self.cracketa1      = 1.37
+        self.cracketa2      = 1.52
     
     def initialize(self):
         self.addPtHist("trkPt")
@@ -44,103 +47,16 @@ class MyPlotter(PlotBase):
         self.addh2("matchedZElVsCEl",";# ZEl; #BEl",10,0,10,10,0,10)
         self.addh2("hardVsSoftEl","",10,0,10,10,0,10)
 
+
+
     def execute(self):
-        trketaVec   = self.getCurrentValue("el_trk_Eta")
-        trkptVec    = self.getCurrentValue("el_trk_Pt")
-        trkphiVec   = self.getCurrentValue("el_trk_Phi")
-
-        cletaVec    = self.getCurrentValue("el_cl_Eta")
-        clptVec     = self.getCurrentValue("el_cl_Pt")
-        clphiVec    = self.getCurrentValue("el_cl_Phi")
-
-        trthetaVec  = self.getCurrentValue("el_truth_Eta")
-        trthptVec   = self.getCurrentValue("el_truth_Pt")
-        trthphiVec  = self.getCurrentValue("el_truth_Phi")
-
-        isMtchdVec  = self.getCurrentValue("elIsMtchd")
-        softeVec    = self.getCurrentValue("elAuthorSofte")
-        authorVec   = self.getCurrentValue("elAuthor")
-
-        parentPDg   = self.getCurrentValue("mtchdParent")
-
-        #Truth
-        BPDGVec         = self.getCurrentValue("BPDG")
-        BPtVec          = self.getCurrentValue("BPt")
-        BEtaVec         = self.getCurrentValue("BEta")
-        BPhiVec         = self.getCurrentValue("BPhi")
-        BIsSemiLeptVec  = self.getCurrentValue("BisSemiElectron")
-
-        CPDGVec         = self.getCurrentValue("CPDG")
-        CPtVec          = self.getCurrentValue("CPt")
-        CEtaVec         = self.getCurrentValue("CEta")
-        CPhiVec         = self.getCurrentValue("CPhi")
-        CIsSemiLeptVec  = self.getCurrentValue("CisSemiElectron")
-
-
-        nZEl    = 0
-        nBEl    = 0
-        nCEl    = 0
-        nOther  = 0
+        self.clAna()
+        self.trkAna()
         
-        #All Vectors of the same size as the electron container
-        for i in range(cletaVec.size()):
-            trkEta  = trketaVec.at(i)
-            trkPhi  = trkphiVec.at(i)
-            trkPt   = trkptVec.at(i)
-            
-            clEta   = cletaVec.at(i)
-            clPhi   = clphiVec.at(i)
-            clPt    = clptVec.at(i)
-            
-            trthEta = trthetaVec.at(i)
-            trthPhi = trthphiVec.at(i)
-            trthPt  = trthptVec.at(i)
-
-            IsMtchd = isMtchdVec.at(i)
-            author  = authorVec.at(i)
-            softe   = softeVec.at(i)
-
-            parent  = parentPDg.at(i)
-
-            if(abs(clEta) < 2.47 and clEta !=-100 and (author ==1 and softe==1)):
-                self.gethist("clEta").Fill(clEta)
-                self.gethist("clPhi").Fill(clPhi)
-                self.gethist("clPt").Fill(clPt)
-                if(IsMtchd==1):
-                    self.gethist("clEtaMtchd").Fill(clEta)
-                    self.gethist("clPhiMtchd").Fill(clPhi)
-                    self.gethist("clPtMtchd").Fill(clPt)
-
-            if(abs(trkEta) < 2.47 and trkEta != -100 and softe ==1):
-                self.gethist("trkEta").Fill(trkEta)
-                self.gethist("trkPt").Fill(trkPt)
-                self.gethist("trkPhi").Fill(trkPhi)
-                if(IsMtchd==1):
-                    self.gethist("trkEtaMtchd").Fill(trkEta)
-                    self.gethist("trkPtMtchd").Fill(trkPt)
-                    self.gethist("trkPhiMtchd").Fill(trkPhi)
-
-            #TruthMatched Electrons
-            if( IsMtchd ==1):
-
-                self.gethist("elParent").Fill(str(parent),1)
-                if(abs(parent) ==23 and author ==1 and clPt >20 and (abs(clEta) < 2.47)):
-                    nZEl    += 1
-                elif(self.isBHadron(parent) and softe==1 and trkEta < 2.47 and trkPt >2):
-                    nBEl    +=1
-                elif(self.isCHadron(parent) and softe==1 and trkEta < 2.47 and trkPt >2):
-                    nCEl    +=1
-                else:
-                    nOther  +=1
-
-        self.gethist("matchedZElVsBEl").Fill(nZEl,nBEl)
-        self.gethist("matchedZElVsCEl").Fill(nZEl,nCEl)\
-
         #Truth
+        self.trthAna()
         self.CalcBMultplcty(20,2.5)
         self.CalcCMultplcty(20,2.5)
-
-
 
     def finalize(self):
         '''Efficiency histograms'''
@@ -158,6 +74,10 @@ class MyPlotter(PlotBase):
         for h in histlist:
             h.Write()
         f.Close()
+
+    ''''''''''''''''''''''''''''''''''''''''''''
+    ''''Functions to be called inside execute'''
+    ''''''''''''''''''''''''''''''''''''''''''''
 
     def CalcBMultplcty(self,ptcut,etacut):
         BPtVec      = self.getCurrentValue("BPt")
@@ -195,8 +115,124 @@ class MyPlotter(PlotBase):
 
         self.gethist("CMultiplcty").Fill(nCHadrons)
 
+    '''TrkParticle'''
+    def trkAna(self):
+        trketaVec   = self.getCurrentValue("el_trk_Eta")
+        trkptVec    = self.getCurrentValue("el_trk_Pt")
+        trkphiVec   = self.getCurrentValue("el_trk_Phi")
+        softeVec    = self.getCurrentValue("elAuthorSofte")
+        isMtchdVec  = self.getCurrentValue("elIsMtchd")
 
 
+
+
+        for i in range(trketaVec.size()):
+            trkEta  = trketaVec.at(i)
+            trkPhi  = trkphiVec.at(i)
+            trkPt   = trkptVec.at(i)
+
+            softe   = softeVec.at(i)
+
+            IsMtchd = isMtchdVec.at(i)
+
+            if(abs(trkEta) < 2.47 and trkEta != -100 and softe ==1):
+                self.gethist("trkEta").Fill(trkEta)
+                self.gethist("trkPt").Fill(trkPt)
+                self.gethist("trkPhi").Fill(trkPhi)
+                if(IsMtchd==1):
+                    self.gethist("trkEtaMtchd").Fill(trkEta)
+                    self.gethist("trkPtMtchd").Fill(trkPt)
+                    self.gethist("trkPhiMtchd").Fill(trkPhi)
+
+    '''Calo cluster'''
+    def clAna(self):
+        cletaVec    = self.getCurrentValue("el_cl_Eta")
+        clptVec     = self.getCurrentValue("el_cl_Pt")
+        clphiVec    = self.getCurrentValue("el_cl_Phi")
+
+        softeVec    = self.getCurrentValue("elAuthorSofte")
+        authorVec   = self.getCurrentValue("elAuthor")
+
+        isMtchdVec  = self.getCurrentValue("elIsMtchd")
+
+
+        for i in range(cletaVec.size()):
+            clEta   = cletaVec.at(i)
+            clPhi   = clphiVec.at(i)
+            clPt    = clptVec.at(i)
+            IsMtchd = isMtchdVec.at(i)
+
+            author  = authorVec.at(i)
+            softe   = softeVec.at(i)
+            
+            if(abs(clEta) < 2.47 and clEta !=-100 and
+                    not(1.37 < abs(clEta) and abs(clEta)<1.52) and
+                    (author ==1 and softe==1)):
+                self.gethist("clEta").Fill(clEta)
+                self.gethist("clPhi").Fill(clPhi)
+                self.gethist("clPt").Fill(clPt)
+
+                if(IsMtchd==1):
+                    self.gethist("clEtaMtchd").Fill(clEta)
+                    self.gethist("clPhiMtchd").Fill(clPhi)
+                    self.gethist("clPtMtchd").Fill(clPt)
+
+    '''truth Analysis'''                
+    def trthAna(self):
+        cletaVec    = self.getCurrentValue("el_cl_Eta")
+        clptVec     = self.getCurrentValue("el_cl_Pt")
+        
+        trthetaVec  = self.getCurrentValue("el_truth_Eta")
+        trthptVec   = self.getCurrentValue("el_truth_Pt")
+        trthphiVec  = self.getCurrentValue("el_truth_Phi")
+
+        isMtchdVec  = self.getCurrentValue("elIsMtchd")
+
+        softeVec    = self.getCurrentValue("elAuthorSofte")
+        authorVec   = self.getCurrentValue("elAuthor")
+
+        parentPDg   = self.getCurrentValue("mtchdParent")
+
+
+        nZEl    =   0
+        nBEl    =   0
+        nCEl    =   0
+        nOther  =   0
+
+        for i in range(cletaVec.size()):
+            trthEta = trthetaVec.at(i)
+            trthPhi = trthphiVec.at(i)
+            trthPt  = trthptVec.at(i)
+
+            IsMtchd = isMtchdVec.at(i)
+            author  = authorVec.at(i)
+            softe   = softeVec.at(i)
+
+            parent  = parentPDg.at(i)
+
+            clEta   = cletaVec.at(i)
+            clPt    = clptVec.at(i)
+
+
+            #TruthMatched Electrons
+            if( IsMtchd ==1 and abs(clEta)<2.47):
+
+                self.gethist("elParent").Fill(str(parent),1)
+                if(abs(parent) ==23 and author ==1 and clPt >20 and (abs(clEta) < 2.47)):
+                    nZEl    += 1
+                elif(self.isBHadron(parent) and softe==1 and trthEta< 2.47 and trthPt>2):
+                    nBEl    +=1
+                elif(self.isCHadron(parent) and softe==1 and trthEta< 2.47 and trthPt>2):
+                    nCEl    +=1
+                else:
+                    nOther  +=1
+
+        self.gethist("matchedZElVsBEl").Fill(nZEl,nBEl)
+        self.gethist("matchedZElVsCEl").Fill(nZEl,nCEl)
+
+    ''''''''''''''''''''''''''''''''
+    '''Function to add histograms'''
+    ''''''''''''''''''''''''''''''''
     def addPtHist(self,name):
         self.addh1(name,";[GeV]",500,0,500)
 
@@ -206,6 +242,11 @@ class MyPlotter(PlotBase):
 
     def addPhiHist(self,name):
         self.addh1(name,"",100,-4,4)
+
+
+    ''''''''''''''''''''''''
+    ''''Utility functions'''
+    ''''''''''''''''''''''''
 
     '''Checks if the supplied pdg id is that of  a B hadron'''
     def isBHadron(self,pdg):
@@ -228,6 +269,10 @@ class MyPlotter(PlotBase):
             return True
         else:
             return False
+
+    '''checks eta isolation cuts'''
+    def isGoodEta(eta):
+
 
 
 
