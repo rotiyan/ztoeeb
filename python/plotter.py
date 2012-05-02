@@ -272,7 +272,12 @@ class MyPlotter(PlotBase):
 
     '''checks eta isolation cuts'''
     def isGoodEta(eta):
+        isGood = False
 
+        if(abs(eta) < self.barrelEtacut and not (abs(eta)<self.cracketa1  and abs(eta) <self.cracketa2)):
+            isGood = True
+
+        return isGood
 
 
 
