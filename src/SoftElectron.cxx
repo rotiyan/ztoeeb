@@ -177,7 +177,6 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("elIsMtchd",&m_elMtchd);
     m_tree->Branch("mtchdParent",&m_mtchdParent);
     m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
-    m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
     m_tree->Branch("BPDG",&m_BPDG);
@@ -192,6 +191,11 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("CEta",&m_CEta);
     m_tree->Branch("CPhi",&m_CPhi);
     m_tree->Branch("CisSemiElectron",&m_CisSemiElectron);
+
+    m_tree->Branch("bQuarkME_pt",&m_bQuarkME_pt);
+    m_tree->Branch("bQuarkME_eta",&m_bQuarkME_eta);
+    m_tree->Branch("bQuarkME_phi",&m_bQuarkME_phi);
+    m_tree->Branch("bQuarkME_pdg",&m_bQuarkME_pdg);
 
 
     //Register TTree
@@ -245,12 +249,25 @@ void SoftElectron::FindTruthParticle()
     m_CPhi          = new std::vector<double>();
     m_CisSemiElectron= new std::vector<int>();
 
+    m_bQuarkME_pt   = new std::vector<double>();
+    m_bQuarkME_eta  = new std::vector<double>();
+    m_bQuarkME_phi  = new std::vector<double>();
+    m_bQuarkME_pdg  = new std::vector<int>();
+
     HepMC::GenEvent::particle_const_iterator  pitr = GenEvent->particles_begin();
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
     {
         const HepMC::GenParticle* part = (*pitr);
         if(part->barcode() > 10000)
             continue;
+
+        if(abs(part->pdg_id())==5 && (part->status() == 123  || part->status() ==124))
+        {
+            m_bQuarkME_pt->push_back(part->momentum().perp()/1000);
+            m_bQuarkME_eta->push_back(part->momentum().eta());
+            m_bQuarkME_phi->push_back(part->momentum().phi());
+            m_bQuarkME_pdg->push_back(part->pdg_id());
+        }
 
         if(part->momentum().perp()/1000 > 2)
         {
@@ -502,6 +519,11 @@ void SoftElectron::ClearCounters()
     delete m_CEta;
     delete m_CPhi;
     delete m_CisSemiElectron;
+    delete m_bQuarkME_pt;
+    delete m_bQuarkME_eta;
+    delete m_bQuarkME_phi;
+    delete m_bQuarkME_pdg;
+
 }
 
 void SoftElectron::FillHistograms()

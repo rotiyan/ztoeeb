@@ -197,8 +197,11 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_CPhi;
         std::vector<int>*       m_CisSemiElectron;
 
-        std::vector<const HepMC::GenParticle* >m_TruthBvec;
-        std::vector<const HepMC::GenParticle* >m_TruthCvec;
+        std::vector<double>*    m_bQuarkME_pt;
+        std::vector<double>*    m_bQuarkME_eta;
+        std::vector<double>*    m_bQuarkME_phi;
+        std::vector<int>* m_bQuarkME_pdg;
+
         
 };
   
