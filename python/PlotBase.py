@@ -30,9 +30,13 @@ class PlotBase(object):
         '''program flow'''
         self.initialize()
         self.__applyStyle()
-        
-        
+
+        print "Total Ntuple Entries: ", self.myTree.GetEntriesFast()
+        counter = 0
         for event  in self.myTree:
+            counter += 1
+            if(not (counter % 1000)):
+                print "Event: ",counter,"/",self.myTree.GetEntriesFast()
             self.event = event
             self.execute()
         
@@ -62,6 +66,9 @@ class PlotBase(object):
 
     def addh2(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1):
         self.hists[name]    = ROOT.TH2F(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh)
+
+    def addh3(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1,nzbins=1,zlow=0,zhigh=1):
+        self.hists[name]    = ROOT.TH3F(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh,nzbins,zlow,zhigh)
 
     def setTTree(self,tree):
         self.myTree = tree
