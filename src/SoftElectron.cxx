@@ -261,12 +261,33 @@ void SoftElectron::FindTruthParticle()
         if(part->barcode() > 10000)
             continue;
 
-        if(abs(part->pdg_id())==5 && (part->status() == 123  || part->status() ==124))
+
+        HepMC::GenVertex* prodVtx = part->production_vertex();
+        if(prodVtx)
         {
-            m_bQuarkME_pt->push_back(part->momentum().perp()/1000);
-            m_bQuarkME_eta->push_back(part->momentum().eta());
-            m_bQuarkME_phi->push_back(part->momentum().phi());
-            m_bQuarkME_pdg->push_back(part->pdg_id());
+            bool hasmpiparent(false);
+            bool hasbhadronparent(false);
+
+            HepMC::GenVertex::particle_iterator pin = prodVtx->particles_begin(HepMC::parents) ;
+
+            for(; pin != prodVtx->particles_end(HepMC::parents) && !hasbhadronparent; ++pin)
+            {
+                int pdgin(abs((*pin)->pdg_id()));
+                if ( (pdgin%10000)/1000 == 5 || (pdgin%1000)/100 == 5 )
+                    hasbhadronparent = true;
+                if ( pdgin == 0  && (*pin)->status()== 120)
+                    hasmpiparent = true;
+            }
+            if(!hasbhadronparent && !hasmpiparent)
+            {
+                if(abs(part->pdg_id())==5 && (part->status() == 123  || part->status() ==124))
+                {
+                    m_bQuarkME_pt->push_back(part->momentum().perp()/1000);
+                    m_bQuarkME_eta->push_back(part->momentum().eta());
+                    m_bQuarkME_phi->push_back(part->momentum().phi());
+                    m_bQuarkME_pdg->push_back(part->pdg_id());
+                }
+            }
         }
 
         if(part->momentum().perp()/1000 > 2)
