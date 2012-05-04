@@ -59,10 +59,26 @@ class PlotBase(object):
     def gethistList(self):
         return self.hists.values()
 
+    def addtohistList(self,h):
+        if("TH1" in str(type(h))):
+            self.hists[h.GetName()] = h
+        else:
+            print "object ",type(h)," is not a TH1 type"
+
+    def removeFromhisList(self,h):
+        if("TH1" in str(type(h))):
+            try:
+                del self.hists[h.GetName()]
+            except:
+                print h.GetName()," was not found in the list of histograms"
+        else:
+            print "object ",type(h)," is not a TH1 type"
+
+
+
     '''Add histograms to the private list'''
     def addh1(self,name,title="",nbins=1,low=0,high=1):
         self.hists[name]    = ROOT.TH1F(name,title,nbins,low,high)
-        print self.hists
 
     def addh2(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1):
         self.hists[name]    = ROOT.TH2F(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh)
