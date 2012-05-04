@@ -21,7 +21,6 @@ class MyPlotter(PlotBase):
         self.addEtaHist("trkEta")
         self.addEtaHist("trkEtaMtchd")
         self.addEtaHist("trkMtchEffVsEta")
-        self.addEtaHist("trkEtaMtchd")
         self.addEtaHist("clEta")
         self.addEtaHist("clEtaMtchd")
         self.addEtaHist("clMtchEffVsEta")
@@ -39,24 +38,36 @@ class MyPlotter(PlotBase):
 
         '''Truth'''
         self.addh1("Bhadrons")
+        self.addh1("Bpt","",500,0,500)
+        self.addh1("Beta","",100,-5,5)
+        self.addh3("BMultiplcty","BMultiplcty;ptcut;etacut;nBHadrons",50,0,50,10,0,10,10,0,10)
         self.addh1("Chadrons")
-        self.addh1("BMultiplcty","",10,0,10)
-        self.addh1("CMultiplcty","",10,0,10)
+        self.addh1("Cpt","",500,0,500)
+        self.addh1("Ceta","",100,-5,5)
+        self.addh3("CMultiplcty","CMultiplcty;ptcut;etacut;nCHadrons",50,0,50,10,0,10,10,0,10)
 
         self.addh2("matchedZElVsBEl",";# ZEl; #BEl",10,0,10,10,0,10)
         self.addh2("matchedZElVsCEl",";# ZEl; #BEl",10,0,10,10,0,10)
         self.addh2("hardVsSoftEl","",10,0,10,10,0,10)
 
-
+        self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
 
     def execute(self):
+        #Electron cluster analysis
         self.clAna()
+        
+        #Electron track particle analaysis
         self.trkAna()
         
-        #Truth
+        #Electron truth analysis
         self.trthAna()
-        self.CalcBMultplcty(20,2.5)
-        self.CalcCMultplcty(20,2.5)
+
+        self.fillBKinematics(5,100)
+        self.fillCKinematics(5,100)
+
+        self.makeDeltaRPlots()
+
 
     def finalize(self):
         '''Efficiency histograms'''
@@ -67,6 +78,11 @@ class MyPlotter(PlotBase):
         self.gethist("clMtchEffVsPt").Divide(self.gethist("clPtMtchd"), self.gethist("clPt"))
         self.gethist("clMtchEffVsEta").Divide(self.gethist("clEtaMtchd"), self.gethist("clEta"))
         self.gethist("clMtchEffVsPhi").Divide(self.gethist("clPhiMtchd"), self.gethist("clPhi"))
+
+        '''Compare B-hadron b-quark delta r'''
+        self.compareDeltaR(5,2.5)
+        self.compareDeltaR(10,2.5)
+        self.compareDeltaR(20,2.5)
 
         #Save histograms to disk
         histlist = self.gethistList()
@@ -79,9 +95,53 @@ class MyPlotter(PlotBase):
     ''''Functions to be called inside execute'''
     ''''''''''''''''''''''''''''''''''''''''''''
 
-    def CalcBMultplcty(self,ptcut,etacut):
+    def makeDeltaRPlots(self):
+        ptcutlist   = [2,5,10,15,20]
+        etacutlist  = [2.5,5]
+
+        bQuarkME_pt     = self.getCurrentValue("bQuarkME_pt")
+        bQuarkME_eta    = self.getCurrentValue("bQuarkME_eta")
+        bQuarkME_phi    = self.getCurrentValue("bQuarkME_phi")
+
         BPtVec      = self.getCurrentValue("BPt")
         BEtaVec     = self.getCurrentValue("BEta")
+        BPhiVec     = self.getCurrentValue("BPhi")
+
+        for pt in ptcutlist:
+            for eta in etacutlist:
+                self.gethist("BMultiplcty").Fill(pt,eta,self.getBMultplcty(pt,eta))
+                self.gethist("CMultiplcty").Fill(pt,eta,self.getCMultplcty(pt,eta))
+
+                nBhadrons = self.getBMultplcty(pt,eta)
+                if(nBhadrons ==1):
+                    drlist = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in BEtaVec for phi1 in BPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
+                    self.gethist("BbdeltaRMin").Fill(pt,eta,min(drlist))
+                    self.gethist("BbdeltaRMax").Fill(pt,eta,max(drlist))
+
+
+    def getBMultplcty(self,ptcut,etacut):
+        BPtVec      = self.getCurrentValue("BPt")
+        BEtaVec     = self.getCurrentValue("BEta")
+        BPhiVec     = self.getCurrentValue("BPhi")
+
+        isSemiElVec = self.getCurrentValue("BisSemiElectron")
+        
+        nBHadrons = 0
+        for i in range(BPtVec.size()):
+            BHdrnPt = BPtVec.at(i)
+            BHdrnEta= BEtaVec.at(i)
+
+            if(BHdrnPt >ptcut and abs(BHdrnEta) < etacut):
+                nBHadrons +=1
+
+        return nBHadrons
+
+
+    def fillBKinematics(self,ptcut,etacut):
+        BPtVec      = self.getCurrentValue("BPt")
+        BEtaVec     = self.getCurrentValue("BEta")
+        BPhiVec     = self.getCurrentValue("BPhi")
+
         isSemiElVec = self.getCurrentValue("BisSemiElectron")
         
         nBHadrons = 0
@@ -91,13 +151,30 @@ class MyPlotter(PlotBase):
 
             if(BHdrnPt >ptcut and abs(BHdrnEta) < etacut):
                 self.gethist("Bhadrons").Fill("Bhadrons",1)
+                self.gethist("Bpt").Fill(BHdrnPt)
+                self.gethist("Beta").Fill(BHdrnEta)
                 nBHadrons +=1
                 if(isSemiElVec.at(i)==1):
                     self.gethist("Bhadrons").Fill("Bsemi",1)
 
-        self.gethist("BMultiplcty").Fill(nBHadrons)
 
-    def CalcCMultplcty(self,ptcut,etacut):
+    def getCMultplcty(self,ptcut,etacut):
+        CPtVec      = self.getCurrentValue("CPt")
+        CEtaVec     = self.getCurrentValue("CEta")
+        isSemiElVec = self.getCurrentValue("CisSemiElectron")
+        
+        nCHadrons = 0
+        for i in range(CPtVec.size()):
+            CHdrnPt = CPtVec.at(i)
+            CHdrnEta= CEtaVec.at(i)
+
+            if(CHdrnPt >ptcut and abs(CHdrnEta) < etacut):
+                nCHadrons +=1
+
+        return nCHadrons
+
+
+    def fillCKinematics(self,ptcut,etacut):
         CPtVec      = self.getCurrentValue("CPt")
         CEtaVec     = self.getCurrentValue("CEta")
         isSemiElVec = self.getCurrentValue("CisSemiElectron")
@@ -109,11 +186,11 @@ class MyPlotter(PlotBase):
 
             if(CHdrnPt >ptcut and abs(CHdrnEta) < etacut):
                 self.gethist("Chadrons").Fill("Chadrons",1)
+                self.gethist("Cpt").Fill(CHdrnPt)
+                self.gethist("Ceta").Fill(CHdrnEta)
                 nCHadrons +=1
                 if(isSemiElVec.at(i)==1):
                     self.gethist("Chadrons").Fill("Csemi",1)
-
-        self.gethist("CMultiplcty").Fill(nCHadrons)
 
     '''TrkParticle'''
     def trkAna(self):
@@ -279,12 +356,42 @@ class MyPlotter(PlotBase):
 
         return isGood
 
+    def deltaR(self,eta1,phi1,eta2,phi2):
+        import math
+        return math.sqrt( (eta1 - eta2)**2 + (phi1 - phi2)**2 )
+
+    def compareDeltaR(self,ptcut,etacut):
+        h3_BbdrMin  = self.gethist("BbdeltaRMin")
+        h3_BbdrMax  = self.gethist("BbdeltaRMax")
+
+        h3_BbdrMin.GetXaxis().SetRangeUser(ptcut,ptcut +1)
+        h3_BbdrMax.GetXaxis().SetRangeUser(ptcut,ptcut +1)
+        
+        h3_BbdrMin.GetYaxis().SetRangeUser(0,etacut)
+        h3_BbdrMax.GetYaxis().SetRangeUser(0,etacut)
+
+        h_rmin  = h3_BbdrMin.Project3D("z")
+        h_rmax  = h3_BbdrMax.Project3D("z")
+
+        h_rmin.GetXaxis().SetRangeUser(0,1)
+        h_rmin.GetXaxis().SetTitle("#Delta R")
+        h_rmax.GetXaxis().SetRangeUser(0,1)
+
+        h_rmin.SetName("BbdeltaRMin_"+str(ptcut)+"_"+str(etacut))
+        h_rmax.SetName("BbdeltaRMax_"+str(ptcut)+"_"+str(etacut))
+        
+        self.addtohistList(h_rmin)
+        self.addtohistList(h_rmax)
+
+#end of plotter class
 
 
 import ROOT 
 import sys
+
 f = ROOT.TFile(sys.argv[1])
 t = f.Get("el")
 
+#run the plotter
 plotter = MyPlotter(t)
 plotter.run()
