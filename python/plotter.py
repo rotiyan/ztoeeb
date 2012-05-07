@@ -1,6 +1,10 @@
 import abc
 from PlotBase import PlotBase
 
+import ROOT, sys,os,glob 
+from multiprocessing import Process,Queue,current_process
+
+
 class MyPlotter(PlotBase):
     def __init__(self,tree,hists = {}):
         self.hists  = hists
@@ -53,6 +57,13 @@ class MyPlotter(PlotBase):
         self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
         self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
 
+        self.addh3("CbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        self.addh3("CbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+
+        self.addh3("CascadedRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        self.addh3("CascadedRMax",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+
+
     def execute(self):
         #Electron cluster analysis
         self.clAna()
@@ -80,13 +91,20 @@ class MyPlotter(PlotBase):
         self.gethist("clMtchEffVsPhi").Divide(self.gethist("clPhiMtchd"), self.gethist("clPhi"))
 
         '''Compare B-hadron b-quark delta r'''
-        self.compareDeltaR(5,2.5)
-        self.compareDeltaR(10,2.5)
-        self.compareDeltaR(20,2.5)
+        self.compareBbDeltaR(5,2.5)
+        self.compareBbDeltaR(10,2.5)
+        self.compareBbDeltaR(20,2.5)
+
+        '''Compare C-hadron b-quark delta r'''
+        self.compareCbDeltaR(5,2.5)
+        self.compareCbDeltaR(10,2.5)
+        self.compareCbDeltaR(20,2.5)
+
 
         #Save histograms to disk
         histlist = self.gethistList()
-        f = ROOT.TFile("outputHist.root","RECREATE")
+        fname = "outputHist"+current_process().name+".root"
+        f = ROOT.TFile(fname,"RECREATE")
         for h in histlist:
             h.Write()
         f.Close()
@@ -107,16 +125,38 @@ class MyPlotter(PlotBase):
         BEtaVec     = self.getCurrentValue("BEta")
         BPhiVec     = self.getCurrentValue("BPhi")
 
+        CPtVec      = self.getCurrentValue("CPt")
+        CEtaVec     = self.getCurrentValue("CEta")
+        CPhiVec     = self.getCurrentValue("CPhi")
+
+        BBC         = self.getCurrentValue("BBC")
+        CparentBC   = self.getCurrentValue("CParentBC")
+
         for pt in ptcutlist:
             for eta in etacutlist:
                 self.gethist("BMultiplcty").Fill(pt,eta,self.getBMultplcty(pt,eta))
                 self.gethist("CMultiplcty").Fill(pt,eta,self.getCMultplcty(pt,eta))
 
-                nBhadrons = self.getBMultplcty(pt,eta)
+                nBhadrons   = self.getBMultplcty(pt,eta)
+                nChadrons   = self.getCMultplcty(pt,eta)
+                
                 if(nBhadrons ==1):
-                    drlist = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in BEtaVec for phi1 in BPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
+                    drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in BEtaVec for phi1 in BPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
                     self.gethist("BbdeltaRMin").Fill(pt,eta,min(drlist))
                     self.gethist("BbdeltaRMax").Fill(pt,eta,max(drlist))
+
+                    if(nChadrons ==1):
+                        drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in CEtaVec for phi1 in CPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
+                        self.gethist("CbdeltaRMin").Fill(pt,eta,min(drlist))
+                        self.gethist("CbdeltaRMax").Fill(pt,eta,max(drlist))
+
+                        for bbc in BBC:
+                            for cpbc in CparentBC:
+                                if(bbc == cpbc):
+                                    self.gethist("CascadedRMin").Fill(pt,eta,min(drlist))
+                                    self.gethist("CascadedRMax").Fill(pt,eta,max(drlist))
+
+
 
 
     def getBMultplcty(self,ptcut,etacut):
@@ -360,7 +400,10 @@ class MyPlotter(PlotBase):
         import math
         return math.sqrt( (eta1 - eta2)**2 + (phi1 - phi2)**2 )
 
-    def compareDeltaR(self,ptcut,etacut):
+    '''Compare delta R separation between ME quark 
+    and the heavy flavor hadrons'''
+    def compareBbDeltaR(self,ptcut,etacut):
+
         h3_BbdrMin  = self.gethist("BbdeltaRMin")
         h3_BbdrMax  = self.gethist("BbdeltaRMax")
 
@@ -377,21 +420,82 @@ class MyPlotter(PlotBase):
         h_rmin.GetXaxis().SetTitle("#Delta R")
         h_rmax.GetXaxis().SetRangeUser(0,1)
 
-        h_rmin.SetName("BbdeltaRMin_"+str(ptcut)+"_"+str(etacut))
-        h_rmax.SetName("BbdeltaRMax_"+str(ptcut)+"_"+str(etacut))
+        h_rmin.SetName("BbdeltaRMin_"+str(ptcut)+"_"+str(etacut*10))
+        h_rmax.SetName("BbdeltaRMax_"+str(ptcut)+"_"+str(etacut*10))
         
         self.addtohistList(h_rmin)
         self.addtohistList(h_rmax)
 
+    def compareCbDeltaR(self,ptcut,etacut):
+        h3_CbdrMin  = self.gethist("CbdeltaRMin")
+        h3_CbdrMax  = self.gethist("CbdeltaRMax")
+
+        h3_CbdrMin.GetXaxis().SetRangeUser(ptcut,ptcut +1)
+        h3_CbdrMax.GetXaxis().SetRangeUser(ptcut,ptcut +1)
+        
+        h3_CbdrMin.GetYaxis().SetRangeUser(0,etacut)
+        h3_CbdrMax.GetYaxis().SetRangeUser(0,etacut)
+
+        h_rmin  = h3_CbdrMin.Project3D("z")
+        h_rmax  = h3_CbdrMax.Project3D("z")
+
+        h_rmin.GetXaxis().SetRangeUser(0,1)
+        h_rmin.GetXaxis().SetTitle("#Delta R")
+        h_rmax.GetXaxis().SetRangeUser(0,1)
+
+        h_rmin.SetName("CbdeltaRMin_"+str(ptcut)+"_"+str(etacut*10))
+        h_rmax.SetName("CbdeltaRMax_"+str(ptcut)+"_"+str(etacut*10))
+        
+        self.addtohistList(h_rmin)
+        self.addtohistList(h_rmax)
+
+        '''cascaded decay b->c'''
+        h3_Cscd_drMin   = self.gethist("CascadedRMin")
+        h3_Cscd_drMax   = self.gethist("CascadedRMax")
+
+        h3_Cscd_drMin.GetXaxis().SetRangeUser(ptcut,ptcut +1)
+        h3_Cscd_drMax.GetXaxis().SetRangeUser(ptcut,ptcut +1)
+
+        h3_Cscd_drMin.GetYaxis().SetRangeUser(0,etacut)
+        h3_Cscd_drMax.GetYaxis().SetRangeUser(0,etacut)
+
+        h_Cscd_rmin     = h3_Cscd_drMin.Project3D("z")
+        h_Cscd_rmax     = h3_Cscd_drMax.Project3D("z")
+
+        h_Cscd_rmin.GetXaxis().SetRangeUser(0,1)
+        h_Cscd_rmin.GetXaxis().SetTitle("#Delta R")
+        h_Cscd_rmax.GetXaxis().SetRangeUser(0,1)
+        h_Cscd_rmax.GetXaxis().SetTitle("#Delta R")
+
+        h_Cscd_rmin.SetName("Cscd_drMin_"+str(ptcut)+"_"+str(etacut*10))
+        h_Cscd_rmax.SetName("Cscd_drMin_"+str(ptcut)+"_"+str(etacut*10))
+
+        self.addtohistList(h_Cscd_rmin)
+        self.addtohistList(h_Cscd_rmax)
+
+    '''Do Multiprocessing'''
+
+
 #end of plotter class
 
 
-import ROOT 
-import sys
 
-f = ROOT.TFile(sys.argv[1])
-t = f.Get("el")
+flist       = glob.glob(str(sys.argv[1])+"/*root")
 
-#run the plotter
-plotter = MyPlotter(t)
-plotter.run()
+def MultiProc(flist):
+    processes   = []
+    doneQue = Queue()
+    try: 
+        for fname in flist:
+            f = ROOT.TFile(fname)
+            t = f.Get("el")
+            plotter = MyPlotter(t)
+            p = Process(target=plotter.run)
+            p.start()
+            processes.append(p)
+        for p in processes:
+            p.join()
+    except:
+        print "something wrong"
+
+MultiProc(flist)
