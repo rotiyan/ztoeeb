@@ -103,7 +103,7 @@ class MyPlotter(PlotBase):
 
         #Save histograms to disk
         histlist = self.gethistList()
-        fname = "outputHist"+current_process().name+".root"
+        fname = "outputHist"+current_process().name+"._root"
         f = ROOT.TFile(fname,"RECREATE")
         for h in histlist:
             h.Write()
@@ -420,8 +420,8 @@ class MyPlotter(PlotBase):
         h_rmin.GetXaxis().SetTitle("#Delta R")
         h_rmax.GetXaxis().SetRangeUser(0,1)
 
-        h_rmin.SetName("BbdeltaRMin_"+str(ptcut)+"_"+str(etacut*10))
-        h_rmax.SetName("BbdeltaRMax_"+str(ptcut)+"_"+str(etacut*10))
+        h_rmin.SetName("BbdeltaRMin_"+str(ptcut)+"_"+str(int(etacut*10)))
+        h_rmax.SetName("BbdeltaRMax_"+str(ptcut)+"_"+str(int(etacut*10)))
         
         self.addtohistList(h_rmin)
         self.addtohistList(h_rmax)
@@ -443,8 +443,8 @@ class MyPlotter(PlotBase):
         h_rmin.GetXaxis().SetTitle("#Delta R")
         h_rmax.GetXaxis().SetRangeUser(0,1)
 
-        h_rmin.SetName("CbdeltaRMin_"+str(ptcut)+"_"+str(etacut*10))
-        h_rmax.SetName("CbdeltaRMax_"+str(ptcut)+"_"+str(etacut*10))
+        h_rmin.SetName("CbdeltaRMin_"+str(ptcut)+"_"+str(int(etacut*10)))
+        h_rmax.SetName("CbdeltaRMax_"+str(ptcut)+"_"+str(int(etacut*10)))
         
         self.addtohistList(h_rmin)
         self.addtohistList(h_rmax)
@@ -467,8 +467,8 @@ class MyPlotter(PlotBase):
         h_Cscd_rmax.GetXaxis().SetRangeUser(0,1)
         h_Cscd_rmax.GetXaxis().SetTitle("#Delta R")
 
-        h_Cscd_rmin.SetName("Cscd_drMin_"+str(ptcut)+"_"+str(etacut*10))
-        h_Cscd_rmax.SetName("Cscd_drMin_"+str(ptcut)+"_"+str(etacut*10))
+        h_Cscd_rmin.SetName("Cscd_drMin_"+str(ptcut)+"_"+str(int(etacut*10)))
+        h_Cscd_rmax.SetName("Cscd_drMax_"+str(ptcut)+"_"+str(int(etacut*10)))
 
         self.addtohistList(h_Cscd_rmin)
         self.addtohistList(h_Cscd_rmax)
@@ -495,6 +495,9 @@ def MultiProc(flist):
             processes.append(p)
         for p in processes:
             p.join()
+
+        os.system("hadd -f outputHist.root *._root")
+        os.system("rm *._root")
     except:
         print "something wrong"
 
