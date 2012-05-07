@@ -128,10 +128,15 @@ class SoftElectron : public Algorithm
 
         /**
          * Returns the childrens of
-         * the particles in the GenEvent
-         * container
+         * the particle in question
          */
         std::vector<const HepMC::GenParticle*> GetChildren(const HepMC::GenParticle* part);
+
+        /**
+         * Returns the parents of 
+         * the particle in question
+         */
+        std::vector<const HepMC::GenParticle*> GetParents(const HepMC::GenParticle* part);
 
         /**
          * Function to count and 
@@ -184,23 +189,33 @@ class SoftElectron : public Algorithm
         std::vector<int>*       m_elMtchd;
         std::vector<int>*       m_mtchdParent;
         std::vector<int>*       m_mtchdGrndParent;
+
         std::vector<int>*       m_BPDG;
         std::vector<int>*       m_BStatus;
         std::vector<double>*    m_BPt;
         std::vector<double>*    m_BEta;
         std::vector<double>*    m_BPhi;
+        std::vector<int>*       m_BBC;
         std::vector<int>*       m_BisSemiElectron;
+        std::vector<double>*    m_BsemiElPt;
+        std::vector<double>*    m_BsemiElEta;
+        std::vector<double>*    m_BsemiElPhi;
         std::vector<int>*       m_CPDG;
         std::vector<int>*       m_CStatus;
         std::vector<double>*    m_CPt;
         std::vector<double>*    m_CEta;
         std::vector<double>*    m_CPhi;
         std::vector<int>*       m_CisSemiElectron;
+        std::vector<int>*       m_CparentBC;
+        std::vector<int>*       m_CgrndParentBC;
+        std::vector<double>*    m_CsemiElPt;
+        std::vector<double>*    m_CsemiElEta;
+        std::vector<double>*    m_CsemiElPhi;
 
         std::vector<double>*    m_bQuarkME_pt;
         std::vector<double>*    m_bQuarkME_eta;
         std::vector<double>*    m_bQuarkME_phi;
-        std::vector<int>* m_bQuarkME_pdg;
+        std::vector<int>*       m_bQuarkME_pdg;
 
         
 };

@@ -179,19 +179,31 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
+
+    //Truth Hadron
     m_tree->Branch("BPDG",&m_BPDG);
     m_tree->Branch("BStatus",&m_BStatus);
     m_tree->Branch("BPt",&m_BPt);
     m_tree->Branch("BEta",&m_BEta);
     m_tree->Branch("BPhi",&m_BPhi);
+    m_tree->Branch("BBC",&m_BBC);
     m_tree->Branch("BisSemiElectron",&m_BisSemiElectron);
+    m_tree->Branch("BsemiElPt",&m_BsemiElPt);
+    m_tree->Branch("BsemiElEta",&m_BsemiElEta);
+    m_tree->Branch("BsemiElPhi",&m_BsemiElPhi);
     m_tree->Branch("CPDG",&m_CPDG);
     m_tree->Branch("CStatus",&m_CStatus);
     m_tree->Branch("CPt",&m_CPt);
     m_tree->Branch("CEta",&m_CEta);
     m_tree->Branch("CPhi",&m_CPhi);
     m_tree->Branch("CisSemiElectron",&m_CisSemiElectron);
+    m_tree->Branch("CParentBC",&m_CparentBC);
+    m_tree->Branch("CGrndParentBC",&m_CgrndParentBC);
+    m_tree->Branch("CsemiElPt",&m_CsemiElPt);
+    m_tree->Branch("CsemiElEta",&m_CsemiElEta);
+    m_tree->Branch("CsemiElPhi",&m_CsemiElPhi);
 
+    //Truth ME quark
     m_tree->Branch("bQuarkME_pt",&m_bQuarkME_pt);
     m_tree->Branch("bQuarkME_eta",&m_bQuarkME_eta);
     m_tree->Branch("bQuarkME_phi",&m_bQuarkME_phi);
@@ -241,13 +253,23 @@ void SoftElectron::FindTruthParticle()
     m_BPt           = new std::vector<double>();
     m_BEta          = new std::vector<double>();
     m_BPhi          = new std::vector<double>();
+    m_BBC           = new std::vector<int>();
     m_BisSemiElectron= new std::vector<int>();
+    m_BsemiElPt     = new std::vector<double>();
+    m_BsemiElEta    = new std::vector<double>();
+    m_BsemiElPhi    = new std::vector<double>();
     m_CPDG          = new std::vector<int>();
     m_CStatus       = new std::vector<int>();
     m_CPt           = new std::vector<double>();
     m_CEta          = new std::vector<double>();
     m_CPhi          = new std::vector<double>();
     m_CisSemiElectron= new std::vector<int>();
+    m_CparentBC     = new std::vector<int>();
+    m_CgrndParentBC = new std::vector<int>();
+    m_CsemiElPt     = new std::vector<double>();
+    m_CsemiElEta    = new std::vector<double>();
+    m_CsemiElPhi    = new std::vector<double>();
+
 
     m_bQuarkME_pt   = new std::vector<double>();
     m_bQuarkME_eta  = new std::vector<double>();
@@ -306,6 +328,7 @@ void SoftElectron::FindTruthParticle()
                     m_BPt->push_back(part->momentum().perp()/1000);
                     m_BEta->push_back(part->momentum().eta());
                     m_BPhi->push_back(part->momentum().phi());
+                    m_BBC->push_back(part->barcode());
 
                     bool hasDaughterEl(false);
                     std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
@@ -314,6 +337,11 @@ void SoftElectron::FindTruthParticle()
                         if(std::abs((*Iter)->pdg_id()) ==11)
                         {
                             hasDaughterEl = true;
+                            m_BsemiElPt->push_back((*Iter)->momentum().perp()/1000);
+                            m_BsemiElEta->push_back((*Iter)->momentum().eta());
+                            m_BsemiElPhi->push_back((*Iter)->momentum().phi());
+
+                            break;
                         }
                     }
                     if(hasDaughterEl)
@@ -337,13 +365,31 @@ void SoftElectron::FindTruthParticle()
                     m_CEta->push_back(part->momentum().eta());
                     m_CPhi->push_back(part->momentum().phi());
 
+                    std::vector<const HepMC::GenParticle*>parentVec     = this->GetParents(part);
+                    for(std::vector<const HepMC::GenParticle*>::iterator Iter = parentVec.begin(); Iter != parentVec.end(); ++Iter)
+                    {
+                        m_CparentBC->push_back((*Iter)->barcode());
+
+                        std::vector<const HepMC::GenParticle*> grndPrntVec  = this->GetParents((*Iter));
+                        for (std::vector<const HepMC::GenParticle*>::iterator gIter = grndPrntVec.begin(); gIter != grndPrntVec.end(); ++gIter)
+                        {
+                            m_CgrndParentBC->push_back((*gIter)->barcode());
+                        }
+                    }
+
                     bool hasDaughterEl(false);
-                    std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
+                    std::vector<const HepMC::GenParticle*> children     = this->GetChildren(part);
                     for(std::vector<const HepMC::GenParticle*>::iterator Iter = children.begin(); Iter != children.end(); ++Iter)
                     {
                         if(std::abs((*Iter)->pdg_id()) ==11)
                         {
                             hasDaughterEl = true;
+                            m_CsemiElPt->push_back((*Iter)->momentum().perp()/1000);
+                            m_CsemiElEta->push_back((*Iter)->momentum().eta());
+                            m_CsemiElPhi->push_back((*Iter)->momentum().phi());
+
+                            //It is highly unlikely a HF hadron to have 2 electron daughters. But still 
+                            break;
                         }
                     }
                     if(hasDaughterEl)
@@ -528,18 +574,29 @@ void SoftElectron::ClearCounters()
     delete m_elMtchd;
     delete m_mtchdParent;
     delete m_mtchdGrndParent;
+
     delete m_BPDG;
     delete m_BStatus;
     delete m_BPt;
     delete m_BEta;
     delete m_BPhi;
+    delete m_BBC;
     delete m_BisSemiElectron;
+    delete m_BsemiElPt;
+    delete m_BsemiElEta;
+    delete m_BsemiElPhi;
     delete m_CPDG;
     delete m_CStatus;
     delete m_CPt;
     delete m_CEta;
     delete m_CPhi;
     delete m_CisSemiElectron;
+    delete m_CparentBC;
+    delete m_CgrndParentBC;
+    delete m_CsemiElPt;
+    delete m_CsemiElEta;
+    delete m_CsemiElPhi;
+
     delete m_bQuarkME_pt;
     delete m_bQuarkME_eta;
     delete m_bQuarkME_phi;
@@ -627,4 +684,28 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::Ge
         }
     }
     return daughterVec;
+}
+
+std::vector<const HepMC::GenParticle*> SoftElectron::GetParents(const HepMC::GenParticle* p)
+{
+    std::vector<const HepMC::GenParticle*> parentVec; 
+
+    HepMC::GenVertex* pvtx  = p->production_vertex();
+    if(pvtx)
+    {
+        HepMC::GenVertex::particle_iterator pin = pvtx->particles_begin(HepMC::parents);
+        for(;pin != pvtx->particles_end(HepMC::parents); ++pin)
+        {
+            const HepMC::GenParticle* parent = (*pin);
+            if(parent->pdg_id() == p->pdg_id())
+            {
+                return this->GetParents(parent);
+            }
+            else 
+            {
+                parentVec.push_back(parent);
+            }
+        }
+    }
+    return parentVec;
 }
