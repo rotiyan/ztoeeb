@@ -15,7 +15,7 @@ j = Job()
 j.application = Athena()
 j.application.atlas_dbrelease = 'LATEST'
 j.application.option_file = ['AnalysisMaster.py' ]
-j.name = 'ZeeBNp0_AlpgenJimmy'
+j.name = 'ZeeBNp2'
 j.application.prepare()
 j.inputdata = DQ2Dataset()
 j.inputdata.dataset = myDatasets
@@ -28,5 +28,5 @@ j.application.athena_compile = False
 j.backend = Panda()
 j.backend.nobuild=True
 j.backend.requirements = PandaRequirements()
-j.backend.requirements.enableMerge = True
+#j.backend.requirements.enableMerge = True
 j.submit()
