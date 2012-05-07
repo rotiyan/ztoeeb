@@ -3,10 +3,12 @@ import ROOT
 
 class PlotBase(object):
     __metaclass__   = abc.ABCMeta
-    def __init__(self,hists,tree,event=0):
+    def __init__(self,hists,tree,event=0,histfile=0):
         self.hists  = hists
         self.myTree = tree
         self.event  = event
+
+        self.histFile   = histfile
 
     '''Abstract method to be used by the user 
     to addhistograms and add tree'''
@@ -74,8 +76,6 @@ class PlotBase(object):
         else:
             print "object ",type(h)," is not a TH1 type"
 
-
-
     '''Add histograms to the private list'''
     def addh1(self,name,title="",nbins=1,low=0,high=1):
         self.hists[name]    = ROOT.TH1F(name,title,nbins,low,high)
@@ -89,6 +89,15 @@ class PlotBase(object):
     def setTTree(self,tree):
         self.myTree = tree
         print "Input ROOT Tree: ", self.myTree.GetName()
+
+
+    '''Set the output root file'''
+    def setOutputHistFile(self,file):
+        self.histFile = file
+
+    def getOutputHistFile(self):
+        return self.histFile
+    
 
     '''Private function to apply style in the ABC'''
     def __applyStyle(self):
