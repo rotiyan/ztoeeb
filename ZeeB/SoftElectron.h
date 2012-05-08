@@ -167,6 +167,10 @@ class SoftElectron : public Algorithm
         ToolHandle< IMCTruthClassifier> m_mcTruthClassifier;
 
         TTree* m_tree; 
+        std::vector<double>*    m_ZElPt;
+        std::vector<double>*    m_ZElEta;
+        std::vector<double>*    m_ZElPhi;
+
         std::vector<int>*       m_elAuthor;
         std::vector<int>*       m_elAuthorSofte;
         std::vector<double>*    m_el_trk_PtBr;
