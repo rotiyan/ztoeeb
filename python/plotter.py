@@ -1,5 +1,6 @@
 import abc
 from PlotBase import PlotBase
+from array import array
 
 import ROOT, sys,os,glob 
 from multiprocessing import Process,Queue,current_process
@@ -54,21 +55,49 @@ class MyPlotter(PlotBase):
         self.addh2("matchedZElVsCEl",";# ZEl; #BEl",10,0,10,10,0,10)
         self.addh2("hardVsSoftEl","",10,0,10,10,0,10)
 
-        self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
-        self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+#        self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+#        self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+#
+#        self.addh3("CbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+#        self.addh3("CbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+#
+#        self.addh3("CascadedRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+#        self.addh3("CascadedRMax",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        
+        '''pt,eta,nB,nC,dr{},dr{}'''
+        self.addhnSparse("BHadron_1","",nbins=4,\
+                bins=[100,100,100,100],\
+                fmin=[0  ,-5 ,0  ,0  ],\
+                fmax=[100, 5 ,1  ,1  ])
 
-        self.addh3("CbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
-        self.addh3("CbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+        self.addhnSparse("BHadron_2","",nbins=6,\
+                bins=[100,100,100,100,100,100],\
+                fmin=[0  ,-5 ,0  ,0  ,0  ,0],\
+                fmax=[100,5  ,1  ,1  ,1  ,1])
 
-        self.addh3("CascadedRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
-        self.addh3("CascadedRMax",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        '''SemiElectron decay '''
+        self.addhnSparse("BSemiElectron","",nbins=4,\
+                bins=[15,100,100,10],\
+                fmin=[0 ,0  ,-5 ,0  ],
+                fmax=[30,100, 5 ,10 ])
+
+        self.addhnSparse("CSemiElectron","",nbins=4,\
+                bins=[15,100,100,10],\
+                fmin=[0 ,0  ,-5 ,0  ],
+                fmax=[30,100,5  ,10 ])
 
         '''bquark correlation'''
+        self.addPtHist("bQuarkPt")
         self.addh2("bquarkPtCorrel",";b1;b2",200,0,200,200,0,200)
         self.addh2("bquarkEtaCorrel",";b1;b2",100,-5,5,100,-5,5)
         self.addh2("bquarkPhiCorrel",";b1;b2",100,-5,5,100,-5,5)
 
         self.addh1("nbQuark","",10,0,10)
+        
+        '''Z boson decay electrons'''
+        self.addPtHist("ZElPt")
+        self.addEtaHist("ZElEta")
+        self.addPhiHist("ZElPhi")
 
 
     def execute(self):
@@ -86,6 +115,10 @@ class MyPlotter(PlotBase):
 
         self.makeDeltaRPlots()
 
+        self.hadronElectronMatching()
+
+        self.doZElectron()
+
 
     def finalize(self):
         '''Efficiency histograms'''
@@ -98,14 +131,14 @@ class MyPlotter(PlotBase):
         self.gethist("clMtchEffVsPhi").Divide(self.gethist("clPhiMtchd"), self.gethist("clPhi"))
 
         '''Compare B-hadron b-quark delta r'''
-        self.compareBbDeltaR(5,2.5)
-        self.compareBbDeltaR(10,2.5)
-        self.compareBbDeltaR(20,2.5)
+        #self.compareBbDeltaR(5,2.5)
+        #self.compareBbDeltaR(10,2.5)
+        #self.compareBbDeltaR(20,2.5)
 
         '''Compare C-hadron b-quark delta r'''
-        self.compareCbDeltaR(5,2.5)
-        self.compareCbDeltaR(10,2.5)
-        self.compareCbDeltaR(20,2.5)
+        #self.compareCbDeltaR(5,2.5)
+        #self.compareCbDeltaR(10,2.5)
+        #self.compareCbDeltaR(20,2.5)
 
 
         #Save histograms to disk
@@ -120,9 +153,44 @@ class MyPlotter(PlotBase):
     ''''Functions to be called inside execute'''
     ''''''''''''''''''''''''''''''''''''''''''''
 
+    def doZElectron(self):
+        ZElPtVec    = self.getCurrentValue("ZElPt")
+        ZElEtaVec   = self.getCurrentValue("ZElEta")
+        ZElPhiVec   = self.getCurrentValue("ZElPhi")
+
+        for i in range(ZElEtaVec.size()):
+            eta = ZElEtaVec.at(i)
+            if(abs(eta) < 2.5):
+                self.gethist("ZElPt").Fill(ZElPtVec.at(i))
+                self.gethist("ZElEta").Fill(ZElEtaVec.at(i))
+                self.gethist("ZElPhi").Fill(ZElPhiVec.at(i))
+
+    def hadronElectronMatching(self):
+        BSemiElPtVec= self.getCurrentValue("BsemiElPt")
+        BSemiElEtaVec=self.getCurrentValue("BsemiElEta")
+        BSemiElPhiVec=self.getCurrentValue("BsemiElPhi")
+        BisSemiVec  = self.getCurrentValue("BisSemiElectron")
+
+        CSemiElPtVec= self.getCurrentValue("CsemiElPt")
+        CSemiElEtaVec=self.getCurrentValue("CsemiElEta")
+        CSemiElPhiVec=self.getCurrentValue("CsemiElPhi")
+        CisSemiVec  = self.getCurrentValue("CisSemiElectron")
+
+        ptcutlist = [2,5,10,15,20]
+
+        for ptcut in ptcutlist:
+            nBHadrons   = self.getBMultplcty(ptcut,2.5)
+            if(BSemiElPtVec.size()):
+                x = [ptcut,BSemiElPtVec[0],BSemiElEtaVec[0],nBHadrons]
+                self.gethist("BSemiElectron").Fill(array("d",x))
+
+            nCHadrons   = self.getCMultplcty(ptcut,2.5)
+            if(CSemiElPtVec.size()):
+                x = [ptcut,CSemiElPtVec[0],CSemiElEtaVec[0],nCHadrons]
+                self.gethist("CSemiElectron").Fill(array("d",x))
+
+
     def makeDeltaRPlots(self):
-        ptcutlist   = [2,5,10,15,20]
-        etacutlist  = [2.5,5]
 
         bQuarkME_pt     = self.getCurrentValue("bQuarkME_pt")
         bQuarkME_eta    = self.getCurrentValue("bQuarkME_eta")
@@ -144,8 +212,10 @@ class MyPlotter(PlotBase):
             self.gethist("bquarkPtCorrel").Fill(bQuarkME_pt[0],bQuarkME_pt[1])
             self.gethist("bquarkEtaCorrel").Fill(bQuarkME_eta[0],bQuarkME_eta[1])
             self.gethist("bquarkPhiCorrel").Fill(bQuarkME_phi[0], bQuarkME_phi[1])
-
             self.gethist("nbQuark").Fill(len(bQuarkME_pt))
+            
+            ptcutlist   = [2,5,10,15,20]
+            etacutlist  = [2.5,5]
 
             for pt in ptcutlist:
                 for eta in etacutlist:
@@ -155,21 +225,24 @@ class MyPlotter(PlotBase):
                     nBhadrons   = self.getBMultplcty(pt,eta)
                     nChadrons   = self.getCMultplcty(pt,eta)
                     
-                    if(nBhadrons ==1):
-                        drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in BEtaVec for phi1 in BPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
-                        self.gethist("BbdeltaRMin").Fill(pt,eta,min(drlist))
-                        self.gethist("BbdeltaRMax").Fill(pt,eta,max(drlist))
+                    BPtEtaPhi   = zip(BPtVec,BEtaVec,BPhiVec)
+                    bPtEtaPhi   = zip(bQuarkME_pt,bQuarkME_eta,bQuarkME_phi)
+                    CPtEtaPhi   = zip(CPtVec,CEtaVec,CPhiVec)
 
-                        if(nChadrons ==1):
-                            drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in CEtaVec for phi1 in CPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
-                            self.gethist("CbdeltaRMin").Fill(pt,eta,min(drlist))
-                            self.gethist("CbdeltaRMax").Fill(pt,eta,max(drlist))
+                    Bbdrlist    = [ self.deltaR(eta1,phi1,eta2,phi2) for pt1,eta1,phi1  in  BPtEtaPhi for pt2,eta2, phi2 in bPtEtaPhi]
+                    Bbdrlist.sort()
+                    Cbdrlist    = [ self.deltaR(eta1,phi1,eta2,phi2) for pt1,eta1,phi1  in  CPtEtaPhi for pt2,eta2, phi2 in bPtEtaPhi]
+                    Cbdrlist.sort()
+                    
+                    x = []
+                    x.append(pt)
+                    x.append(eta)
+                    x = x + Bbdrlist
+                    if(nBhadrons ==1):                  
+                        self.gethist("BHadron_1").Fill(array("d",x))
+                    if(nBhadrons ==2):
+                        self.gethist("BHadron_2").Fill(array("d",x))
 
-                            for bbc in BBC:
-                                for cpbc in CparentBC:
-                                    if(bbc == cpbc):
-                                        self.gethist("CascadedRMin").Fill(pt,eta,min(drlist))
-                                        self.gethist("CascadedRMax").Fill(pt,eta,max(drlist))
 
 
     def getBMultplcty(self,ptcut,etacut):
