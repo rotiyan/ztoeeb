@@ -121,29 +121,29 @@ StatusCode SoftElectron::execute()
 
     StatusCode sc = StatusCode::SUCCESS;
 
-    /** Testing HFOR 
+    /** Testing HFOR **/
     if ( m_hfor_tool->execute().isSuccess() )
     {
         std::string hfor_type = m_hfor_tool->getDecision();
+        
+        if(hfor_type =="isLightFlavor")
+        {
+       
+            /** Retrieve Event header: */
+            sc = this->LoadContainers();
+            if (sc.isFailure())
+            {
+                mlog << MSG::FATAL <<"Could not load containers" <<endreq;
+                return StatusCode::FAILURE;
+            }
+
+            this->ClearCounters();
+            this->FindTruthParticle();
+            this->DoElectronMatch();
+            m_tree->Fill();
+        }
     }
-    **/
     
-    /** Retrieve Event header: */
-    sc = this->LoadContainers();
-    if (sc.isFailure())
-    {
-        mlog << MSG::FATAL <<"Could not load containers" <<endreq;
-        return StatusCode::FAILURE;
-    }
-
-    this->ClearCounters();
-    this->FindTruthParticle();
-    this->DoElectronMatch();
-    m_tree->Fill();
-    this->FillHistograms();
-    
-
-
     return sc;
 }
 
@@ -601,11 +601,6 @@ void SoftElectron::ClearCounters()
     delete m_bQuarkME_eta;
     delete m_bQuarkME_phi;
     delete m_bQuarkME_pdg;
-
-}
-
-void SoftElectron::FillHistograms()
-{
 
 }
 

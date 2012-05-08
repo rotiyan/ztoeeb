@@ -114,14 +114,6 @@ class SoftElectron : public Algorithm
         void ClearCounters();
 
         /**
-         * Called at the end of an 
-         * event loop to fill event 
-         * specific variables
-         * and counters
-         */
-        void FillHistograms();
-
-        /**
          * Return the mother of a particle in the HepMC records
          */
         const HepMC::GenParticle* GetMother(const HepMC::GenParticle* part);
