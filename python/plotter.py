@@ -63,6 +63,13 @@ class MyPlotter(PlotBase):
         self.addh3("CascadedRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
         self.addh3("CascadedRMax",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
 
+        '''bquark correlation'''
+        self.addh2("bquarkPtCorrel",";b1;b2",200,0,200,200,0,200)
+        self.addh2("bquarkEtaCorrel",";b1;b2",100,-5,5,100,-5,5)
+        self.addh2("bquarkPhiCorrel",";b1;b2",100,-5,5,100,-5,5)
+
+        self.addh1("nbQuark","",10,0,10)
+
 
     def execute(self):
         #Electron cluster analysis
@@ -132,31 +139,37 @@ class MyPlotter(PlotBase):
         BBC         = self.getCurrentValue("BBC")
         CparentBC   = self.getCurrentValue("CParentBC")
 
-        for pt in ptcutlist:
-            for eta in etacutlist:
-                self.gethist("BMultiplcty").Fill(pt,eta,self.getBMultplcty(pt,eta))
-                self.gethist("CMultiplcty").Fill(pt,eta,self.getCMultplcty(pt,eta))
+        '''bquark correlation'''
+        if(len(bQuarkME_pt) ==2):
+            self.gethist("bquarkPtCorrel").Fill(bQuarkME_pt[0],bQuarkME_pt[1])
+            self.gethist("bquarkEtaCorrel").Fill(bQuarkME_eta[0],bQuarkME_eta[1])
+            self.gethist("bquarkPhiCorrel").Fill(bQuarkME_phi[0], bQuarkME_phi[1])
 
-                nBhadrons   = self.getBMultplcty(pt,eta)
-                nChadrons   = self.getCMultplcty(pt,eta)
-                
-                if(nBhadrons ==1):
-                    drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in BEtaVec for phi1 in BPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
-                    self.gethist("BbdeltaRMin").Fill(pt,eta,min(drlist))
-                    self.gethist("BbdeltaRMax").Fill(pt,eta,max(drlist))
+            self.gethist("nbQuark").Fill(len(bQuarkME_pt))
 
-                    if(nChadrons ==1):
-                        drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in CEtaVec for phi1 in CPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
-                        self.gethist("CbdeltaRMin").Fill(pt,eta,min(drlist))
-                        self.gethist("CbdeltaRMax").Fill(pt,eta,max(drlist))
+            for pt in ptcutlist:
+                for eta in etacutlist:
+                    self.gethist("BMultiplcty").Fill(pt,eta,self.getBMultplcty(pt,eta))
+                    self.gethist("CMultiplcty").Fill(pt,eta,self.getCMultplcty(pt,eta))
 
-                        for bbc in BBC:
-                            for cpbc in CparentBC:
-                                if(bbc == cpbc):
-                                    self.gethist("CascadedRMin").Fill(pt,eta,min(drlist))
-                                    self.gethist("CascadedRMax").Fill(pt,eta,max(drlist))
+                    nBhadrons   = self.getBMultplcty(pt,eta)
+                    nChadrons   = self.getCMultplcty(pt,eta)
+                    
+                    if(nBhadrons ==1):
+                        drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in BEtaVec for phi1 in BPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
+                        self.gethist("BbdeltaRMin").Fill(pt,eta,min(drlist))
+                        self.gethist("BbdeltaRMax").Fill(pt,eta,max(drlist))
 
+                        if(nChadrons ==1):
+                            drlist  = [ self.deltaR(eta1,phi1,eta2,phi2) for eta1 in CEtaVec for phi1 in CPhiVec for eta2 in bQuarkME_eta for phi2 in bQuarkME_phi]
+                            self.gethist("CbdeltaRMin").Fill(pt,eta,min(drlist))
+                            self.gethist("CbdeltaRMax").Fill(pt,eta,max(drlist))
 
+                            for bbc in BBC:
+                                for cpbc in CparentBC:
+                                    if(bbc == cpbc):
+                                        self.gethist("CascadedRMin").Fill(pt,eta,min(drlist))
+                                        self.gethist("CascadedRMax").Fill(pt,eta,max(drlist))
 
 
     def getBMultplcty(self,ptcut,etacut):
