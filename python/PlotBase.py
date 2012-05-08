@@ -1,5 +1,6 @@
 import abc
 import ROOT
+from array import array 
 
 class PlotBase(object):
     __metaclass__   = abc.ABCMeta
@@ -85,6 +86,9 @@ class PlotBase(object):
 
     def addh3(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1,nzbins=1,zlow=0,zhigh=1):
         self.hists[name]    = ROOT.TH3F(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh,nzbins,zlow,zhigh)
+
+    def addhnSparse(self,name,title="",nbins=1,bins=[1],fmin=[0],fmax=[1]):
+        self.hists[name]    = ROOT.THnSparseD(name,title,nbins,array("i",bins),array("d",fmin),array("d",fmax))
 
     def setTTree(self,tree):
         self.myTree = tree
