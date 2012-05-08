@@ -127,6 +127,7 @@ StatusCode SoftElectron::execute()
         std::string hfor_type = m_hfor_tool->getDecision();
         
         if(hfor_type =="isLightFlavor")
+        //if(hfor_type=="isBB")
         {
        
             /** Retrieve Event header: */
@@ -137,10 +138,10 @@ StatusCode SoftElectron::execute()
                 return StatusCode::FAILURE;
             }
 
-            this->ClearCounters();
             this->FindTruthParticle();
             this->DoElectronMatch();
             m_tree->Fill();
+            this->ClearCounters();
         }
     }
     
@@ -180,7 +181,11 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
 
-    //Truth Hadron
+    //Truth 
+    m_tree->Branch("ZElPt",&m_ZElPt);
+    m_tree->Branch("ZElEta",&m_ZElEta);
+    m_tree->Branch("ZElPhi",&m_ZElPhi);
+
     m_tree->Branch("BPDG",&m_BPDG);
     m_tree->Branch("BStatus",&m_BStatus);
     m_tree->Branch("BPt",&m_BPt);
@@ -191,6 +196,7 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("BsemiElPt",&m_BsemiElPt);
     m_tree->Branch("BsemiElEta",&m_BsemiElEta);
     m_tree->Branch("BsemiElPhi",&m_BsemiElPhi);
+    
     m_tree->Branch("CPDG",&m_CPDG);
     m_tree->Branch("CStatus",&m_CStatus);
     m_tree->Branch("CPt",&m_CPt);
@@ -248,6 +254,10 @@ void SoftElectron::FindTruthParticle()
         return ;
     }
 
+    m_ZElPt         = new std::vector<double>();
+    m_ZElEta        = new std::vector<double>();
+    m_ZElPhi        = new std::vector<double>();
+
     m_BPDG          = new std::vector<int>();
     m_BStatus       = new std::vector<int>();
     m_BPt           = new std::vector<double>();
@@ -258,6 +268,7 @@ void SoftElectron::FindTruthParticle()
     m_BsemiElPt     = new std::vector<double>();
     m_BsemiElEta    = new std::vector<double>();
     m_BsemiElPhi    = new std::vector<double>();
+
     m_CPDG          = new std::vector<int>();
     m_CStatus       = new std::vector<int>();
     m_CPt           = new std::vector<double>();
@@ -283,31 +294,48 @@ void SoftElectron::FindTruthParticle()
         if(part->barcode() > 10000)
             continue;
 
+        //Decaying Z-boson
+        if(std::abs(part->pdg_id()) ==23 && part->status()==155)
+        {
+            std::vector<const HepMC::GenParticle*> zchildren = this->GetChildren(part);
+            for(std::vector<const HepMC::GenParticle*>::iterator Iter = zchildren.begin(); Iter != zchildren.end(); ++Iter)
+            {
+                m_ZElPt->push_back((*Iter)->momentum().perp()/1000);
+                m_ZElEta->push_back((*Iter)->momentum().eta());
+                m_ZElPhi->push_back((*Iter)->momentum().phi());
+            }
 
-        HepMC::GenVertex* prodVtx = part->production_vertex();
-        if(prodVtx)
+        }
+
+        //ME b-quark
+        if(std::abs(part->pdg_id())==5)
         {
             bool hasmpiparent(false);
             bool hasbhadronparent(false);
 
-            HepMC::GenVertex::particle_iterator pin = prodVtx->particles_begin(HepMC::parents) ;
+            HepMC::GenVertex* prodVtx = part->production_vertex();
+            if(prodVtx)
+            {
 
-            for(; pin != prodVtx->particles_end(HepMC::parents) && !hasbhadronparent; ++pin)
-            {
-                int pdgin(abs((*pin)->pdg_id()));
-                if ( (pdgin%10000)/1000 == 5 || (pdgin%1000)/100 == 5 )
-                    hasbhadronparent = true;
-                if ( pdgin == 0  && (*pin)->status()== 120)
-                    hasmpiparent = true;
-            }
-            if(!hasbhadronparent && !hasmpiparent)
-            {
-                if(abs(part->pdg_id())==5 && (part->status() == 123  || part->status() ==124))
+                HepMC::GenVertex::particle_iterator pin = prodVtx->particles_begin(HepMC::parents) ;
+
+                for(; pin != prodVtx->particles_end(HepMC::parents) && !hasbhadronparent; ++pin)
                 {
-                    m_bQuarkME_pt->push_back(part->momentum().perp()/1000);
-                    m_bQuarkME_eta->push_back(part->momentum().eta());
-                    m_bQuarkME_phi->push_back(part->momentum().phi());
-                    m_bQuarkME_pdg->push_back(part->pdg_id());
+                    int pdgin(abs((*pin)->pdg_id()));
+                    if ( (pdgin%10000)/1000 == 5 || (pdgin%1000)/100 == 5 )
+                        hasbhadronparent = true;
+                    if ( pdgin == 0  && (*pin)->status()== 120)
+                        hasmpiparent = true;
+                }
+                if(!hasbhadronparent && !hasmpiparent)
+                {
+                    if(abs(part->pdg_id())==5 && (part->status() == 123  || part->status() ==124))
+                    {
+                        m_bQuarkME_pt->push_back(part->momentum().perp()/1000);
+                        m_bQuarkME_eta->push_back(part->momentum().eta());
+                        m_bQuarkME_phi->push_back(part->momentum().phi());
+                        m_bQuarkME_pdg->push_back(part->pdg_id());
+                    }
                 }
             }
         }
@@ -560,6 +588,10 @@ StatusCode SoftElectron::LoadContainers()
 
 void SoftElectron::ClearCounters()
 {
+    delete m_ZElPt;
+    delete m_ZElEta;
+    delete m_ZElPhi;
+
     delete m_elAuthor;
     delete m_elAuthorSofte;
     delete m_el_trk_PtBr;
