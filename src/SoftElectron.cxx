@@ -68,12 +68,13 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     m_tree(0),
     m_mcTruthClassifier("MCTruthClassifier")
 {
-  declareProperty("MCParticleContainer",m_truthParticleContainerName = "SpclMC");
-  declareProperty("TrackParticleContainer", m_trackParticleContainerName = "TrackParticleCandidate");
-  declareProperty("MuonContainer",m_muonContainerName = "StacoMuonCollection");
-  declareProperty("ElectronContainer", m_electronContainerName = "ElectronAODCollection");
-  declareProperty("PrimaryVertexContainer", m_primaryVertexContainerName = "VxPrimaryCandidate");
-  declareProperty("MCEventContainer", m_mcEventContainerName = "GEN_AOD");
+    declareProperty("MCParticleContainer",m_truthParticleContainerName = "SpclMC");
+    declareProperty("TrackParticleContainer", m_trackParticleContainerName = "TrackParticleCandidate");
+    declareProperty("MuonContainer",m_muonContainerName = "StacoMuonCollection");
+    declareProperty("ElectronContainer", m_electronContainerName = "ElectronAODCollection");
+    declareProperty("PrimaryVertexContainer", m_primaryVertexContainerName = "VxPrimaryCandidate");
+    declareProperty("MCEventContainer", m_mcEventContainerName = "GEN_AOD");
+    declareProperty("HforType",m_hforType ="isBB");
 }
 
 SoftElectron::~SoftElectron() {}
@@ -126,8 +127,7 @@ StatusCode SoftElectron::execute()
     {
         std::string hfor_type = m_hfor_tool->getDecision();
         
-        if(hfor_type =="isLightFlavor")
-        //if(hfor_type=="isBB")
+        if(hfor_type ==m_hforType)
         {
        
             /** Retrieve Event header: */

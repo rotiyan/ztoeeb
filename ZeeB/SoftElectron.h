@@ -164,6 +164,7 @@ class SoftElectron : public Algorithm
         ITHistSvc* m_histos; /// histo service
 
         ToolHandle< IHforTool > m_hfor_tool;
+        std::string m_hforType;
         ToolHandle< IMCTruthClassifier> m_mcTruthClassifier;
 
         TTree* m_tree; 
