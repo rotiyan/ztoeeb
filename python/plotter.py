@@ -45,10 +45,12 @@ class MyPlotter(PlotBase):
         self.addh1("Bhadrons")
         self.addh1("Bpt","",500,0,500)
         self.addh1("Beta","",100,-5,5)
-        self.addh3("BMultiplcty","BMultiplcty;ptcut;etacut;nBHadrons",50,0,50,10,0,10,10,0,10)
+        self.addh3("BMultiplcty","BMultiplcty;ptcut;etacut;nBHadrons",15,0,30,10,0,10,10,0,10)
         self.addh1("Chadrons")
-        self.addh1("Cpt","",500,0,500)
-        self.addh1("Ceta","",100,-5,5)
+        self.addPtHist("Cpt")
+        self.addEtaHist("Ceta")
+        self.addPtHist("CscdPt")
+        self.addEtaHist("CscdEta")
         self.addh3("CMultiplcty","CMultiplcty;ptcut;etacut;nCHadrons",50,0,50,10,0,10,10,0,10)
 
         self.addh2("matchedZElVsBEl",";# ZEl; #BEl",10,0,10,10,0,10)
@@ -86,11 +88,20 @@ class MyPlotter(PlotBase):
                 fmin=[0 ,0  ,-5 ,0  ],
                 fmax=[30,100,5  ,10 ])
 
+        '''ZB electron'''
+        self.addhnSparse("ZBEl","",nbins=5,\
+                bins=[200,200,100,100,10],\
+                fmin=[0  ,0  ,-5 , -5,0 ],\
+                fmax=[200,200,5  ,  5,10])
+
         '''bquark correlation'''
         self.addPtHist("bQuarkPt")
-        self.addh2("bquarkPtCorrel",";b1;b2",200,0,200,200,0,200)
-        self.addh2("bquarkEtaCorrel",";b1;b2",100,-5,5,100,-5,5)
-        self.addh2("bquarkPhiCorrel",";b1;b2",100,-5,5,100,-5,5)
+
+        self.addh3("bquarkPtDeltaR",";b1;b2",200,0,200,200,0,200,100,0,2)
+        self.addhnSparse("bquarkKinematics",nbins=7,\
+                bins=[200,200,100,100,100,100,100],\
+                fmin=[0  ,0  ,0  ,-5 ,-5 ,-5 ,-4 ],\
+                fmax=[100,100,100,5  , 5 ,5  , 4 ])
 
         self.addh1("nbQuark","",10,0,10)
         
@@ -110,15 +121,14 @@ class MyPlotter(PlotBase):
         #Electron truth analysis
         self.trthAna()
 
-        self.fillBKinematics(5,100)
-        self.fillCKinematics(5,100)
+        self.fillBKinematics(2,2.5)
+        self.fillCKinematics(2,2.5)
 
         self.makeDeltaRPlots()
 
         self.hadronElectronMatching()
 
         self.doZElectron()
-
 
     def finalize(self):
         '''Efficiency histograms'''
@@ -166,11 +176,15 @@ class MyPlotter(PlotBase):
                 self.gethist("ZElPhi").Fill(ZElPhiVec.at(i))
 
     def hadronElectronMatching(self):
+        BPtVec      = self.getCurrentValue("BPt")
+        BPhiVec     = self.getCurrentValue("BPhi")
+
         BSemiElPtVec= self.getCurrentValue("BsemiElPt")
         BSemiElEtaVec=self.getCurrentValue("BsemiElEta")
         BSemiElPhiVec=self.getCurrentValue("BsemiElPhi")
         BisSemiVec  = self.getCurrentValue("BisSemiElectron")
 
+        CElPt       = self.getCurrentValue("CElPt")
         CSemiElPtVec= self.getCurrentValue("CsemiElPt")
         CSemiElEtaVec=self.getCurrentValue("CsemiElEta")
         CSemiElPhiVec=self.getCurrentValue("CsemiElPhi")
@@ -178,11 +192,17 @@ class MyPlotter(PlotBase):
 
         ptcutlist = [2,5,10,15,20]
 
+        ZElPt       = self.getCurrentValue("ZElPt")
+        ZElEta      = self.getCurrentValue("ZElEta")
+
         for ptcut in ptcutlist:
             nBHadrons   = self.getBMultplcty(ptcut,2.5)
             if(BSemiElPtVec.size()):
                 x = [ptcut,BSemiElPtVec[0],BSemiElEtaVec[0],nBHadrons]
                 self.gethist("BSemiElectron").Fill(array("d",x))
+
+                y = [ZElPt[0],ZElPt[1],ZElEta[0],ZElEta[1],BSemiElPtVec[0],BSemiElEtaVec[0],nBHadrons]
+                self.gethist("ZBEl").Fill(array("d",y));
 
             nCHadrons   = self.getCMultplcty(ptcut,2.5)
             if(CSemiElPtVec.size()):
@@ -209,10 +229,13 @@ class MyPlotter(PlotBase):
 
         '''bquark correlation'''
         if(len(bQuarkME_pt) ==2):
-            self.gethist("bquarkPtCorrel").Fill(bQuarkME_pt[0],bQuarkME_pt[1])
-            self.gethist("bquarkEtaCorrel").Fill(bQuarkME_eta[0],bQuarkME_eta[1])
-            self.gethist("bquarkPhiCorrel").Fill(bQuarkME_phi[0], bQuarkME_phi[1])
+            x = [bQuarkME_pt[0],bQuarkME_pt[1],bQuarkME_eta[0],bQuarkME_eta[1],bQuarkME_phi[0],bQuarkME_phi[1]]
+            self.gethist("bquarkKinematics").Fill(array("d",x))
             self.gethist("nbQuark").Fill(len(bQuarkME_pt))
+            
+            bPtEtaPhi = zip(bQuarkME_pt,bQuarkME_eta,bQuarkME_phi)
+            self.gethist("bquarkPtDeltaR").Fill(bQuarkME_pt[0],bQuarkME_pt[1],self.deltaR(bQuarkME_eta[0],bQuarkME_phi[0],bQuarkME_eta[1],bQuarkME_phi[1]))
+            
             
             ptcutlist   = [2,5,10,15,20]
             etacutlist  = [2.5,5]
@@ -304,6 +327,8 @@ class MyPlotter(PlotBase):
         CPtVec      = self.getCurrentValue("CPt")
         CEtaVec     = self.getCurrentValue("CEta")
         isSemiElVec = self.getCurrentValue("CisSemiElectron")
+        BBCVec      = self.getCurrentValue("BBC")
+        CParentBCVec= self.getCurrentValue("CParentBC")
         
         nCHadrons = 0
         for i in range(CPtVec.size()):
@@ -311,6 +336,10 @@ class MyPlotter(PlotBase):
             CHdrnEta= CEtaVec.at(i)
 
             if(CHdrnPt >ptcut and abs(CHdrnEta) < etacut):
+                "fix the ntuple branch"
+                #if (CParentBCVec.at(i) in BBCVec):
+                #    self.gethist("CscdPt").Fill(CHdrnPt)
+                #    self.gethist("CscdEta").Fill(CHdrnEta)
                 self.gethist("Chadrons").Fill("Chadrons",1)
                 self.gethist("Cpt").Fill(CHdrnPt)
                 self.gethist("Ceta").Fill(CHdrnEta)
