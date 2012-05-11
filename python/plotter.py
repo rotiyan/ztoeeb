@@ -53,9 +53,9 @@ class MyPlotter(PlotBase):
         self.addEtaHist("CscdEta")
         self.addh3("CMultiplcty","CMultiplcty;ptcut;etacut;nCHadrons",50,0,50,10,0,10,10,0,10)
 
-        self.addh2("matchedZElVsBEl",";# ZEl; #BEl",10,0,10,10,0,10)
-        self.addh2("matchedZElVsCEl",";# ZEl; #BEl",10,0,10,10,0,10)
-        self.addh2("hardVsSoftEl","",10,0,10,10,0,10)
+        self.addh2("matchedZElVsBEl",";# ZEl; #BEl",10,0.5,10.5,10,0.5,10.5)
+        self.addh2("matchedZElVsCEl",";# ZEl; #BEl",10,0.5,10.5,10,0.5,10.5)
+        self.addh2("hardVsSoftEl","",10,0.5,10.5,10,0.5,10.5)
 
 #        self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
 #        self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
@@ -80,19 +80,19 @@ class MyPlotter(PlotBase):
         '''SemiElectron decay '''
         self.addhnSparse("BSemiElectron","",nbins=4,\
                 bins=[15,100,100,10],\
-                fmin=[0 ,0  ,-5 ,0  ],
-                fmax=[30,100, 5 ,10 ])
+                fmin=[0 ,0  ,-5 ,0.5  ],
+                fmax=[30,100, 5 ,10.5 ])
 
         self.addhnSparse("CSemiElectron","",nbins=4,\
                 bins=[15,100,100,10],\
-                fmin=[0 ,0  ,-5 ,0  ],
-                fmax=[30,100,5  ,10 ])
+                fmin=[0 ,0  ,-5 ,0.5  ],
+                fmax=[30,100,5  ,10.5 ])
 
         '''ZB electron'''
         self.addhnSparse("ZBEl","",nbins=5,\
                 bins=[200,200,100,100,10],\
-                fmin=[0  ,0  ,-5 , -5,0 ],\
-                fmax=[200,200,5  ,  5,10])
+                fmin=[0  ,0  ,-5 , -5,0.5 ],\
+                fmax=[200,200,5  ,  5,10.5])
 
         '''bquark correlation'''
         self.addPtHist("bQuarkPt")
@@ -103,7 +103,7 @@ class MyPlotter(PlotBase):
                 fmin=[0  ,0  ,0  ,-5 ,-5 ,-5 ,-4 ],\
                 fmax=[100,100,100,5  , 5 ,5  , 4 ])
 
-        self.addh1("nbQuark","",10,0,10)
+        self.addh1("nbQuark","",10,0.5,10.5)
         
         '''Z boson decay electrons'''
         self.addPtHist("ZElPt")
