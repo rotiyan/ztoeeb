@@ -7,12 +7,14 @@ from multiprocessing import Process,Queue,current_process
 
 
 class MyPlotter(PlotBase):
-    def __init__(self,tree,hists = {}):
+    def __init__(self,tree,outFileName,hists = {}):
         self.hists  = hists
         self.myTree   = tree
         self.barrelEtacut   = 2.47
         self.cracketa1      = 1.37
         self.cracketa2      = 1.52
+
+        self.outFileName    = outFileName
     
     def initialize(self):
         self.addPtHist("trkPt")
@@ -79,14 +81,14 @@ class MyPlotter(PlotBase):
 
         '''SemiElectron decay '''
         self.addhnSparse("BSemiElectron","",nbins=4,\
-                bins=[15,100,100,10],\
-                fmin=[0 ,0  ,-5 ,0.5  ],
-                fmax=[30,100, 5 ,10.5 ])
+                bins=[30  ,100  ,100,10],\
+                fmin=[0.5 ,0.5  ,-5 ,0.5  ],
+                fmax=[30.5,100.5, 5 ,10.5 ])
 
         self.addhnSparse("CSemiElectron","",nbins=4,\
-                bins=[15,100,100,10],\
-                fmin=[0 ,0  ,-5 ,0.5  ],
-                fmax=[30,100,5  ,10.5 ])
+                bins=[30  ,100  ,100,10],\
+                fmin=[0.5 ,0.5  ,-5 ,0.5  ],
+                fmax=[30.5,100.5,5  ,10.5 ])
 
         '''ZB electron'''
         self.addhnSparse("ZBEl","",nbins=5,\
@@ -153,7 +155,7 @@ class MyPlotter(PlotBase):
 
         #Save histograms to disk
         histlist = self.gethistList()
-        fname = "outputHist"+current_process().name+"._root"
+        fname = self.outFileName+current_process().name
         f = ROOT.TFile(fname,"RECREATE")
         for h in histlist:
             h.Write()
@@ -592,27 +594,3 @@ class MyPlotter(PlotBase):
 
 #end of plotter class
 
-
-
-flist       = glob.glob(str(sys.argv[1])+"/*root")
-
-def MultiProc(flist):
-    processes   = []
-    doneQue = Queue()
-    try: 
-        for fname in flist:
-            f = ROOT.TFile(fname)
-            t = f.Get("el")
-            plotter = MyPlotter(t)
-            p = Process(target=plotter.run)
-            p.start()
-            processes.append(p)
-        for p in processes:
-            p.join()
-
-        os.system("hadd -f outputHist.root *._root")
-        os.system("rm *._root")
-    except:
-        print "something wrong"
-
-MultiProc(flist)
