@@ -168,7 +168,7 @@ class MyPlotter(PlotBase):
         ZElEtaVec   = self.getCurrentValue("ZElEta")
         ZElPhiVec   = self.getCurrentValue("ZElPhi")
 
-        for i in range(ZElEtaVec.size()):
+        for i in xrange(ZElEtaVec.size()):
             eta = ZElEtaVec.at(i)
             if(abs(eta) < 2.5):
                 self.gethist("ZElPt").Fill(ZElPtVec.at(i))
@@ -184,7 +184,6 @@ class MyPlotter(PlotBase):
         BSemiElPhiVec=self.getCurrentValue("BsemiElPhi")
         BisSemiVec  = self.getCurrentValue("BisSemiElectron")
 
-        CElPt       = self.getCurrentValue("CElPt")
         CSemiElPtVec= self.getCurrentValue("CsemiElPt")
         CSemiElEtaVec=self.getCurrentValue("CsemiElEta")
         CSemiElPhiVec=self.getCurrentValue("CsemiElPhi")
@@ -276,7 +275,7 @@ class MyPlotter(PlotBase):
         isSemiElVec = self.getCurrentValue("BisSemiElectron")
         
         nBHadrons = 0
-        for i in range(BPtVec.size()):
+        for i in xrange(BPtVec.size()):
             BHdrnPt = BPtVec.at(i)
             BHdrnEta= BEtaVec.at(i)
 
@@ -294,7 +293,7 @@ class MyPlotter(PlotBase):
         isSemiElVec = self.getCurrentValue("BisSemiElectron")
         
         nBHadrons = 0
-        for i in range(BPtVec.size()):
+        for i in xrange(BPtVec.size()):
             BHdrnPt = BPtVec.at(i)
             BHdrnEta= BEtaVec.at(i)
 
@@ -313,7 +312,7 @@ class MyPlotter(PlotBase):
         isSemiElVec = self.getCurrentValue("CisSemiElectron")
         
         nCHadrons = 0
-        for i in range(CPtVec.size()):
+        for i in xrange(CPtVec.size()):
             CHdrnPt = CPtVec.at(i)
             CHdrnEta= CEtaVec.at(i)
 
@@ -331,7 +330,7 @@ class MyPlotter(PlotBase):
         CParentBCVec= self.getCurrentValue("CParentBC")
         
         nCHadrons = 0
-        for i in range(CPtVec.size()):
+        for i in xrange(CPtVec.size()):
             CHdrnPt = CPtVec.at(i)
             CHdrnEta= CEtaVec.at(i)
 
@@ -358,7 +357,7 @@ class MyPlotter(PlotBase):
 
 
 
-        for i in range(trketaVec.size()):
+        for i in xrange(trketaVec.size()):
             trkEta  = trketaVec.at(i)
             trkPhi  = trkphiVec.at(i)
             trkPt   = trkptVec.at(i)
@@ -388,7 +387,7 @@ class MyPlotter(PlotBase):
         isMtchdVec  = self.getCurrentValue("elIsMtchd")
 
 
-        for i in range(cletaVec.size()):
+        for i in xrange(cletaVec.size()):
             clEta   = cletaVec.at(i)
             clPhi   = clphiVec.at(i)
             clPt    = clptVec.at(i)
@@ -431,7 +430,7 @@ class MyPlotter(PlotBase):
         nCEl    =   0
         nOther  =   0
 
-        for i in range(cletaVec.size()):
+        for i in xrange(cletaVec.size()):
             trthEta = trthetaVec.at(i)
             trthPhi = trthphiVec.at(i)
             trthPt  = trthptVec.at(i)
