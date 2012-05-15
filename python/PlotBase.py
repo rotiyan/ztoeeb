@@ -109,4 +109,4 @@ class PlotBase(object):
         for name,hist in self.hists.iteritems():
             hist.Sumw2()
 
-
+#End of class Plotbase
