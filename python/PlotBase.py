@@ -32,10 +32,13 @@ class PlotBase(object):
     def run(self):
         '''program flow'''
         self.initialize()
-        self.__applyStyle()
+
+        for hist in self.gethistList():
+            hist.Sumw2()
 
         print "Total Ntuple Entries: ", self.myTree.GetEntriesFast()
         counter = 0
+
         for event  in self.myTree:
             counter += 1
             if(not (counter % 1000)):
@@ -102,11 +105,4 @@ class PlotBase(object):
     def getOutputHistFile(self):
         return self.histFile
     
-
-    '''Private function to apply style in the ABC'''
-    def __applyStyle(self):
-        #ROOT.gSystem.Load("AtlasStyle.py")
-        for name,hist in self.hists.iteritems():
-            hist.Sumw2()
-
 #End of class Plotbase
