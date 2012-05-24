@@ -589,8 +589,4 @@ class MyPlotter(PlotBase):
         self.addtohistList(h_Cscd_rmin)
         self.addtohistList(h_Cscd_rmax)
 
-    '''Do Multiprocessing'''
-
-
 #end of plotter class
-
