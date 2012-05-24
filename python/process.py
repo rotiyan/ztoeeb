@@ -4,8 +4,6 @@ from multiprocessing import Process,Queue,current_process
 from plotter import MyPlotter
 from plotscript import  plotscript
 ########################################
-rawHistFname = 'rawHist.root'
-flist       = glob.glob(str(sys.argv[1])+"/*root")
 def MultiProc(flist):
     processes   = []
     doneQue = Queue()
@@ -26,7 +24,11 @@ def MultiProc(flist):
     except:
         print "something wrong"
 
-#MultiProc(flist)
+
+rawHistFname = 'rawHist.root'
+if( not os.path.exists(rawHistFname)):
+    flist   = glob.glob(raw_input("Path to Ntuple Folder: ")+"/*root")
+    MultiProc(flist)
 
 inFile  = ROOT.TFile(rawHistFname)
 myPlotScript = plotscript(inFile)
