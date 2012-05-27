@@ -1,8 +1,7 @@
 import ROOT, sys,os,glob 
 from multiprocessing import Process,Queue,current_process
 
-from plotter import MyPlotter
-from plotscript import  plotscript
+from NtupleAna import NtupleAna, plotscript
 ########################################
 def MultiProc(flist):
     processes   = []
@@ -11,7 +10,7 @@ def MultiProc(flist):
         for fname in flist:
             f = ROOT.TFile(fname)
             t = f.Get("el")
-            plotter = MyPlotter(t, outFileName = "outputHist")
+            plotter = NtupleAna(t, outFileName = "outputHist")
             p = Process(target=plotter.run)
             p.start()
             processes.append(p)
