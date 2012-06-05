@@ -127,7 +127,7 @@ StatusCode SoftElectron::execute()
     {
         std::string hfor_type = m_hfor_tool->getDecision();
         
-        if(hfor_type ==m_hforType)
+        //if(hfor_type ==m_hforType)
         {
        
             /** Retrieve Event header: */
