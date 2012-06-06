@@ -123,7 +123,7 @@ StatusCode SoftElectron::execute()
     StatusCode sc = StatusCode::SUCCESS;
 
     /** Testing HFOR **/
-    if ( m_hfor_tool->execute().isSuccess() )
+    //if ( m_hfor_tool->execute().isSuccess() )
     {
         std::string hfor_type = m_hfor_tool->getDecision();
         
