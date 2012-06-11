@@ -67,14 +67,14 @@ class NtupleAna(NtupleAnaBase):
         self.addh2("matchedZElVsCEl",";# ZEl; #BEl",10,0.5,10.5,10,0.5,10.5)
         self.addh2("hardVsSoftEl","",10,0.5,10.5,10,0.5,10.5)
 
-#        self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
-#        self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
-#
-#        self.addh3("CbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
-#        self.addh3("CbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
-#
-#        self.addh3("CascadedRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
-#        self.addh3("CascadedRMax",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        #self.addh3("BbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        #self.addh3("BbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+        #
+        #self.addh3("CbdeltaRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        #self.addh3("CbdeltaRMax",";ptcut;etacut;#Delta R max",50,0,50,10,0,10,500,0,5)
+        #
+        #self.addh3("CascadedRMin",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
+        #self.addh3("CascadedRMax",";ptcut;etacut;#Delta R min",50,0,50,10,0,10,500,0,5)
         
         '''SemiElectron decay '''
         #ptcut,nBEl,nCEl
@@ -713,33 +713,36 @@ class plotscript:
 
         #B Multiplicity as a function of B-hadron pt cut
         h_mulVsPtCut    = BSparse.Projection(2,0)
+        h_mulVsPtCut.SetName("MultVsPtCut")
         h_mulVsPtCut.GetXaxis().SetTitle("pt cut")
         h_mulVsPtCut.GetYaxis().SetTitle("# B-hadrons")
-        h_mulVsPtCut.Draw("colztext")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz()
-        ROOT.gPad.Print(self.pdfPath+"/BMultVsPtcut.pdf","Landscapepdf")
+        #h_mulVsPtCut.Draw("colztext")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz()
+        #ROOT.gPad.Print(self.pdfPath+"/BMultVsPtcut.pdf","Landscapepdf")
         self.__addHist(h_mulVsPtCut)
 
         #BSemiElectron multiplicity as a function of B-hadron pt cut
         h_BElVsPtCut    = BSparse.Projection(1,0)
+        h_BElVsPtCut.SetName("BElVsPtCut")
         h_BElVsPtCut.GetXaxis().SetTitle("pt cut")
         h_BElVsPtCut.GetYaxis().SetTitle("# B-el")
-        h_BElVsPtCut.Draw("colztext")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz()
-        ROOT.gPad.Print(self.pdfPath+"/BElVsPtCut.pdf","Landscapepdf")
+        #h_BElVsPtCut.Draw("colztext")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz()
+        #ROOT.gPad.Print(self.pdfPath+"/BElVsPtCut.pdf","Landscapepdf")
         self.__addHist(h_BElVsPtCut)
 
         #Multiplicity of B Electrons as a function of B- multiplicity
         h_BElVsBMul     = BSparse.Projection(1,2)
+        h_BElVsBMul.SetName("BElVsBMul")
         h_BElVsBMul.GetXaxis().SetTitle("nBHadrons")
         h_BElVsBMul.GetYaxis().SetRangeUser(0,8)
         h_BElVsBMul.GetYaxis().SetTitle("# B-el")
-        h_BElVsBMul.Draw("colztext")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz()
-        ROOT.gPad.Print(self.pdfPath+"/BElVsBMul.pdf","Landscapepdf")
+        #h_BElVsBMul.Draw("colztext")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz()
+        #ROOT.gPad.Print(self.pdfPath+"/BElVsBMul.pdf","Landscapepdf")
         self.__addHist(h_BElVsBMul)
 
         #Multiplicity of B-hadrons
@@ -779,76 +782,80 @@ class plotscript:
 
         #B Semi electron events as a function of B ptcut and B multiplicity
         h_BElEvents     = self.__getInHist("BElEvents")
-        h_BElEvents.Draw("colztext")
+        #h_BElEvents.Draw("colztext")
         h_BElEvents.GetXaxis().SetTitle("B-hadron pt cut [GeV]")
         h_BElEvents.GetYaxis().SetTitle("# B-hadrons")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz(0)
-        ROOT.gPad.Print(self.pdfPath+"/BElEvents_ptcut_BMul.pdf","Landscapepdf")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz(0)
+        #ROOT.gPad.Print(self.pdfPath+"/BElEvents_ptcut_BMul.pdf","Landscapepdf")
         self.__addHist(h_BElEvents)
 
     def MakeHistBKinematics(self):
         '''Retrieve the kinematics histograms'''
         h_BhdrnBElCorrPt    = self.__getInHist("BHdrnBElPtCorr")
-        h_BhdrnBElCorrPt.Draw("colz")
+        #h_BhdrnBElCorrPt.Draw("colz")
         h_BhdrnBElCorrPt.GetXaxis().SetRangeUser(0,100)
         h_BhdrnBElCorrPt.GetYaxis().SetRangeUser(0,50)
         h_BhdrnBElCorrPt.GetXaxis().SetTitle("B-hadron pt [GeV]")
         h_BhdrnBElCorrPt.GetYaxis().SetTitle("BEl pt [GeV]")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.Print(self.pdfPath+"/BHdrnBElPtCorr.pdf","Landscapepdf")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.Print(self.pdfPath+"/BHdrnBElPtCorr.pdf","Landscapepdf")
         self.__addHist(h_BhdrnBElCorrPt)
 
         h_BElPt = self.__getInHist("BHdrnBElPtCorr").ProjectionY()
-        h_BElPt.Draw()
+        h_BElPt.SetName("BElPt")
+        #h_BElPt.Draw()
         h_BElPt.GetXaxis().SetTitle("B- el pt [GeV]")
-        ROOT.gPad.SetLogy()
-        ROOT.gPad.Print(self.pdfPath+"/BElPt.pdf","Landscapepdf")
+        #ROOT.gPad.SetLogy()
+        #ROOT.gPad.Print(self.pdfPath+"/BElPt.pdf","Landscapepdf")
         self.__addHist(h_BElPt)
 
         h_BElEff    = self.__getInHist("BElEvntEff")
         h_BElEff.GetXaxis().SetTitle("B-hadron pt-cut [GeV]")
         h_BElEff.GetYaxis().SetTitle("# B-hadrons")
-        h_BElEff.Draw("colztext")
-        ROOT.gPad.Print(self.pdfPath+"/BElEvntEff.pdf","Landscapepdf")
+        #h_BElEff.Draw("colztext")
+        #ROOT.gPad.Print(self.pdfPath+"/BElEvntEff.pdf","Landscapepdf")
         self.__addHist(h_BElEff)
 
         h_BHdrnEvnt = self.__getInHist("BHdrnEvents")
         h_BHdrnEvnt.GetXaxis().SetTitle("B-hadron pt-cut [GeV]")
         h_BHdrnEvnt.GetYaxis().SetTitle("# B-hadrons")
-        h_BHdrnEvnt.Draw("colztext")
-        ROOT.gPad.Print(self.pdfPath+"/BHdrnEvents.pdf","Landscapepdf")
+        #h_BHdrnEvnt.Draw("colztext")
+        #ROOT.gPad.Print(self.pdfPath+"/BHdrnEvents.pdf","Landscapepdf")
         self.__addHist(h_BHdrnEvnt)
 
     def MakeHistCSemiElectron(self):
         '''Retrieve THnSparse'''
         CSparse         = self.__getInHist("CSemiElectron")
         h_mulVsPtCut    = CSparse.Projection(2,0)
+        h_mulVsPtCut.SetName("MultVsPtCut")
         h_mulVsPtCut.GetXaxis().SetTitle("pt cut")
         h_mulVsPtCut.GetYaxis().SetTitle("# C-hadrons")
-        h_mulVsPtCut.Draw("colztext")
-        ROOT.gPad.SetLogz()
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.Print(self.pdfPath+"/CMultVsPtcut.pdf","Landscapepdf")
+        #h_mulVsPtCut.Draw("colztext")
+        #ROOT.gPad.SetLogz()
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.Print(self.pdfPath+"/CMultVsPtcut.pdf","Landscapepdf")
         self.__addHist(h_mulVsPtCut)
 
         h_CElVsPtCut    = CSparse.Projection(1,0)
+        h_CElVsPtCut.SetName("CElVsPtCut")
         h_CElVsPtCut.GetXaxis().SetTitle("pt cut")
         h_CElVsPtCut.GetYaxis().SetTitle("# C-el")
-        h_CElVsPtCut.Draw("colztext")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz()
-        ROOT.gPad.Print(self.pdfPath+"/CElVsPtCut.pdf","Landscapepdf")
+        #h_CElVsPtCut.Draw("colztext")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz()
+        #ROOT.gPad.Print(self.pdfPath+"/CElVsPtCut.pdf","Landscapepdf")
         self.__addHist(h_CElVsPtCut)
 
         h_CElVsCMul     = CSparse.Projection(1,2)
+        h_CElVsCMul.SetName("CElVsCMult")
         h_CElVsCMul.GetXaxis().SetTitle("# C-hadrons")
         h_CElVsCMul.GetYaxis().SetTitle("# C-el")
         h_CElVsCMul.GetYaxis().SetRangeUser(0,8)
-        h_CElVsCMul.Draw("colztext")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz()
-        ROOT.gPad.Print(self.pdfPath+"/CElVsCMul.pdf","Landscapepdf")
+        #h_CElVsCMul.Draw("colztext")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz()
+        #ROOT.gPad.Print(self.pdfPath+"/CElVsCMul.pdf","Landscapepdf")
         self.__addHist(h_CElVsCMul)
 
         #Multiplicity of C-hadrons
@@ -888,12 +895,12 @@ class plotscript:
 
         #C Semi electron events as a function of C ptcut and C multiplicity
         h_CElEvents     = self.__getInHist("CElEvents")
-        h_CElEvents.Draw("colztext")
+        #h_CElEvents.Draw("colztext")
         h_CElEvents.GetXaxis().SetTitle("C-hadron pt cut [GeV]")
         h_CElEvents.GetYaxis().SetTitle("# C-hadrons")
-        ROOT.gPad.SetLogy(0)
-        ROOT.gPad.SetLogz(0)
-        ROOT.gPad.Print(self.pdfPath+"/CElEvents_ptcut_CMul.pdf","Landscapepdf")
+        #ROOT.gPad.SetLogy(0)
+        #ROOT.gPad.SetLogz(0)
+        #ROOT.gPad.Print(self.pdfPath+"/CElEvents_ptcut_CMul.pdf","Landscapepdf")
         self.__addHist(h_CElEvents)
 
 #End of class plotscript
