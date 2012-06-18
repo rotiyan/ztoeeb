@@ -9,7 +9,7 @@
 
 import glob
 from AthenaCommon.AthenaCommonFlags import jobproperties as jp
-jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.109300.AlpgenJimmyZeebbNp0_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993_tid679741_00/*root*')
+jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993_tid679749_00/*root*')
 
 # to run over multiple input files
 ##################
