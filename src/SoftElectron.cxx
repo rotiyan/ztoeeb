@@ -44,6 +44,7 @@
 
 #include "EventInfo/EventInfo.h"
 #include "EventInfo/EventID.h"
+#include "EventInfo/EventType.h"
 
 #include "MCTruthClassifier/IMCTruthClassifier.h"
 #include "MCTruthClassifier/MCTruthClassifierDefs.h"
@@ -82,6 +83,8 @@ SoftElectron::~SoftElectron() {}
 StatusCode SoftElectron::initialize() 
 {
     MsgStream mlog( msgSvc(), name() );
+
+    mlog <<MSG::INFO<< "HFOR TYPE: "<< m_hforType << endreq;
 
     StatusCode sc = service("StoreGateSvc", m_storeGate);
     
@@ -123,11 +126,11 @@ StatusCode SoftElectron::execute()
     StatusCode sc = StatusCode::SUCCESS;
 
     /** Testing HFOR **/
-    //if ( m_hfor_tool->execute().isSuccess() )
+    if ( m_hfor_tool->execute().isSuccess() )
     {
         std::string hfor_type = m_hfor_tool->getDecision();
         
-        //if(hfor_type ==m_hforType)
+        if(hfor_type ==m_hforType)
         {
        
             /** Retrieve Event header: */
@@ -166,6 +169,8 @@ StatusCode SoftElectron::BookHistograms()
      * TTree
      */
     m_tree  = new TTree("el","Electron Tree");
+
+    //Electrons
     m_tree->Branch("el_trk_Pt",&m_el_trk_PtBr);
     m_tree->Branch("el_trk_Eta",&m_el_trk_EtaBr);
     m_tree->Branch("el_trk_Phi",&m_el_trk_PhiBr);
