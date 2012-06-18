@@ -46,6 +46,8 @@ class NtupleAna(NtupleAnaBase):
 
         self.addh1("elParent")
 
+
+
         '''Truth'''
         self.addh1("Bhadrons")
         self.addh1("BHdrnpt","",500,0,500)
@@ -56,6 +58,7 @@ class NtupleAna(NtupleAnaBase):
         self.addProfile2D("BElEvntEff","",35,0.5,35.5,10,-0.5,9.5)
 
         self.addh1("Chadrons")
+        self.addh2("CHdrnCElPtCorr","",500,0,500,100,0,100)
         self.addPtHist("Cpt")
         self.addEtaHist("Ceta")
         self.addPtHist("CscdPt")
@@ -316,6 +319,39 @@ class NtupleAna(NtupleAnaBase):
                     for j in xrange(BsemiElPtVec.size()):
                         self.gethist("BHdrnBElPtCorr").Fill(BHdrnPt,BsemiElPtVec.at(j))
 
+    def fillCKinematics(self,ptcut,etacut):
+        CPtVec      = self.getCurrentValue("CPt")
+        CEtaVec     = self.getCurrentValue("CEta")
+        CSemiElPtVec= self.getCurrentValue("CsemiElPt")
+        isSemiElVec = self.getCurrentValue("CisSemiElectron")
+        CsemiElPtVec= self.getCurrentValue("CsemiElPt")
+        BBCVec      = self.getCurrentValue("BBC") #BBarcode Vector
+        CParentBCVec= self.getCurrentValue("CParentBC") #CParent Barcode
+        
+        nCHadrons = 0
+        for i in xrange(CPtVec.size()):
+            CHdrnPt = CPtVec.at(i)
+            CHdrnEta= CEtaVec.at(i)
+
+            if(CHdrnPt >ptcut and abs(CHdrnEta) < etacut):
+                "fix the ntuple branch"
+                #if (CParentBCVec.at(i) in BBCVec):
+                #    self.gethist("CscdPt").Fill(CHdrnPt)
+                #    self.gethist("CscdEta").Fill(CHdrnEta)
+
+                self.gethist("Chadrons").Fill("Chadrons",1)
+                self.gethist("Cpt").Fill(CHdrnPt)
+                self.gethist("Ceta").Fill(CHdrnEta)
+                nCHadrons +=1
+                if(isSemiElVec.at(i)==1):
+                    self.gethist("Chadrons").Fill("Csemi",1)
+
+                    #if(CParentBCVec.at(i) not in BBCVec):
+                    for j in xrange(CsemiElPtVec.size()):
+                        self.gethist("CHdrnCElPtCorr").Fill(CHdrnPt,CSemiElPtVec.at(j))
+
+
+
 
     def getCMultplcty(self,ptcut,etacut):
         CPtVec      = self.getCurrentValue("CPt")
@@ -378,30 +414,6 @@ class NtupleAna(NtupleAnaBase):
 
         return nCEl
 
-
-    def fillCKinematics(self,ptcut,etacut):
-        CPtVec      = self.getCurrentValue("CPt")
-        CEtaVec     = self.getCurrentValue("CEta")
-        isSemiElVec = self.getCurrentValue("CisSemiElectron")
-        BBCVec      = self.getCurrentValue("BBC")
-        CParentBCVec= self.getCurrentValue("CParentBC")
-        
-        nCHadrons = 0
-        for i in xrange(CPtVec.size()):
-            CHdrnPt = CPtVec.at(i)
-            CHdrnEta= CEtaVec.at(i)
-
-            if(CHdrnPt >ptcut and abs(CHdrnEta) < etacut):
-                "fix the ntuple branch"
-                #if (CParentBCVec.at(i) in BBCVec):
-                #    self.gethist("CscdPt").Fill(CHdrnPt)
-                #    self.gethist("CscdEta").Fill(CHdrnEta)
-                self.gethist("Chadrons").Fill("Chadrons",1)
-                self.gethist("Cpt").Fill(CHdrnPt)
-                self.gethist("Ceta").Fill(CHdrnEta)
-                nCHadrons +=1
-                if(isSemiElVec.at(i)==1):
-                    self.gethist("Chadrons").Fill("Csemi",1)
 
     '''TrkParticle'''
     def trkAna(self):
@@ -504,14 +516,20 @@ class NtupleAna(NtupleAnaBase):
 
             #TruthMatched Electrons
             if( IsMtchd ==1 and abs(clEta)<2.47):
+                from PyAnalysisUtils import PDG
 
-                self.gethist("elParent").Fill(str(parent),1)
+                if(self.isBHadron(parent) or self.isCHadron(parent)):
+                    self.gethist("elParent").Fill(PDG.pdgid_to_root_name(parent),1)
+
                 if(abs(parent) ==23 and author ==1 and clPt >20 and (abs(clEta) < 2.47)):
                     nZEl    += 1
+
                 elif(self.isBHadron(parent) and softe==1 and trthEta< 2.47 and trthPt>2):
                     nBEl    +=1
+
                 elif(self.isCHadron(parent) and softe==1 and trthEta< 2.47 and trthPt>2):
                     nCEl    +=1
+
                 else:
                     nOther  +=1
 
@@ -519,7 +537,7 @@ class NtupleAna(NtupleAnaBase):
         self.gethist("matchedZElVsCEl").Fill(nZEl,nCEl)
 
     ''''''''''''''''''''''''''''''''
-    '''Function to add histograms'''
+    '''Function to add histograms to the analysis chain'''
     ''''''''''''''''''''''''''''''''
     def addPtHist(self,name):
         self.addh1(name,";[GeV]",500,0,500)
@@ -707,6 +725,12 @@ class plotscript:
     Functions with '__' will not be executed while creating
     final histograms'''
 
+    def MakeTruthHists(self):
+        self.__addHist(self.__getInHist("elParent"))
+
+        self.__addHist(self.__getInHist("matchedZElVsBEl"))
+        self.__addHist(self.__getInHist("matchedZElVsCEl"))
+
     def MakeHistBSemiElectron(self):
         '''Retrieve the THnSparse'''
         BSparse         = self.__getInHist("BSemiElectron")
@@ -823,6 +847,22 @@ class plotscript:
         #h_BHdrnEvnt.Draw("colztext")
         #ROOT.gPad.Print(self.pdfPath+"/BHdrnEvents.pdf","Landscapepdf")
         self.__addHist(h_BHdrnEvnt)
+
+    def MakeHistCKinematics(self):
+        '''Retrieve the kinematics histograms'''
+        h_ChdrnCElCorrPt    = self.__getInHist("CHdrnCElPtCorr")
+        #h_ChdrnCElCorrPt.Draw("colz")
+        h_ChdrnCElCorrPt.GetXaxis().SetRangeUser(0,100)
+        h_ChdrnCElCorrPt.GetYaxis().SetRangeUser(0,50)
+        h_ChdrnCElCorrPt.GetXaxis().SetTitle("C-hadron pt [GeV]")
+        h_ChdrnCElCorrPt.GetYaxis().SetTitle("CEl pt [GeV]")
+        self.__addHist(h_ChdrnCElCorrPt)
+
+        h_CElPt = self.__getInHist("CHdrnCElPtCorr").ProjectionY()
+        h_CElPt.SetName("CElPt")
+        h_CElPt.GetXaxis().SetTitle("C- el pt [GeV]")
+        h_CElPt.GetYaxis().SetTitle("#C-hadrons")
+        self.__addHist(h_CElPt)
 
     def MakeHistCSemiElectron(self):
         '''Retrieve THnSparse'''
