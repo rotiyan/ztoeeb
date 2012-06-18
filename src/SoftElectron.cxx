@@ -53,11 +53,6 @@
 #include <iostream>
 #include <algorithm>
 
-bool MomentumCompare(const HepMC::GenParticle* i, const HepMC::GenParticle* j)
-{
-    return (i->momentum().perp() < j->momentum().perp());
-}
-
 SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator) 
     : Algorithm(name, pSvcLocator),
     m_mcTruthContainer(0),
@@ -66,8 +61,11 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     m_vxContainer(0),
     m_electronCollection(0),
     m_histos(0),
+    m_mcTruthClassifier("MCTruthClassifier"),
     m_tree(0),
-    m_mcTruthClassifier("MCTruthClassifier")
+    m_elEtaCut(2.5),
+    m_elCrackEtaCutLow(1.37),
+    m_elCrackEtaCutHigh(1.52)
 {
     declareProperty("MCParticleContainer",m_truthParticleContainerName = "SpclMC");
     declareProperty("TrackParticleContainer", m_trackParticleContainerName = "TrackParticleCandidate");
@@ -76,6 +74,9 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     declareProperty("PrimaryVertexContainer", m_primaryVertexContainerName = "VxPrimaryCandidate");
     declareProperty("MCEventContainer", m_mcEventContainerName = "GEN_AOD");
     declareProperty("HforType",m_hforType ="isBB");
+    declareProperty("FillGenInfo",m_fillGenInfo=false);
+    declareProperty("DoTruthMatching",m_doTruthMatching=false);
+    declareProperty("ElPtCut",m_elPtCut=15);//GeV
 }
 
 SoftElectron::~SoftElectron() {}
@@ -85,6 +86,8 @@ StatusCode SoftElectron::initialize()
     MsgStream mlog( msgSvc(), name() );
 
     mlog <<MSG::INFO<< "HFOR TYPE: "<< m_hforType << endreq;
+    mlog <<MSG::INFO<< "FILLGENINFO "<<m_fillGenInfo <<endreq;
+    mlog <<MSG::INFO<< "DOTRUTHMATCHING"<<m_doTruthMatching <<endreq;
 
     StatusCode sc = service("StoreGateSvc", m_storeGate);
     
@@ -95,13 +98,16 @@ StatusCode SoftElectron::initialize()
                 <<endreq;
         return StatusCode::FAILURE;
     }
-    if(m_mcTruthClassifier.retrieve().isFailure())
-    {
-        mlog <<MSG::FATAL
-           << "Failed to retrieve Truth Classifier Tool"
-           << endreq;
-    }
 
+    if(m_doTruthMatching)
+    {
+        if(m_mcTruthClassifier.retrieve().isFailure())
+        {
+            mlog <<MSG::FATAL
+               << "Failed to retrieve Truth Classifier Tool"
+               << endreq;
+        }
+    }
 
     // THistSvc init:
     sc = service("THistSvc", m_histos);
@@ -125,29 +131,40 @@ StatusCode SoftElectron::execute()
 
     StatusCode sc = StatusCode::SUCCESS;
 
-    /** Testing HFOR **/
-    if ( m_hfor_tool->execute().isSuccess() )
+    /** Retrieve AOD Containers */
+    sc = this->LoadContainers();
+    if (sc.isFailure())
     {
-        std::string hfor_type = m_hfor_tool->getDecision();
-        
+        mlog << MSG::FATAL <<"Could not load containers" <<endreq;
+        return StatusCode::FAILURE;
+    }
+
+    //Book Ntuple Containers
+    this->BookNtupleContainers();
+
+    if(m_fillGenInfo) //MC
+    {
+        /** Heavy Flavor Overlap Removal **/
+        std::string hfor_type ="";
+        if ( m_hfor_tool->execute().isSuccess() )
+            hfor_type = m_hfor_tool->getDecision();
+
         if(hfor_type ==m_hforType)
         {
-       
-            /** Retrieve Event header: */
-            sc = this->LoadContainers();
-            if (sc.isFailure())
-            {
-                mlog << MSG::FATAL <<"Could not load containers" <<endreq;
-                return StatusCode::FAILURE;
-            }
-
+            this->FillElectrons();
             this->FindTruthParticle();
-            this->DoElectronMatch();
-            m_tree->Fill();
-            this->ClearCounters();
+            if(m_doTruthMatching)
+                this->DoElectronMatch();
         }
     }
-    
+    else //data
+    {
+        this->FillElectrons();
+    }
+
+    //end of event loop 
+    m_tree->Fill();
+    this->ClearContainers();
     return sc;
 }
 
@@ -171,15 +188,15 @@ StatusCode SoftElectron::BookHistograms()
     m_tree  = new TTree("el","Electron Tree");
 
     //Electrons
-    m_tree->Branch("el_trk_Pt",&m_el_trk_PtBr);
-    m_tree->Branch("el_trk_Eta",&m_el_trk_EtaBr);
-    m_tree->Branch("el_trk_Phi",&m_el_trk_PhiBr);
-    m_tree->Branch("el_cl_Pt",&m_el_cl_PtBr);
-    m_tree->Branch("el_cl_Eta",&m_el_cl_EtaBr);
-    m_tree->Branch("el_cl_Phi",&m_el_cl_PhiBr);
-    m_tree->Branch("el_truth_Pt",&m_el_truth_PtBr);
-    m_tree->Branch("el_truth_Eta",&m_el_truth_EtaBr);
-    m_tree->Branch("el_truth_Phi",&m_el_truth_PhiBr);
+    m_tree->Branch("el_trk_Pt",&m_el_trk_Pt);
+    m_tree->Branch("el_trk_Eta",&m_el_trk_Eta);
+    m_tree->Branch("el_trk_Phi",&m_el_trk_Phi);
+    m_tree->Branch("el_cl_Pt",&m_el_cl_Pt);
+    m_tree->Branch("el_cl_Eta",&m_el_cl_Eta);
+    m_tree->Branch("el_cl_Phi",&m_el_cl_Phi);
+    m_tree->Branch("el_truth_Pt",&m_el_truth_Pt);
+    m_tree->Branch("el_truth_Eta",&m_el_truth_Eta);
+    m_tree->Branch("el_truth_Phi",&m_el_truth_Phi);
     m_tree->Branch("elIsMtchd",&m_elMtchd);
     m_tree->Branch("mtchdParent",&m_mtchdParent);
     m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
@@ -226,28 +243,6 @@ StatusCode SoftElectron::BookHistograms()
     return StatusCode::SUCCESS;
 }
 
-bool SoftElectron::isBHadron(const HepMC::GenParticle* p) 
-{
-    int mpdg = abs(p->pdg_id());
-    return (mpdg ==511 || mpdg == 521 || mpdg == 531);
-    
-    /*return (   ( 500 < mpdg && mpdg < 599 )   ||
-            ( 10500 < mpdg && mpdg < 10599 ) ||
-            (  5000 < mpdg && mpdg < 5999  ) ||
-            ( 20500 < mpdg && mpdg < 20599 ) );*/
-}
-
-bool SoftElectron::isCHadron(const HepMC::GenParticle* p) 
-{
-    int mpdg = abs(p->pdg_id());
-    return (mpdg == 411 || mpdg == 421 || mpdg == 431);
-
-    /*return (   ( 400 < mpdg && mpdg < 499 )   || 
-            ( 10400 < mpdg && mpdg < 10499 ) ||
-            (  4000 < mpdg && mpdg < 4999  ) ||
-            ( 20400 < mpdg && mpdg < 20499 ) );*/
-}
-
 void SoftElectron::FindTruthParticle()
 {
     MsgStream mlog( msgSvc(), name() );
@@ -258,39 +253,6 @@ void SoftElectron::FindTruthParticle()
         mlog<<MSG::DEBUG <<"Could not find GenEvent" <<endreq;
         return ;
     }
-
-    m_ZElPt         = new std::vector<double>();
-    m_ZElEta        = new std::vector<double>();
-    m_ZElPhi        = new std::vector<double>();
-
-    m_BPDG          = new std::vector<int>();
-    m_BStatus       = new std::vector<int>();
-    m_BPt           = new std::vector<double>();
-    m_BEta          = new std::vector<double>();
-    m_BPhi          = new std::vector<double>();
-    m_BBC           = new std::vector<int>();
-    m_BisSemiElectron= new std::vector<int>();
-    m_BsemiElPt     = new std::vector<double>();
-    m_BsemiElEta    = new std::vector<double>();
-    m_BsemiElPhi    = new std::vector<double>();
-
-    m_CPDG          = new std::vector<int>();
-    m_CStatus       = new std::vector<int>();
-    m_CPt           = new std::vector<double>();
-    m_CEta          = new std::vector<double>();
-    m_CPhi          = new std::vector<double>();
-    m_CisSemiElectron= new std::vector<int>();
-    m_CparentBC     = new std::vector<int>();
-    m_CgrndParentBC = new std::vector<int>();
-    m_CsemiElPt     = new std::vector<double>();
-    m_CsemiElEta    = new std::vector<double>();
-    m_CsemiElPhi    = new std::vector<double>();
-
-
-    m_bQuarkME_pt   = new std::vector<double>();
-    m_bQuarkME_eta  = new std::vector<double>();
-    m_bQuarkME_phi  = new std::vector<double>();
-    m_bQuarkME_pdg  = new std::vector<int>();
 
     HepMC::GenEvent::particle_const_iterator  pitr = GenEvent->particles_begin();
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
@@ -478,29 +440,57 @@ bool SoftElectron::isFinalState(const HepMC::GenParticle* part, int type)
     return true;
 }
 
+void SoftElectron::FillElectrons()
+{
+    MsgStream mlog(msgSvc(), name());
+
+    for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
+    {
+        const Analysis::Electron* Electron = m_electronCollection->at(i);
+        
+        //Track Particle 
+        const Rec::TrackParticle* ElTrkPartcl = Electron->trackParticle();
+        if(ElTrkPartcl)
+        {
+            double elTrkPt  = ElTrkPartcl->pt()/1000;
+            if(elTrkPt > m_elPtCut)
+            {
+                m_el_trk_Pt->at(i)  = ElTrkPartcl->pt()/1000;
+                m_el_trk_Eta->at(i) = ElTrkPartcl->eta();
+                m_el_trk_Phi->at(i) = ElTrkPartcl->phi();
+            }
+        }
+
+        //Cluster
+        const CaloCluster* ElCluster = Electron->cluster();
+        if(ElCluster)
+        {
+            double elClPt   = ElCluster->pt()/1000;
+            double elClEta  = ElCluster->eta();
+            double elClPhi  = ElCluster->phi();
+
+            if( (abs(elClEta) >m_elCrackEtaCutHigh && abs(elClEta) < m_elCrackEtaCutLow) &&
+                    std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
+
+            m_el_cl_Pt->at(i)   = elClPt;
+            m_el_cl_Eta->at(i)  = elClEta;
+            m_el_cl_Phi->at(i)  = elClPhi;
+        }
+
+        //Soft Electrons
+        if(Electron->author(egammaParameters::AuthorSofte))
+            m_elAuthorSofte->at(i)  = 1;
+
+        if(Electron->author(egammaParameters::AuthorElectron))
+            m_elAuthor->at(i)   = 1;
+
+    }
+}
+
 void SoftElectron::DoElectronMatch()
 {
     int ElSize      = m_electronCollection->size();
 
-    m_el_trk_PtBr   =   new std::vector<double>(ElSize,-100);    
-    m_el_trk_EtaBr  =   new std::vector<double>(ElSize,-100);    
-    m_el_trk_PhiBr  =   new std::vector<double>(ElSize,-100);    
-    m_el_cl_PtBr    =   new std::vector<double>(ElSize,-100);    
-    m_el_cl_EtaBr   =   new std::vector<double>(ElSize,-100);    
-    m_el_cl_PhiBr   =   new std::vector<double>(ElSize,-100);    
-    m_el_truth_PtBr =   new std::vector<double>(ElSize,-100);    
-    m_el_truth_EtaBr=   new std::vector<double>(ElSize,-100);    
-    m_el_truth_PhiBr=   new std::vector<double>(ElSize,-100);    
- 
-    m_elAuthor      =   new std::vector<int>(ElSize,-100);       
-    m_elAuthorSofte =   new std::vector<int>(ElSize,-100);       
-    m_elMtchd       =   new std::vector<int>(ElSize,-100);       
-    m_mtchdParent   =   new std::vector<int>(ElSize,-100);       
-    m_mtchdGrndParent=  new std::vector<int>(ElSize,-100);
-
-    MsgStream mlog(msgSvc(), name());
-
-    MCTruthPartClassifier::ParticleDef partDef;
     for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
@@ -514,36 +504,10 @@ void SoftElectron::DoElectronMatch()
 
             m_elMtchd->at(i)        = 1;
             m_mtchdParent->at(i)    = elParent->pdg_id();
-            m_el_truth_PtBr->at(i)  = elParent->momentum().perp()/1000;
-            m_el_truth_EtaBr->at(i) = elParent->momentum().eta();
-            m_el_truth_PhiBr->at(i) = elParent->momentum().phi();
+            m_el_truth_Pt->at(i)    = elParent->momentum().perp()/1000;
+            m_el_truth_Eta->at(i)   = elParent->momentum().eta();
+            m_el_truth_Phi->at(i)   = elParent->momentum().phi();
         }
-        
-        //Track Particle 
-        const Rec::TrackParticle* ElTrkPartcl = Electron->trackParticle();
-        if(ElTrkPartcl)
-        {
-            m_el_trk_PtBr->at(i)    = ElTrkPartcl->pt()/1000;
-            m_el_trk_EtaBr->at(i)   = ElTrkPartcl->eta();
-            m_el_trk_PhiBr->at(i)   = ElTrkPartcl->phi();
-        }
-
-        //Cluster
-        const CaloCluster* ElCluster = Electron->cluster();
-        if(ElCluster)
-        {
-            m_el_cl_PtBr->at(i)     = ElCluster->pt()/1000;
-            m_el_cl_EtaBr->at(i)    = ElCluster->eta();
-            m_el_cl_PhiBr->at(i)    = ElCluster->phi();
-        }
-
-        //Soft Electrons
-        if(Electron->author(egammaParameters::AuthorSofte))
-            m_elAuthorSofte->at(i)  = 1;
-
-        if(Electron->author(egammaParameters::AuthorElectron))
-            m_elAuthor->at(i)   = 1;
-
     }
 }
 
@@ -567,20 +531,6 @@ StatusCode SoftElectron::LoadContainers()
         return sc;
     }
  
-    sc = m_storeGate->retrieve(m_mcEventCollection, m_mcEventContainerName);
-    if(sc.isFailure())
-    {
-        mlog << MSG::ERROR <<"could no retrive MC EventCollection" <<endreq;
-        return sc;
-    }
- 
-    sc=m_storeGate->retrieve(m_mcTruthContainer, m_truthParticleContainerName);
-    if(sc.isFailure())
-    {
-        mlog << MSG::ERROR << "could not retrive TruthParticlecontainer" <<endreq;
-        return sc;
-    }
-    
     sc = m_storeGate->retrieve( m_electronCollection,m_electronContainerName);
     if(sc.isFailure())
     {
@@ -588,29 +538,96 @@ StatusCode SoftElectron::LoadContainers()
         return sc;
     }
 
+    if(m_fillGenInfo)
+    {
+        sc=m_storeGate->retrieve(m_mcTruthContainer, m_truthParticleContainerName);
+        if(sc.isFailure())
+        {
+            mlog << MSG::ERROR << "could not retrive TruthParticlecontainer" <<endreq;
+            return sc;
+        }
+    
+        sc = m_storeGate->retrieve(m_mcEventCollection, m_mcEventContainerName);
+        if(sc.isFailure())
+        {
+            mlog << MSG::ERROR <<"could no retrive MC EventCollection" <<endreq;
+            return sc;
+        }
+    }
+
     return sc;
 }
 
-void SoftElectron::ClearCounters()
+void SoftElectron::BookNtupleContainers()
 {
+    //Truth
+    m_ZElPt         = new std::vector<double>();
+    m_ZElEta        = new std::vector<double>();
+    m_ZElPhi        = new std::vector<double>();
+
+    m_BPDG          = new std::vector<int>();
+    m_BStatus       = new std::vector<int>();
+    m_BPt           = new std::vector<double>();
+    m_BEta          = new std::vector<double>();
+    m_BPhi          = new std::vector<double>();
+    m_BBC           = new std::vector<int>();
+    m_BisSemiElectron= new std::vector<int>();
+    m_BsemiElPt     = new std::vector<double>();
+    m_BsemiElEta    = new std::vector<double>();
+    m_BsemiElPhi    = new std::vector<double>();
+
+    m_CPDG          = new std::vector<int>();
+    m_CStatus       = new std::vector<int>();
+    m_CPt           = new std::vector<double>();
+    m_CEta          = new std::vector<double>();
+    m_CPhi          = new std::vector<double>();
+    m_CisSemiElectron= new std::vector<int>();
+    m_CparentBC     = new std::vector<int>();
+    m_CgrndParentBC = new std::vector<int>();
+    m_CsemiElPt     = new std::vector<double>();
+    m_CsemiElEta    = new std::vector<double>();
+    m_CsemiElPhi    = new std::vector<double>();
+
+    m_bQuarkME_pt   = new std::vector<double>();
+    m_bQuarkME_eta  = new std::vector<double>();
+    m_bQuarkME_phi  = new std::vector<double>();
+    m_bQuarkME_pdg  = new std::vector<int>();
+
+    //TruthMatch Electron
+    int ElSize      = m_electronCollection->size();
+    m_elMtchd           =   new std::vector<int>(ElSize,-100);       
+    m_mtchdParent       =   new std::vector<int>(ElSize,-100);       
+    m_mtchdGrndParent   =   new std::vector<int>(ElSize,-100);
+    m_el_truth_Pt       =   new std::vector<double>(ElSize,-100);    
+    m_el_truth_Eta      =   new std::vector<double>(ElSize,-100);    
+    m_el_truth_Phi      =   new std::vector<double>(ElSize,-100);    
+
+    //Reco Electron
+    m_el_trk_Pt     =   new std::vector<double>(ElSize,-100);    
+    m_el_trk_Eta    =   new std::vector<double>(ElSize,-100);    
+    m_el_trk_Phi    =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_Pt      =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_Eta     =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_Phi     =   new std::vector<double>(ElSize,-100);    
+    
+    m_elAuthor      =   new std::vector<int>(ElSize,-100);       
+    m_elAuthorSofte =   new std::vector<int>(ElSize,-100);       
+}
+
+void SoftElectron::ClearContainers()
+{
+    delete m_elAuthor;
+    delete m_elAuthorSofte;
+    delete m_el_trk_Pt;
+    delete m_el_trk_Eta;
+    delete m_el_trk_Phi;
+    delete m_el_cl_Pt;
+    delete m_el_cl_Eta;
+    delete m_el_cl_Phi;
+
     delete m_ZElPt;
     delete m_ZElEta;
     delete m_ZElPhi;
-
-    delete m_elAuthor;
-    delete m_elAuthorSofte;
-    delete m_el_trk_PtBr;
-    delete m_el_trk_EtaBr;
-    delete m_el_trk_PhiBr;
-    delete m_el_cl_PtBr;
-    delete m_el_cl_EtaBr;
-    delete m_el_cl_PhiBr;
-    delete m_el_truth_PtBr;
-    delete m_el_truth_EtaBr;
-    delete m_el_truth_PhiBr;
-    delete m_elMtchd;
-    delete m_mtchdParent;
-    delete m_mtchdGrndParent;
 
     delete m_BPDG;
     delete m_BStatus;
@@ -639,13 +656,16 @@ void SoftElectron::ClearCounters()
     delete m_bQuarkME_phi;
     delete m_bQuarkME_pdg;
 
+    delete m_el_truth_Pt;
+    delete m_el_truth_Eta;
+    delete m_el_truth_Phi;
+    delete m_elMtchd;
+    delete m_mtchdParent;
+    delete m_mtchdGrndParent;
 }
 
 const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)
 {
-    
-    const CaloCluster* ElCluster = Electron->cluster();
- 
     const HepMC::GenParticle* elParent = 0;
 
     m_mcTruthClassifier->particleTruthClassifier(Electron);
