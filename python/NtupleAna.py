@@ -770,39 +770,41 @@ class plotscript:
         self.__addHist(h_BElVsBMul)
 
         #Multiplicity of B-hadrons
-        BSparse.GetAxis(0).SetRangeUser(2,3)
-        h_BMult_2       = BSparse.Projection(2)
-        h_BMult_2.SetMarkerColor(ROOT.kGreen+1)
-
         BSparse.GetAxis(0).SetRangeUser(5,6)
         h_BMult_5       = BSparse.Projection(2)
-        h_BMult_5.SetMarkerColor(ROOT.kViolet+1)
+        h_BMult_5.SetMarkerColor(ROOT.kRed+1)
+        h_BMult_5.SetName("BMult_5")
+        self.__addHist(h_BMult_5)
 
         BSparse.GetAxis(0).SetRangeUser(10,11)
         h_BMult_10      = BSparse.Projection(2)
-        h_BMult_10.SetMarkerColor(ROOT.kBlue+1)
+        h_BMult_10.SetMarkerColor(ROOT.kGreen+1)
+        h_BMult_10.SetName("BMult_10")
+        self.__addHist(h_BMult_10)
 
         BSparse.GetAxis(0).SetRangeUser(15,16)
         h_BMult_15      = BSparse.Projection(2)
-        h_BMult_15.SetMarkerColor(ROOT.kRed+1)
+        h_BMult_15.SetMarkerColor(ROOT.kBlue+1)
+        h_BMult_15.SetName("BMult_15")
+        self.__addHist(h_BMult_15)
 
-        h_BMult_2.GetXaxis().SetTitle("# B-hadrons")
-        h_BMult_2.Draw()
-        h_BMult_5.Draw("same")
-        h_BMult_10.Draw("same")
-        h_BMult_15.Draw("same")
+        BSparse.GetAxis(0).SetRangeUser(20,21)
+        h_BMult_20      = BSparse.Projection(2)
+        h_BMult_20.SetMarkerColor(ROOT.kYellow+1)
+        h_BMult_20.SetName("BMult_20")
+        self.__addHist(h_BMult_20)
 
-        #Legend
-        leg = ROOT.TLegend(0.6,0.6,0.8,0.8)
-        leg.AddEntry(h_BMult_2,"pt cut =2 GeV")
-        leg.AddEntry(h_BMult_5,"pt cut =5 GeV")
-        leg.AddEntry(h_BMult_10,"pt cut =10 GeV")
-        leg.AddEntry(h_BMult_15,"pt cut =15 GeV")
-        leg.Draw("same")
+        BSparse.GetAxis(0).SetRangeUser(25,26)
+        h_BMult_25      = BSparse.Projection(2)
+        h_BMult_25.SetMarkerColor(ROOT.kViolet+1)
+        h_BMult_25.SetName("BMult_25 ")
+        self.__addHist(h_BMult_25)
 
-
-        ROOT.gPad.SetLogy()
-        ROOT.gPad.Print(self.pdfPath+"/BMult.pdf","Landscapepdf")
+        BSparse.GetAxis(0).SetRangeUser(30,31)
+        h_BMult_30      = BSparse.Projection(2)
+        h_BMult_30.SetMarkerColor(ROOT.kMagenta+1)
+        h_BMult_30.SetName("BMult_30")
+        self.__addHist(h_BMult_30)
 
         #B Semi electron events as a function of B ptcut and B multiplicity
         h_BElEvents     = self.__getInHist("BElEvents")
@@ -899,39 +901,41 @@ class plotscript:
         self.__addHist(h_CElVsCMul)
 
         #Multiplicity of C-hadrons
-        CSparse.GetAxis(0).SetRangeUser(2,3)
-        h_CMult_2       = CSparse.Projection(2)
-        h_CMult_2.SetMarkerColor(ROOT.kGreen+1)
-
         CSparse.GetAxis(0).SetRangeUser(5,6)
         h_CMult_5       = CSparse.Projection(2)
-        h_CMult_5.SetMarkerColor(ROOT.kViolet+1)
+        h_CMult_5.SetMarkerColor(ROOT.kRed+1)
+        h_CMult_5.SetName("CMult_5")
+        self.__addHist(h_CMult_5)
 
         CSparse.GetAxis(0).SetRangeUser(10,11)
         h_CMult_10      = CSparse.Projection(2)
-        h_CMult_10.SetMarkerColor(ROOT.kBlue+1)
+        h_CMult_10.SetMarkerColor(ROOT.kGreen+1)
+        h_CMult_10.SetName("CMult_10")
+        self.__addHist(h_CMult_10)
 
         CSparse.GetAxis(0).SetRangeUser(15,16)
         h_CMult_15      = CSparse.Projection(2)
-        h_CMult_15.SetMarkerColor(ROOT.kRed+1)
+        h_CMult_15.SetMarkerColor(ROOT.kBlue+1)
+        h_CMult_15.SetName("CMult_15")
+        self.__addHist(h_CMult_15)
 
-        h_CMult_2.GetXaxis().SetTitle("# C-hadrons")
-        h_CMult_2.Draw()
-        h_CMult_5.Draw("same")
-        h_CMult_10.Draw("same")
-        h_CMult_15.Draw("same")
+        CSparse.GetAxis(0).SetRangeUser(20,21)
+        h_CMult_20      = CSparse.Projection(2)
+        h_CMult_20.SetMarkerColor(ROOT.kYellow+1)
+        h_CMult_20.SetName("CMult_20")
+        self.__addHist(h_CMult_20)
 
-        #Legend
-        leg = ROOT.TLegend(0.6,0.6,0.8,0.8)
-        leg.AddEntry(h_CMult_2,"pt cut =2 GeV")
-        leg.AddEntry(h_CMult_5,"pt cut =5 GeV")
-        leg.AddEntry(h_CMult_10,"pt cut =10 GeV")
-        leg.AddEntry(h_CMult_15,"pt cut =15 GeV")
-        leg.Draw("same")
+        CSparse.GetAxis(0).SetRangeUser(25,26)
+        h_CMult_25      = CSparse.Projection(2)
+        h_CMult_25.SetMarkerColor(ROOT.kViolet+1)
+        h_CMult_25.SetName("CMult_25")
+        self.__addHist(h_CMult_25)
 
-
-        ROOT.gPad.SetLogy()
-        ROOT.gPad.Print(self.pdfPath+"/CMult.pdf","Landscapepdf")
+        CSparse.GetAxis(0).SetRangeUser(30,31)
+        h_CMult_30      = CSparse.Projection(2)
+        h_CMult_30.SetMarkerColor(ROOT.kMagenta+1)
+        h_CMult_30.SetName("CMult_30")
+        self.__addHist(h_CMult_30)
 
         #C Semi electron events as a function of C ptcut and C multiplicity
         h_CElEvents     = self.__getInHist("CElEvents")
