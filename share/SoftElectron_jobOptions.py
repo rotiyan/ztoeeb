@@ -26,8 +26,9 @@ MySoftElectron = SoftElectron(
         #SelectUFromRun = run_number # use only u-jets from this run
         PrimaryVertexContainer = "VxPrimaryCandidate",
         MCParticleContainer = "SpclMC",
-        MCEventContainer = "GEN_AOD",
-        HforType = "isCC")
+        MCEventContainer = "GEN_AOD")
+        #HforType  = "isCC")
+        #HforType = "isLightFlavor")
 
 from AthenaCommon.AlgSequence import AlgSequence
 topSequence = AlgSequence()
