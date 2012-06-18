@@ -63,19 +63,6 @@ class SoftElectron : public Algorithm
         StatusCode BookHistograms();
 
         /**
-         * Checks if the GenParticle is a B-hadron
-         * based on the pdg id
-         */
-        bool isBHadron(const HepMC::GenParticle* p);
-
-        /**
-         * Checks if the Genparticle 
-         * is a C-hadrons
-         * based on the pdg id
-         */
-        bool isCHadron(const HepMC::GenParticle* p);
-
-        /**
          * Loop through the GenEvent 
          * containers and Identifies 
          * the truth particles of interest
@@ -89,8 +76,13 @@ class SoftElectron : public Algorithm
         bool isFinalState(const HepMC::GenParticle* part, int type);
 
         /**
-         * Match the Reco electron with 
-         * the truth electrons
+         * Fill Electrons container info into the 
+         * ntuple
+         */
+        void FillElectrons();
+
+        /**
+         * Use Mc truth classifier to  find the truth electron
          */
         void DoElectronMatch();
 
@@ -104,14 +96,18 @@ class SoftElectron : public Algorithm
          * which are required for 
          * the analysis
          */
-        StatusCode LoadContainers(); 
+        StatusCode LoadContainers();
 
         /**
-         * Clear the counters and 
-         * containers at the begining of 
-         * an event loop
+         * Book Ntuple Containers
          */
-        void ClearCounters();
+        void BookNtupleContainers();
+
+        /**
+         * Clear the counters
+         * and ntuple branch containers 
+         */
+        void ClearContainers();
 
         /**
          * Return the mother of a particle in the HepMC records
@@ -174,15 +170,15 @@ class SoftElectron : public Algorithm
 
         std::vector<int>*       m_elAuthor;
         std::vector<int>*       m_elAuthorSofte;
-        std::vector<double>*    m_el_trk_PtBr;
-        std::vector<double>*    m_el_trk_EtaBr;
-        std::vector<double>*    m_el_trk_PhiBr;
-        std::vector<double>*    m_el_cl_PtBr;
-        std::vector<double>*    m_el_cl_EtaBr;
-        std::vector<double>*    m_el_cl_PhiBr;
-        std::vector<double>*    m_el_truth_PtBr;
-        std::vector<double>*    m_el_truth_EtaBr;
-        std::vector<double>*    m_el_truth_PhiBr;
+        std::vector<double>*    m_el_trk_Pt;
+        std::vector<double>*    m_el_trk_Eta;
+        std::vector<double>*    m_el_trk_Phi;
+        std::vector<double>*    m_el_cl_Pt;
+        std::vector<double>*    m_el_cl_Eta;
+        std::vector<double>*    m_el_cl_Phi;
+        std::vector<double>*    m_el_truth_Pt;
+        std::vector<double>*    m_el_truth_Eta;
+        std::vector<double>*    m_el_truth_Phi;
         std::vector<int>*       m_elMtchd;
         std::vector<int>*       m_mtchdParent;
         std::vector<int>*       m_mtchdGrndParent;
@@ -214,7 +210,13 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_bQuarkME_phi;
         std::vector<int>*       m_bQuarkME_pdg;
 
-        
+        bool                    m_fillGenInfo;
+        bool                    m_doTruthMatching;
+
+        double                  m_elPtCut;
+        double                  m_elEtaCut;
+        double                  m_elCrackEtaCutLow;
+        double                  m_elCrackEtaCutHigh;
 };
   
 
