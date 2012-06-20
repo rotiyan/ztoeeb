@@ -9,7 +9,8 @@
 
 import glob
 from AthenaCommon.AthenaCommonFlags import jobproperties as jp
-jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993_tid679749_00/*root*')
+#jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993_tid679749_00/*root*')
+jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/data11_7TeV.00180124.physics_Egamma.merge.AOD.r2603_p659_tid497212_00/*root*')
 
 # to run over multiple input files
 ##################
@@ -23,7 +24,7 @@ jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.126414.Alpge
 #
 from RecExConfig.RecFlags import rec
 
-jp.AthenaCommonFlags.EvtMax=-1 # number of event to process
+jp.AthenaCommonFlags.EvtMax=500 # number of event to process
 
 # include your algorithm job options here
 
