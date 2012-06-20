@@ -740,10 +740,6 @@ class plotscript:
         h_mulVsPtCut.SetName("MultVsPtCut")
         h_mulVsPtCut.GetXaxis().SetTitle("pt cut")
         h_mulVsPtCut.GetYaxis().SetTitle("# B-hadrons")
-        #h_mulVsPtCut.Draw("colztext")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz()
-        #ROOT.gPad.Print(self.pdfPath+"/BMultVsPtcut.pdf","Landscapepdf")
         self.__addHist(h_mulVsPtCut)
 
         #BSemiElectron multiplicity as a function of B-hadron pt cut
@@ -751,10 +747,6 @@ class plotscript:
         h_BElVsPtCut.SetName("BElVsPtCut")
         h_BElVsPtCut.GetXaxis().SetTitle("pt cut")
         h_BElVsPtCut.GetYaxis().SetTitle("# B-el")
-        #h_BElVsPtCut.Draw("colztext")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz()
-        #ROOT.gPad.Print(self.pdfPath+"/BElVsPtCut.pdf","Landscapepdf")
         self.__addHist(h_BElVsPtCut)
 
         #Multiplicity of B Electrons as a function of B- multiplicity
@@ -763,10 +755,6 @@ class plotscript:
         h_BElVsBMul.GetXaxis().SetTitle("nBHadrons")
         h_BElVsBMul.GetYaxis().SetRangeUser(0,8)
         h_BElVsBMul.GetYaxis().SetTitle("# B-el")
-        #h_BElVsBMul.Draw("colztext")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz()
-        #ROOT.gPad.Print(self.pdfPath+"/BElVsBMul.pdf","Landscapepdf")
         self.__addHist(h_BElVsBMul)
 
         #Multiplicity of B-hadrons
@@ -808,12 +796,8 @@ class plotscript:
 
         #B Semi electron events as a function of B ptcut and B multiplicity
         h_BElEvents     = self.__getInHist("BElEvents")
-        #h_BElEvents.Draw("colztext")
         h_BElEvents.GetXaxis().SetTitle("B-hadron pt cut [GeV]")
         h_BElEvents.GetYaxis().SetTitle("# B-hadrons")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz(0)
-        #ROOT.gPad.Print(self.pdfPath+"/BElEvents_ptcut_BMul.pdf","Landscapepdf")
         self.__addHist(h_BElEvents)
 
     def MakeHistBKinematics(self):
@@ -824,36 +808,26 @@ class plotscript:
         h_BhdrnBElCorrPt.GetYaxis().SetRangeUser(0,50)
         h_BhdrnBElCorrPt.GetXaxis().SetTitle("B-hadron pt [GeV]")
         h_BhdrnBElCorrPt.GetYaxis().SetTitle("BEl pt [GeV]")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.Print(self.pdfPath+"/BHdrnBElPtCorr.pdf","Landscapepdf")
         self.__addHist(h_BhdrnBElCorrPt)
 
         h_BElPt = self.__getInHist("BHdrnBElPtCorr").ProjectionY()
         h_BElPt.SetName("BElPt")
-        #h_BElPt.Draw()
         h_BElPt.GetXaxis().SetTitle("B- el pt [GeV]")
-        #ROOT.gPad.SetLogy()
-        #ROOT.gPad.Print(self.pdfPath+"/BElPt.pdf","Landscapepdf")
         self.__addHist(h_BElPt)
 
         h_BElEff    = self.__getInHist("BElEvntEff")
         h_BElEff.GetXaxis().SetTitle("B-hadron pt-cut [GeV]")
         h_BElEff.GetYaxis().SetTitle("# B-hadrons")
-        #h_BElEff.Draw("colztext")
-        #ROOT.gPad.Print(self.pdfPath+"/BElEvntEff.pdf","Landscapepdf")
         self.__addHist(h_BElEff)
 
         h_BHdrnEvnt = self.__getInHist("BHdrnEvents")
         h_BHdrnEvnt.GetXaxis().SetTitle("B-hadron pt-cut [GeV]")
         h_BHdrnEvnt.GetYaxis().SetTitle("# B-hadrons")
-        #h_BHdrnEvnt.Draw("colztext")
-        #ROOT.gPad.Print(self.pdfPath+"/BHdrnEvents.pdf","Landscapepdf")
         self.__addHist(h_BHdrnEvnt)
 
     def MakeHistCKinematics(self):
         '''Retrieve the kinematics histograms'''
         h_ChdrnCElCorrPt    = self.__getInHist("CHdrnCElPtCorr")
-        #h_ChdrnCElCorrPt.Draw("colz")
         h_ChdrnCElCorrPt.GetXaxis().SetRangeUser(0,100)
         h_ChdrnCElCorrPt.GetYaxis().SetRangeUser(0,50)
         h_ChdrnCElCorrPt.GetXaxis().SetTitle("C-hadron pt [GeV]")
@@ -873,20 +847,12 @@ class plotscript:
         h_mulVsPtCut.SetName("MultVsPtCut")
         h_mulVsPtCut.GetXaxis().SetTitle("pt cut")
         h_mulVsPtCut.GetYaxis().SetTitle("# C-hadrons")
-        #h_mulVsPtCut.Draw("colztext")
-        #ROOT.gPad.SetLogz()
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.Print(self.pdfPath+"/CMultVsPtcut.pdf","Landscapepdf")
         self.__addHist(h_mulVsPtCut)
 
         h_CElVsPtCut    = CSparse.Projection(1,0)
         h_CElVsPtCut.SetName("CElVsPtCut")
         h_CElVsPtCut.GetXaxis().SetTitle("pt cut")
         h_CElVsPtCut.GetYaxis().SetTitle("# C-el")
-        #h_CElVsPtCut.Draw("colztext")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz()
-        #ROOT.gPad.Print(self.pdfPath+"/CElVsPtCut.pdf","Landscapepdf")
         self.__addHist(h_CElVsPtCut)
 
         h_CElVsCMul     = CSparse.Projection(1,2)
@@ -894,10 +860,6 @@ class plotscript:
         h_CElVsCMul.GetXaxis().SetTitle("# C-hadrons")
         h_CElVsCMul.GetYaxis().SetTitle("# C-el")
         h_CElVsCMul.GetYaxis().SetRangeUser(0,8)
-        #h_CElVsCMul.Draw("colztext")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz()
-        #ROOT.gPad.Print(self.pdfPath+"/CElVsCMul.pdf","Landscapepdf")
         self.__addHist(h_CElVsCMul)
 
         #Multiplicity of C-hadrons
@@ -939,12 +901,8 @@ class plotscript:
 
         #C Semi electron events as a function of C ptcut and C multiplicity
         h_CElEvents     = self.__getInHist("CElEvents")
-        #h_CElEvents.Draw("colztext")
         h_CElEvents.GetXaxis().SetTitle("C-hadron pt cut [GeV]")
         h_CElEvents.GetYaxis().SetTitle("# C-hadrons")
-        #ROOT.gPad.SetLogy(0)
-        #ROOT.gPad.SetLogz(0)
-        #ROOT.gPad.Print(self.pdfPath+"/CElEvents_ptcut_CMul.pdf","Landscapepdf")
         self.__addHist(h_CElEvents)
 
 #End of class plotscript
