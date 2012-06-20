@@ -39,10 +39,25 @@ wzDict  = {\
         'wznp2': 'mc11_7TeV.107106.AlpgenJimmyWZincllNp2.merge.AOD.e995_s1372_s1370_r3043_r2993/',
         'wznp3': 'mc11_7TeV.107107.AlpgenJimmyWZincllNp3.merge.AOD.e995_s1372_s1370_r3043_r2993/'}
 
-dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"ww" : wwDict,"zz" : zzDict,"wz" : wzDict}
+data    = {\
+        'PeriodD' : 'data11_7TeV.periodD.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodE' : 'data11_7TeV.periodE.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        #'PeriodF' : 'data11_7TeV.periodF.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodG' : 'data11_7TeV.periodG.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodH' : 'data11_7TeV.periodH.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodI' : 'data11_7TeV.periodI.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodJ' : 'data11_7TeV.periodJ.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodK' : 'data11_7TeV.periodK.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodL' : 'data11_7TeV.periodL.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodM' : 'data11_7TeV.periodM.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+
+
+
+dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"ww" : wwDict,"zz" : zzDict,"wz" : wzDict,"data",data}
 
 #Map the hfor type to each dataset
-hforDict    = {"zbb" : "isBB", "zinc": "isLightFlavor", "zcc": "isCC", "ww": "isLightFlavor","zz":"isLightFlavor","wz": "isLightFlavor"}
+hforDict    = {"zbb" : "isBB", "zinc": "isLightFlavor", "zcc": "", "ww": "isLightFlavor","zz":"isLightFlavor","wz": "isLightFlavor"}
+#Hfor doens't work for Zcc sample !!
 
 def gangaSub(dsDictName,dsName,dslist):
     j = Job()
@@ -72,13 +87,31 @@ def gangaSub(dsDictName,dsName,dslist):
 
 
 
-for name, ds in dsDict.iteritems():
-    print name,"\n",ds,"\n"
+if(len(sys.argv)>1):
+    if(sys.argv[1] =="-1"):
+        #Submit All datasets
+        li = [(dsDictName,dsName,ds) for dsDictName,dsDict in dsDict.iteritems() for dsName,ds in dsDict.iteritems()]
+        for dsTuple in li:
+            gangaSub(dsTuple[0],dsTuple[1],[dsTuple[2]])
+    elif(dsDict[sys.argv[1]]):
+        inDsDict = dsDict[sys.argv[1]]
+        inDsDictName = dsDict[inDsDictName]
+        
+        for inDsname, ds in inDsDict.iteritems():
+            print inDsname,ds
+            gangaSub(inDsDictName,inDsname,[ds])
+    
+    else:
+        print "Dataset Collection ",sys.argv[1]," not found"
+    
+else:
+    for name, ds in dsDict.iteritems():
+        print name,"\n",ds,"\n"
+        
+        inDsDictName = raw_input("Enter data set dictionary: ")
+        inDsDict =  dsDict[inDsDictName]
+        print [val for name,val in inDsDict.iteritems()]
 
-inDsDictName = raw_input("Enter data set dictionary: ")
-inDsDict =  dsDict[inDsDictName]
-
-print [val for name,val in inDsDict.iteritems()]
-for inDsname, ds in inDsDict.iteritems():
-    print inDsname,ds
-    gangaSub(inDsDictName,inDsname,[ds])
+        for inDsname, ds in inDsDict.iteritems():
+            print inDsname,ds
+            gangaSub(inDsDictName,inDsname,[ds])
