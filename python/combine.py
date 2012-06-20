@@ -16,9 +16,12 @@ def getMergedHist(flist,histName):
     return h0
 
 # Make a fileName,file dictionary
-zbb     = [x for x in os.listdir(".") if os.path.isdir(x) and  "ZeebbNp" in x  ]
-zcc     = [x for x in os.listdir(".") if os.path.isdir(x) and  "ZeeccNp" in x  ]
-zlight  = [x for x in os.listdir(".") if os.path.isdir(x) and  "ZeeNp" in x    ]
+zbb     = [x for x in os.listdir(".") if os.path.isdir(x) and  "zbbnp" in x  ]
+print "Zb: ",zbb
+zcc     = [x for x in os.listdir(".") if os.path.isdir(x) and  "zccnp" in x  ]
+print"Zc: ",zcc
+zlight  = [x for x in os.listdir(".") if os.path.isdir(x) and  "znp" in x    ]
+print "Zlight: ",zlight
 
 
 #Get the histograms
