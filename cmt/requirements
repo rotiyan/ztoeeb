@@ -41,6 +41,7 @@ use MissingETEvent		MissingETEvent-*		Reconstruction
 use muonEvent			muonEvent-*			    Reconstruction/MuonIdentification
 use Particle			Particle-*			    Reconstruction
 use egammaEvent         egammaEvent-*           Reconstruction/egamma
+use egammaAnalysisUtils	egammaAnalysisUtils-*	Reconstruction/egamma/egammaAnalysis
 use tauEvent			tauEvent-*			    Reconstruction
 use ITrackToVertex 		ITrackToVertex-*		Reconstruction/RecoTools
 use TrkTrackSummary 	TrkTrackSummary-* 		Tracking/TrkEvent
