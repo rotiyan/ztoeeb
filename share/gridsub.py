@@ -53,13 +53,13 @@ data    = {\
 
 
 
-dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"ww" : wwDict,"zz" : zzDict,"wz" : wzDict,"data",data}
+dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"ww" : wwDict,"zz" : zzDict,"wz" : wzDict,"data": data}
 
 #Map the hfor type to each dataset
 hforDict    = {"zbb" : "isBB", "zinc": "isLightFlavor", "zcc": "", "ww": "isLightFlavor","zz":"isLightFlavor","wz": "isLightFlavor"}
 #Hfor doens't work for Zcc sample !!
 
-def gangaSub(dsDictName,dsName,dslist):
+def gangaSub(dsDictName,dsName,ds):
     j = Job()
     j.application = Athena()
     j.application.atlas_dbrelease = 'LATEST'
@@ -69,8 +69,9 @@ def gangaSub(dsDictName,dsName,dslist):
     j.application.options= optionString
     j.name = dsName
     j.application.prepare()
-    j.inputdata = DQ2Dataset()
-    j.inputdata.dataset = dslist
+    j.inputdata = AMIDataset()
+    j.inputdata.logicalDatasetName  = str(dslist)
+    j.inputdata.goodRunListXML = File('/afs/cern.ch/user/n/narayan/public/data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_WZjets_allchannels.xml')
     j.outputdata = DQ2OutputDataset()
     j.splitter = DQ2JobSplitter()
     j.splitter.numsubjobs = 10
@@ -92,14 +93,14 @@ if(len(sys.argv)>1):
         #Submit All datasets
         li = [(dsDictName,dsName,ds) for dsDictName,dsDict in dsDict.iteritems() for dsName,ds in dsDict.iteritems()]
         for dsTuple in li:
-            gangaSub(dsTuple[0],dsTuple[1],[dsTuple[2]])
+            gangaSub(dsTuple[0],dsTuple[1],dsTuple[2])
     elif(dsDict[sys.argv[1]]):
         inDsDict = dsDict[sys.argv[1]]
         inDsDictName = dsDict[inDsDictName]
         
         for inDsname, ds in inDsDict.iteritems():
             print inDsname,ds
-            gangaSub(inDsDictName,inDsname,[ds])
+            gangaSub(inDsDictName,inDsname,ds)
     
     else:
         print "Dataset Collection ",sys.argv[1]," not found"
@@ -108,10 +109,10 @@ else:
     for name, ds in dsDict.iteritems():
         print name,"\n",ds,"\n"
         
-        inDsDictName = raw_input("Enter data set dictionary: ")
-        inDsDict =  dsDict[inDsDictName]
-        print [val for name,val in inDsDict.iteritems()]
+    inDsDictName = raw_input("Enter data set dictionary: ")
+    inDsDict =  dsDict[inDsDictName]
+    print [val for name,val in inDsDict.iteritems()]
 
-        for inDsname, ds in inDsDict.iteritems():
-            print inDsname,ds
-            gangaSub(inDsDictName,inDsname,[ds])
+    for inDsname, ds in inDsDict.iteritems():
+        print inDsname,ds
+        gangaSub(inDsDictName,inDsname,[ds])
