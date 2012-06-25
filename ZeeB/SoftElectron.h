@@ -168,6 +168,7 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_ZElEta;
         std::vector<double>*    m_ZElPhi;
 
+        std::vector<int>*       m_el_charge;
         std::vector<int>*       m_elAuthor;
         std::vector<int>*       m_elAuthorSofte;
         std::vector<double>*    m_el_trk_Pt;
@@ -176,6 +177,14 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_el_cl_Pt;
         std::vector<double>*    m_el_cl_Eta;
         std::vector<double>*    m_el_cl_Phi;
+
+        std::vector<bool>*      m_el_id_loose;
+        std::vector<bool>*      m_el_id_loosepp;
+        std::vector<bool>*      m_el_id_medium;
+        std::vector<bool>*      m_el_id_mediumpp;
+        std::vector<bool>*      m_el_id_tight;
+        std::vector<bool>*      m_el_id_tightpp;
+
         std::vector<double>*    m_el_truth_Pt;
         std::vector<double>*    m_el_truth_Eta;
         std::vector<double>*    m_el_truth_Phi;
