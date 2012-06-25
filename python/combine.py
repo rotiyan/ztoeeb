@@ -88,21 +88,41 @@ h_zl_CMult_25       = getMergedHist(zlight,"CMult_25")
 h_zl_CMult_30       = getMergedHist(zlight,"CMult_30")
 ######################################################
 # z boson mass
-h_zb_Z      = getMergedHist(zbb,"h_zb_Z")
-h_zc_Z      = getMergedHist(zcc,"h_zb_Z")
-h_zl_Z      = getMergedHist(zlight,"h_zb_Z")
-h_data_d_Z  = getMergedHist(data_D,"h_zb_Z")
+h_zb_Z      = getMergedHist(zbb,"Z Boson Mass")
+h_zc_Z      = getMergedHist(zcc,"Z Boson Mass")
+h_zl_Z      = getMergedHist(zlight,"Z Boson Mass")
+h_data_d_Z  = getMergedHist(data_D,"Z Boson Mass")
 
 #########################################################
 # Z lepton kinematics
-h_zb_ZEminusPt  = getMergedHist(data_D,"h_ZBosonEminusPt")
-h_zc_ZEminusPt  = getMergedHist(data_D,"h_ZBosonEminusPt")
-h_zl_ZEminusPt  = getMergedHist(data_D,"h_ZBosonEminusPt")
+h_zb_ZEminusPt  = getMergedHist(zbb,"Boson Candidate EMinus pt")
+h_zc_ZEminusPt  = getMergedHist(zcc,"Boson Candidate EMinus pt")
+h_zl_ZEminusPt  = getMergedHist(zlight,"Boson Candidate EMinus pt")
+h_data_ZEminusPt= getMergedHist(data_D,"Boson Candidate EMinus pt")
 
-h_zb_ZEplusPt   = getMergedHist(data_D,"h_ZBosonEminusPt")
-h_zc_ZEplusPt   = getMergedHist(data_D,"h_ZBosonEminusPt")
-h_zl_ZEplusPt   = getMergedHist(data_D,"h_ZBosonEminusPt")
+h_zb_ZEplusPt   = getMergedHist(zbb,"Boson Candidate Eplus pt")
+h_zc_ZEplusPt   = getMergedHist(zcc,"Boson Candidate Eplus pt")
+h_zl_ZEplusPt   = getMergedHist(zlight,"Boson Candidate Eplus pt")
+h_data_ZEplusPt = getMergedHist(data_D,"Boson Candidate Eplus pt")
 
+###
+# Electron kinematics
+h_zb_ElAuthorPt    = getMergedHist(zbb,"ElAuthorPt")
+h_zc_ElAuthorPt    = getMergedHist(zcc,"ElAuthorPt")
+h_zl_ElAuthorPt    = getMergedHist(zlight,"ElAuthorPt")
+h_data_ElAuthorPt   = getMergedHist(data_D,"ElAuthorPt")
+
+h_zb_ElAuthorEta    = getMergedHist(zbb,"ElAuthorEta")
+h_zc_ElAuthorEta    = getMergedHist(zcc,"ElAuthorEta")
+h_zl_ElAuthorEta    = getMergedHist(zlight,"ElAuthorEta")
+h_data_ElAuthorEta  = getMergedHist(data_D,"ElAuthorEta")
+
+h_zb_ElAuthorPhi    = getMergedHist(zbb,"ElAuthorPhi")
+h_zc_ElAuthorPhi    = getMergedHist(zcc,"ElAuthorPhi")
+h_zl_ElAuthorPhi    = getMergedHist(zlight,"ElAuthorPhi")
+h_data_ElAuthorPhi  = getMergedHist(data_D,"ElAuthorPhi")
+
+'''
 # Draw the histograms
 c1  = ROOT.TCanvas("Zbb","Zbb")
 ROOT.SetOwnership(c1,False)
@@ -176,10 +196,10 @@ ROOT.gPad.SetLogy(1)
 
 ###########################################
 c4 = ROOT.TCanvas("BMult","BMult")
-c4.Divide(2,2)
-c4.cd(1)
-
 ROOT.SetOwnership(c4,False)
+c4.Divide(2,2)
+
+c4.cd(1)
 h_zb_BMult_5.Draw()
 h_zb_BMult_10.Draw("same")
 h_zb_BMult_15.Draw("same")
@@ -197,7 +217,6 @@ leg.AddEntry(h_zb_BMult_30,"pt cut = 30 GeV")
 leg.Draw("same")
 
 c4.cd(2)
-ROOT.SetOwnership(c4,False)
 h_zc_BMult_5.Draw()
 h_zc_BMult_10.Draw("same")
 h_zc_BMult_15.Draw("same")
@@ -230,25 +249,96 @@ leg.AddEntry(h_zl_BMult_20,"pt cut =20 GeV")
 leg.AddEntry(h_zl_BMult_25,"pt cut = 25 GeV")
 leg.AddEntry(h_zl_BMult_30,"pt cut = 30 GeV")
 leg.Draw("same")
-
+'''
 
 c5 = ROOT.TCanvas("zcand","zcand")
 ROOT.SetOwnership(c5,False)
 c5.Divide(2,2)
 
 c5.cd(1)
-h_zl_Z.Draw()
-h_zb_Z.Draw("same")
-h_zc_Z.Draw("same")
-h_data_d_Z.Draw("same")
+ElPtStack   = ROOT.THStack("ElPtStack","ElPtStack")
+h_zl_ElAuthorPt.SetFillColor(ROOT.kBlue+1)
+h_zl_ElAuthorPt.SetLineColor(ROOT.kBlue+1)
+
+h_zb_ElAuthorPt.SetFillColor(ROOT.kRed+1)
+h_zb_ElAuthorPt.SetLineColor(ROOT.kRed+1)
+
+h_zc_ElAuthorPt.SetFillColor(ROOT.kGreen+1)
+h_zc_ElAuthorPt.SetLineColor(ROOT.kGreen+1)
+
+ElPtStack.Add(h_zb_ElAuthorPt)
+ElPtStack.Add(h_zc_ElAuthorPt)
+ElPtStack.Add(h_zl_ElAuthorPt)
+
+ElPtStack.Draw("HIST")
+h_data_ElAuthorPt.Scale(10)
+h_data_ElAuthorPt.Draw("same")
+
+ROOT.gPad.SetLogy(1)
 
 c5.cd(2)
-h_zl_ZEminusPt.Draw()
-h_zb_ZEminusPt.Draw("same")
-h_zc_ZEminusPt.Draw("same")
+
+ElEtaStack  = ROOT.THStack("ElEtaStack","ElEtaStack")
+h_zl_ElAuthorEta.SetFillColor(ROOT.kBlue+1)
+h_zl_ElAuthorEta.SetLineColor(ROOT.kBlue+1)
+
+h_zb_ElAuthorEta.SetFillColor(ROOT.kRed+1)
+h_zb_ElAuthorEta.SetLineColor(ROOT.kRed+1)
+
+h_zc_ElAuthorEta.SetFillColor(ROOT.kGreen+1)
+h_zc_ElAuthorEta.SetLineColor(ROOT.kGreen+1)
+
+ElEtaStack.Add(h_zb_ElAuthorEta)
+ElEtaStack.Add(h_zc_ElAuthorEta)
+ElEtaStack.Add(h_zl_ElAuthorEta)
+
+ElEtaStack.Draw("HIST")
+
+h_data_ElAuthorEta.Scale(10)
+h_data_ElAuthorEta.Draw("same")
+
+ROOT.gPad.SetLogy(1)
 
 c5.cd(3)
-h_zl_ZEplusPt.Draw()
-h_zb_ZEplusPt.Draw("same")
-h_zc_ZEplusPt.Draw("same")
+ElPhiStack  = ROOT.THStack("ElPhiStack","ElPhiStack")
+h_zl_ElAuthorPhi.SetFillColor(ROOT.kBlue+1)
+h_zl_ElAuthorPhi.SetLineColor(ROOT.kBlue+1)
 
+h_zb_ElAuthorPhi.SetFillColor(ROOT.kRed+1)
+h_zb_ElAuthorPhi.SetLineColor(ROOT.kRed+1)
+
+h_zc_ElAuthorPhi.SetFillColor(ROOT.kGreen+1)
+h_zc_ElAuthorPhi.SetLineColor(ROOT.kGreen+1)
+
+ElPhiStack.Add(h_zb_ElAuthorPhi)
+ElPhiStack.Add(h_zc_ElAuthorPhi)
+ElPhiStack.Add(h_zl_ElAuthorPhi)
+
+ElPhiStack.Draw("HIST")
+
+h_data_ElAuthorPhi.Scale(10)
+h_data_ElAuthorPhi.Draw("same")
+
+ROOT.gPad.SetLogy(1)
+
+
+c5.cd(4)
+mStack = ROOT.THStack("MassStack","MassStack")
+h_zl_Z.SetFillColor(ROOT.kBlue+1)
+h_zl_Z.SetLineColor(ROOT.kBlue+1)
+
+h_zb_Z.SetFillColor(ROOT.kRed+1)
+h_zb_Z.SetLineColor(ROOT.kRed+1)
+
+h_zc_Z.SetFillColor(ROOT.kGreen+1)
+h_zc_Z.SetLineColor(ROOT.kGreen+1)
+
+mStack.Add(h_zb_Z)
+mStack.Add(h_zc_Z)
+mStack.Add(h_zl_Z)
+mStack.Draw("HIST")
+
+h_data_d_Z.Scale(10)
+h_data_d_Z.Draw("same")
+
+ROOT.gPad.SetLogy(1)
