@@ -81,22 +81,22 @@ class NtupleAnaBase(object):
             print "object ",type(h)," is not a TH1 type"
 
     '''Add histograms to the private list'''
-    def addh1(self,name,title="",nbins=1,low=0,high=1):
+    def regTH1(self,name,title="",nbins=1,low=0,high=1):
         self.hists[name]    = ROOT.TH1F(name,title,nbins,low,high)
 
-    def addh2(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1):
+    def regTH2(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1):
         self.hists[name]    = ROOT.TH2F(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh)
 
-    def addh3(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1,nzbins=1,zlow=0,zhigh=1):
+    def regTH3(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1,nzbins=1,zlow=0,zhigh=1):
         self.hists[name]    = ROOT.TH3F(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh,nzbins,zlow,zhigh)
 
-    def addProfile(self,name,title="",nxbins=1,xlow=0,xhigh=1):
+    def regProfHist(self,name,title="",nxbins=1,xlow=0,xhigh=1):
         self.hists[name]    = ROOT.TProfile(name,title,nxbins,xlow,xhigh)
 
-    def addProfile2D(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1):
+    def regProfHist2D(self,name,title="",nxbins=1,xlow=0,xhigh=1,nybins=1,ylow=0,yhigh=1):
         self.hists[name]    = ROOT.TProfile2D(name,title,nxbins,xlow,xhigh,nybins,ylow,yhigh)
 
-    def addhnSparse(self,name,title="",nbins=1,bins=[1],fmin=[0],fmax=[1]):
+    def regTHnSparse(self,name,title="",nbins=1,bins=[1],fmin=[0],fmax=[1]):
         self.hists[name]    = ROOT.THnSparseD(name,title,nbins,array("i",bins),array("d",fmin),array("d",fmax))
 
     def setTTree(self,tree):
