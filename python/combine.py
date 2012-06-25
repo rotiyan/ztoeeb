@@ -22,6 +22,8 @@ zcc     = [x for x in os.listdir(".") if os.path.isdir(x) and  "zccnp" in x  ]
 print"Zc: ",zcc
 zlight  = [x for x in os.listdir(".") if os.path.isdir(x) and  "znp" in x    ]
 print "Zlight: ",zlight
+data_D  = [x for x in os.listdir(".") if os.path.isdir(x) and "periodD" in x]
+print "Data Period D",data_D
 
 
 #Get the histograms
@@ -85,8 +87,21 @@ h_zl_CMult_20       = getMergedHist(zlight,"CMult_20")
 h_zl_CMult_25       = getMergedHist(zlight,"CMult_25")
 h_zl_CMult_30       = getMergedHist(zlight,"CMult_30")
 ######################################################
+# z boson mass
+h_zb_Z      = getMergedHist(zbb,"h_zb_Z")
+h_zc_Z      = getMergedHist(zcc,"h_zb_Z")
+h_zl_Z      = getMergedHist(zlight,"h_zb_Z")
+h_data_d_Z  = getMergedHist(data_D,"h_zb_Z")
 
+#########################################################
+# Z lepton kinematics
+h_zb_ZEminusPt  = getMergedHist(data_D,"h_ZBosonEminusPt")
+h_zc_ZEminusPt  = getMergedHist(data_D,"h_ZBosonEminusPt")
+h_zl_ZEminusPt  = getMergedHist(data_D,"h_ZBosonEminusPt")
 
+h_zb_ZEplusPt   = getMergedHist(data_D,"h_ZBosonEminusPt")
+h_zc_ZEplusPt   = getMergedHist(data_D,"h_ZBosonEminusPt")
+h_zl_ZEplusPt   = getMergedHist(data_D,"h_ZBosonEminusPt")
 
 # Draw the histograms
 c1  = ROOT.TCanvas("Zbb","Zbb")
@@ -182,7 +197,7 @@ leg.AddEntry(h_zb_BMult_30,"pt cut = 30 GeV")
 leg.Draw("same")
 
 c4.cd(2)
-ROOT.SetOwnership(c5,False)
+ROOT.SetOwnership(c4,False)
 h_zc_BMult_5.Draw()
 h_zc_BMult_10.Draw("same")
 h_zc_BMult_15.Draw("same")
@@ -215,3 +230,25 @@ leg.AddEntry(h_zl_BMult_20,"pt cut =20 GeV")
 leg.AddEntry(h_zl_BMult_25,"pt cut = 25 GeV")
 leg.AddEntry(h_zl_BMult_30,"pt cut = 30 GeV")
 leg.Draw("same")
+
+
+c5 = ROOT.TCanvas("zcand","zcand")
+ROOT.SetOwnership(c5,False)
+c5.Divide(2,2)
+
+c5.cd(1)
+h_zl_Z.Draw()
+h_zb_Z.Draw("same")
+h_zc_Z.Draw("same")
+h_data_d_Z.Draw("same")
+
+c5.cd(2)
+h_zl_ZEminusPt.Draw()
+h_zb_ZEminusPt.Draw("same")
+h_zc_ZEminusPt.Draw("same")
+
+c5.cd(3)
+h_zl_ZEplusPt.Draw()
+h_zb_ZEplusPt.Draw("same")
+h_zc_ZEplusPt.Draw("same")
+
