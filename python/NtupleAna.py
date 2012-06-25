@@ -50,6 +50,9 @@ class NtupleAna(NtupleAnaBase):
         self.regPhiHist("ElAuthorMtchdEffVsPhi")
         self.regPhiHist("EltrthPhi")
 
+
+        self.regTH1("ElAuthorMultplcty","",20,-0.5,19.5)
+
         self.regTHnSparse("ZCandKine","",nbins=7,\
                 bins=[1000,100,500, 1000, 100, 500,500],\
                 fmin=[0  , -5, -5, 0   , -5 , -5 ,40 ],\
@@ -470,7 +473,7 @@ class NtupleAna(NtupleAnaBase):
             IsMtchd = isMtchdVec.at(i)
 
             
-            if(clEta !=-100 and clPt !=-100 and clPhi !=-100 and author ==1):
+            if(clEta !=-100 and clPt !=-100 and clPhi !=-100 and (author ==1 or softe==1)):
                 self.gethist("ElclEta").Fill(clEta)
                 self.gethist("ElclPhi").Fill(clPhi)
                 self.gethist("ElclPt").Fill(clPt)
@@ -512,7 +515,7 @@ class NtupleAna(NtupleAnaBase):
             medId   = medIdVec.at(i)
             medPPId = medPPIdVec.at(i)
 
-            if(medPPId ==True and clEta !=-100 and clPt !=-100 and clPhi !=-100 and author==1 ):
+            if(medPPId ==True and clEta !=-100 and clPt !=-100 and clPhi !=-100 and (author==True or softe==True)):
                 pt  +=  [clPt]
                 eta +=  [clEta]
                 phi +=  [clPhi]
@@ -526,8 +529,11 @@ class NtupleAna(NtupleAnaBase):
                     self.gethist("ElAuthorMtchdEta").Fill(clEta)
                     self.gethist("ElAuthorMtchdPt").Fill(clPt)
                     self.gethist("ElAuthorMtchdPhi").Fill(clPhi)
-
-        self.FillZCandKinematics(pt,eta,phi,chrg)
+ 
+        self.gethist("ElAuthorMultplcty").Fill(len(pt)) 
+        
+        if(len(pt)>1):
+            self.FillZCandKinematics(pt,eta,phi,chrg)
 
 
     '''Get Invariant mass list of OS electrons'''
@@ -845,6 +851,9 @@ class plotscript:
             h_ZBosonMass.SetName("Z Boson Mass")
             h_ZBosonMass.GetXaxis().SetTitle("[GeV]")
             self.__saveHist(h_ZBosonMass)
+
+        #Multiplcty
+        self.__saveHist(self.__getInHist("ElAuthorMultplcty"))
 
     def MakeTruthHists(self):
         self.__saveHist(self.__getInHist("TrthElParent"))
