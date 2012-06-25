@@ -12,23 +12,21 @@ from AthenaCommon.AthenaCommonFlags import jobproperties as jp
 #jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993_tid679749_00/*root*')
 jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/data11_7TeV.00180124.physics_Egamma.merge.AOD.r2603_p659_tid497212_00/*root*')
 
-# to run over multiple input files
-##################
-#DATAPATH = '/afs/cern.ch/atlas/maxidisk/d49/'
-#from glob import glob
-#INPUT = glob(DATAPATH + 'AOD*.root*')
-#print INPUT
-#jp.AthenaCommonFlags.FilesInput = INPUT
+from GoodRunsLists.GoodRunsListsConf import *
+ToolSvc += GoodRunsListSelectorTool()
 
-##################
-#
+GoodRunsListSelectorTool.GoodRunsListVec = [ 'data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_WZjets_allchannels.xml' ]
+
+from AthenaCommon.AlgSequence import AthSequencer
+from GoodRunsListsUser.GoodRunsListsUserConf import *
+seq = AthSequencer("AthFilterSeq")
+seq += GRLTriggerSelectorAlg('GRLTriggerAlg1')
+
 from RecExConfig.RecFlags import rec
 
-jp.AthenaCommonFlags.EvtMax=500 # number of event to process
+jp.AthenaCommonFlags.EvtMax=-1 # number of event to process
 
 # include your algorithm job options here
-
-#rec.UserAlgs=[ "ttbarExample_jobOptions_NEW.py" ] 
 rec.UserAlgs=[ "SoftElectron_jobOptions.py"]
 
 # Output log setting; this is for the framework in general
