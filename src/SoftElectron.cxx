@@ -139,32 +139,42 @@ StatusCode SoftElectron::execute()
         return StatusCode::FAILURE;
     }
 
-    //Book Ntuple Containers
-    this->BookNtupleContainers();
-
-    if(m_fillGenInfo) //MC
+    bool vxPass = false;
+    if(m_vxContainer)
     {
-        /** Heavy Flavor Overlap Removal **/
-        std::string hfor_type ="";
-        if ( m_hfor_tool->execute().isSuccess() )
-            hfor_type = m_hfor_tool->getDecision();
+        VxContainer::const_iterator vxIter = m_vxContainer->begin();
+        int nTracks = (*vxIter)->vxTrackAtVertex()->size();
+        if(nTracks>=3)
+            vxPass = true;
+    }
 
-        if(hfor_type ==m_hforType)
+    if( vxPass)
+    {
+        //Book Ntuple Containers
+        this->BookNtupleContainers();
+
+        if(m_fillGenInfo) //MC
         {
-            this->FillElectrons();
-            this->FindTruthParticle();
-            if(m_doTruthMatching)
-                this->DoElectronMatch();
-        }
-    }
-    else //data
-    {
-        this->FillElectrons();
-    }
+            /** Heavy Flavor Overlap Removal **/
+            std::string hfor_type ="";
+            if ( m_hfor_tool->execute().isSuccess() )
+                hfor_type = m_hfor_tool->getDecision();
 
-    //end of event loop 
-    m_tree->Fill();
-    this->ClearContainers();
+            if(hfor_type ==m_hforType)
+            {
+                this->FillElectrons();
+                this->FindTruthParticle();
+                if(m_doTruthMatching)
+                    this->DoElectronMatch();
+            }
+        }
+        else //data
+            this->FillElectrons();
+
+
+        m_tree->Fill();
+        this->ClearContainers();
+    }
     return sc;
 }
 
@@ -486,8 +496,8 @@ void SoftElectron::FillElectrons()
             double elClEta  = ElCluster->eta();
             double elClPhi  = ElCluster->phi();
 
-            //if( (std::abs(elClEta) >m_elCrackEtaCutHigh && std::abs(elClEta) < m_elCrackEtaCutLow))
-            if(std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
+            if( (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
+                    std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
             {
                 m_el_cl_Pt->at(i)   = elClPt;
                 m_el_cl_Eta->at(i)  = elClEta;
@@ -496,19 +506,15 @@ void SoftElectron::FillElectrons()
         }
 
         //Soft Electrons
-        if(Electron->author(egammaParameters::AuthorSofte))
-            m_elAuthorSofte->at(i)  = 1;
-
-        if(Electron->author(egammaParameters::AuthorElectron))
-            m_elAuthor->at(i)   = 1;
+        m_elAuthorSofte->at(i)  =  Electron->author(egammaParameters::AuthorSofte);
+        //Standard Egamma Algorithm
+        m_elAuthor->at(i)       =  Electron->author(egammaParameters::AuthorElectron);
 
     }
 }
 
 void SoftElectron::DoElectronMatch()
 {
-    int ElSize      = m_electronCollection->size();
-
     for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
@@ -545,7 +551,7 @@ StatusCode SoftElectron::LoadContainers()
     sc = m_storeGate->retrieve(m_vxContainer, m_primaryVertexContainerName);
     if(sc.isFailure())
     {
-        mlog << MSG::ERROR <<"could not retrive PrimaryVertex contaienr" <<endreq;
+        mlog << MSG::ERROR <<"could not retrive PrimaryVertex container" <<endreq;
         return sc;
     }
  
@@ -628,8 +634,8 @@ void SoftElectron::BookNtupleContainers()
     m_el_cl_Eta     =   new std::vector<double>(ElSize,-100);    
     m_el_cl_Phi     =   new std::vector<double>(ElSize,-100);    
     
-    m_elAuthor      =   new std::vector<int>(ElSize,-100);       
-    m_elAuthorSofte =   new std::vector<int>(ElSize,-100);       
+    m_elAuthor      =   new std::vector<bool>(ElSize,false);       
+    m_elAuthorSofte =   new std::vector<bool>(ElSize,false);       
     m_el_charge     =   new std::vector<int>(ElSize,-100);
 
 
