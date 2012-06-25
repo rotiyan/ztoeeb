@@ -202,6 +202,14 @@ StatusCode SoftElectron::BookHistograms()
     m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
+    m_tree->Branch("el_charge",&m_el_charge);
+
+    m_tree->Branch("el_loose",&m_el_id_loose);
+    m_tree->Branch("el_loosePP",&m_el_id_loosepp);
+    m_tree->Branch("el_medium",&m_el_id_medium);
+    m_tree->Branch("el_mediumPP",&m_el_id_mediumpp);
+    m_tree->Branch("el_tight",&m_el_id_tight);
+    m_tree->Branch("el_tightPP",&m_el_id_tightpp);
 
     //Truth 
     m_tree->Branch("ZElPt",&m_ZElPt);
@@ -447,6 +455,15 @@ void SoftElectron::FillElectrons()
     for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
+
+        //Fill Common electron properties
+        m_el_charge->at(i)      = Electron->charge();
+        m_el_id_loose->at(i)    = Electron->passID(egammaPID::ElectronIDLoose);
+        m_el_id_loosepp->at(i)  = Electron->passID(egammaPID::ElectronIDLoosePP);
+        m_el_id_medium->at(i)   = Electron->passID(egammaPID::ElectronIDMedium);
+        m_el_id_mediumpp->at(i) = Electron->passID(egammaPID::ElectronIDMediumPP);
+        m_el_id_tight->at(i)    = Electron->passID(egammaPID::ElectronIDTight);
+        m_el_id_tightpp->at(i)  = Electron->passID(egammaPID::ElectronIDTightPP);
         
         //Track Particle 
         const Rec::TrackParticle* ElTrkPartcl = Electron->trackParticle();
@@ -469,12 +486,13 @@ void SoftElectron::FillElectrons()
             double elClEta  = ElCluster->eta();
             double elClPhi  = ElCluster->phi();
 
-            if( (abs(elClEta) >m_elCrackEtaCutHigh && abs(elClEta) < m_elCrackEtaCutLow) &&
-                    std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
-
-            m_el_cl_Pt->at(i)   = elClPt;
-            m_el_cl_Eta->at(i)  = elClEta;
-            m_el_cl_Phi->at(i)  = elClPhi;
+            //if( (std::abs(elClEta) >m_elCrackEtaCutHigh && std::abs(elClEta) < m_elCrackEtaCutLow))
+            if(std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
+            {
+                m_el_cl_Pt->at(i)   = elClPt;
+                m_el_cl_Eta->at(i)  = elClEta;
+                m_el_cl_Phi->at(i)  = elClPhi;
+            }
         }
 
         //Soft Electrons
@@ -612,18 +630,37 @@ void SoftElectron::BookNtupleContainers()
     
     m_elAuthor      =   new std::vector<int>(ElSize,-100);       
     m_elAuthorSofte =   new std::vector<int>(ElSize,-100);       
+    m_el_charge     =   new std::vector<int>(ElSize,-100);
+
+
+    m_el_id_loose   =   new std::vector<bool>(ElSize,false);
+    m_el_id_loosepp =   new std::vector<bool>(ElSize,false);
+    m_el_id_medium  =   new std::vector<bool>(ElSize,false);
+    m_el_id_mediumpp=   new std::vector<bool>(ElSize,false);
+    m_el_id_tight   =   new std::vector<bool>(ElSize,false);
+    m_el_id_tightpp =   new std::vector<bool>(ElSize,false);
+
 }
 
 void SoftElectron::ClearContainers()
 {
-    delete m_elAuthor;
-    delete m_elAuthorSofte;
     delete m_el_trk_Pt;
     delete m_el_trk_Eta;
     delete m_el_trk_Phi;
     delete m_el_cl_Pt;
     delete m_el_cl_Eta;
     delete m_el_cl_Phi;
+
+    delete m_elAuthor;
+    delete m_elAuthorSofte;
+    delete m_el_charge;
+
+    delete m_el_id_loose;
+    delete m_el_id_loosepp;
+    delete m_el_id_medium;
+    delete m_el_id_mediumpp;
+    delete m_el_id_tight;
+    delete m_el_id_tightpp;
 
     delete m_ZElPt;
     delete m_ZElEta;
