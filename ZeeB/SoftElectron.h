@@ -169,8 +169,8 @@ class SoftElectron : public Algorithm
         std::vector<double>*    m_ZElPhi;
 
         std::vector<int>*       m_el_charge;
-        std::vector<int>*       m_elAuthor;
-        std::vector<int>*       m_elAuthorSofte;
+        std::vector<bool>*       m_elAuthor;
+        std::vector<bool>*       m_elAuthorSofte;
         std::vector<double>*    m_el_trk_Pt;
         std::vector<double>*    m_el_trk_Eta;
         std::vector<double>*    m_el_trk_Phi;
