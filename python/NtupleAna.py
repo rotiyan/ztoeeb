@@ -17,49 +17,20 @@ class NtupleAna(NtupleAnaBase):
         self.outFileName    = outFileName
     
     def initialize(self):
-        self.regPtHist("EltrkPt")
-        self.regPtHist("EltrkMtchdPt")
-        self.regPtHist("EltrkMtchEffVsPt")
-        self.regPtHist("ElclPt")
-        self.regPtHist("ElclMtchdPt")
-        self.regPtHist("ElclMtchEffVsPt")
+        #GRL Shared object
+        #ROOT.gSystem.Load("libGoodRunsListsLib.so")
+        #ROOT.DQ.SetXMLFile("../share/data12_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_WZjets_allchannels.xml")
+
+        #Used in DoAuthorEl()
         self.regPtHist("ElAuthorPt")
-        self.regPtHist("ElAuthorMtchdPt")
-        self.regPtHist("ElAuthorMtchdEffVsPt")
-        self.regPtHist("EltrthPt")
-
-        self.regEtaHist("EltrkEta")
-        self.regEtaHist("EltrkMtchdEta")
-        self.regEtaHist("EltrkMtchEffVsEta")
-        self.regEtaHist("ElclEta")
-        self.regEtaHist("ElclMtchdEta")
-        self.regEtaHist("ElclMtchEffVsEta")
         self.regEtaHist("ElAuthorEta")
-        self.regEtaHist("ElAuthorMtchdEta")
-        self.regEtaHist("ElAuthorMtchdEffVsEta")
-        self.regEtaHist("EltrthEta")
-
-        self.regPhiHist("EltrkPhi")
-        self.regPhiHist("EltrkMtchdPhi")
-        self.regPhiHist("EltrkMtchEffVsPhi")
-        self.regPhiHist("ElclPhi")
-        self.regPhiHist("ElclMtchdPhi")
-        self.regPhiHist("ElclMtchEffVsPhi")
         self.regPhiHist("ElAuthorPhi")
-        self.regPhiHist("ElAuthorMtchdPhi")
-        self.regPhiHist("ElAuthorMtchdEffVsPhi")
-        self.regPhiHist("EltrthPhi")
-
-
         self.regTH1("ElAuthorMultplcty","",20,-0.5,19.5)
 
         self.regTHnSparse("ZCandKine","",nbins=7,\
-                bins=[1000,100,500, 1000, 100, 500,500],\
-                fmin=[0  , -5, -5, 0   , -5 , -5 ,40 ],\
-                fmax=[500, 5 ,  5, 500 , 5  , 5  ,140])
-
-        self.regTH1("TrthElParent")
-
+                bins=[1000,100,500, 1000, 100, 500,400],\
+                fmin=[0  , -5, -5, 0   , -5 , -5 ,0 ],\
+                fmax=[500, 5 ,  5, 500 , 5  , 5  ,200])
 
         '''Truth'''
         self.regTH1("Bhadrons")
@@ -79,8 +50,6 @@ class NtupleAna(NtupleAnaBase):
         self.regTH2("CHdrnEvents","",35,0.5,35.5,10,-0.5,9.5)
         self.regTH2("CElEvents","",35,0.5,35.5,10,-0.5,9.5)
 
-        self.regTH2("matchedZElVsBEl",";# ZEl; #BEl",10,0.5,10.5,10,0.5,10.5)
-        self.regTH2("matchedZElVsCEl",";# ZEl; #BEl",10,0.5,10.5,10,0.5,10.5)
         self.regTH2("hardVsSoftEl","",10,0.5,10.5,10,0.5,10.5)
 
         '''SemiElectron decay '''
@@ -120,48 +89,12 @@ class NtupleAna(NtupleAnaBase):
 
 
     def execute(self):
-        #Electron cluster analysis
-        self.DoClusterEl()
-        
-        #Electron track particle analaysis
-        self.DoTrkrEl()
-
-        #Electron Author 
+        #Check if the event passes GRL
+        #if(ROOT.DQ.PassRunLB(self.getCurrentValue("RunNumber"),self.getCurrentValue("LumiblockNumber"))):
+        #Analyse the author electrons
         self.DoAuthorEl()
         
-        #Electron truth analysis
-        self.trthAna()
-
-        self.fillBKinematics(2,2.5)
-        self.fillCKinematics(2,2.5)
-
-        self.makeDeltaRPlots()
-
-        self.hadronElectronMatching()
-
-        self.doZElectron()
-
     def finalize(self):
-        '''Efficiency histograms'''
-        self.gethist("EltrkMtchEffVsPt").Divide(self.gethist("EltrkMtchdPt"), self.gethist("EltrkPt"))
-        self.gethist("EltrkMtchEffVsEta").Divide(self.gethist("EltrkMtchdEta"), self.gethist("EltrkEta"))
-        self.gethist("EltrkMtchEffVsPhi").Divide(self.gethist("EltrkMtchdPhi"), self.gethist("EltrkPhi"))
-
-        self.gethist("ElclMtchEffVsPt").Divide(self.gethist("ElclMtchdPt"), self.gethist("ElclPt"))
-        self.gethist("ElclMtchEffVsEta").Divide(self.gethist("ElclMtchdEta"), self.gethist("ElclEta"))
-        self.gethist("ElclMtchEffVsPhi").Divide(self.gethist("ElclMtchdPhi"), self.gethist("ElclPhi"))
-
-        '''Compare B-hadron b-quark delta r'''
-        #self.compareBbDeltaR(5,2.5)
-        #self.compareBbDeltaR(10,2.5)
-        #self.compareBbDeltaR(20,2.5)
-
-        '''Compare C-hadron b-quark delta r'''
-        #self.compareCbDeltaR(5,2.5)
-        #self.compareCbDeltaR(10,2.5)
-        #self.compareCbDeltaR(20,2.5)
-
-
         #Save histograms to disk
         histlist = self.gethistList()
         fname = self.outFileName+current_process().name
@@ -422,74 +355,11 @@ class NtupleAna(NtupleAnaBase):
         return nCEl
 
 
-    '''TrkParticle'''
-    def DoTrkrEl(self):
-        trketaVec   = self.getCurrentValue("el_trk_Eta")
-        trkptVec    = self.getCurrentValue("el_trk_Pt")
-        trkphiVec   = self.getCurrentValue("el_trk_Phi")
-        softeVec    = self.getCurrentValue("elAuthorSofte")
-
-        #Truth Match
-        isMtchdVec  = self.getCurrentValue("elIsMtchd")
-
-        for i in xrange(trketaVec.size()):
-            trkEta  = trketaVec.at(i)
-            trkPhi  = trkphiVec.at(i)
-            trkPt   = trkptVec.at(i)
-
-            softe   = softeVec.at(i)
-
-            IsMtchd = isMtchdVec.at(i)
-
-            if(trkEta != -100 and trkPt !=-100 and trkPhi !=-100 and softe ==1):
-                self.gethist("EltrkEta").Fill(trkEta)
-                self.gethist("EltrkPt").Fill(trkPt)
-                self.gethist("EltrkPhi").Fill(trkPhi)
-                if(IsMtchd==1):
-                    self.gethist("EltrkMtchdEta").Fill(trkEta)
-                    self.gethist("EltrkMtchdPt").Fill(trkPt)
-                    self.gethist("EltrkMtchdPhi").Fill(trkPhi)
-
-    '''Calo cluster'''
-    def DoClusterEl(self):
-        cletaVec    = self.getCurrentValue("el_cl_Eta")
-        clptVec     = self.getCurrentValue("el_cl_Pt")
-        clphiVec    = self.getCurrentValue("el_cl_Phi")
-
-        softeVec    = self.getCurrentValue("elAuthorSofte")
-        authorVec   = self.getCurrentValue("elAuthor")
-
-        #Is Truth Matched
-        isMtchdVec  = self.getCurrentValue("elIsMtchd")
-
-
-        for i in xrange(cletaVec.size()):
-            clEta   = cletaVec.at(i)
-            clPhi   = clphiVec.at(i)
-            clPt    = clptVec.at(i)
-
-            author  = authorVec.at(i)
-            softe   = softeVec.at(i)
-            IsMtchd = isMtchdVec.at(i)
-
-            
-            if(clEta !=-100 and clPt !=-100 and clPhi !=-100 and (author ==1 or softe==1)):
-                self.gethist("ElclEta").Fill(clEta)
-                self.gethist("ElclPhi").Fill(clPhi)
-                self.gethist("ElclPt").Fill(clPt)
-
-                if(IsMtchd==1):
-                    self.gethist("ElclMtchdEta").Fill(clEta)
-                    self.gethist("ElclMtchdPhi").Fill(clPhi)
-                    self.gethist("ElclMtchdPt").Fill(clPt)
-
-
     '''The Author Electron is an electron with track pointing to the cluster identified'''
     def DoAuthorEl(self):
-        cletaVec    = self.getCurrentValue("el_cl_Eta")
         clptVec     = self.getCurrentValue("el_cl_Pt")
+        cletaVec    = self.getCurrentValue("el_cl_Eta")
         clphiVec    = self.getCurrentValue("el_cl_Phi")
-        isMtchdVec  = self.getCurrentValue("elIsMtchd")
 
         softeVec    = self.getCurrentValue("elAuthorSofte")
         authorVec   = self.getCurrentValue("elAuthor")
@@ -497,42 +367,49 @@ class NtupleAna(NtupleAnaBase):
         chrgVec     = self.getCurrentValue("el_charge")
         medIdVec    = self.getCurrentValue("el_medium")
         medPPIdVec  = self.getCurrentValue("el_mediumPP")
+        tightPPIdVec= self.getCurrentValue("el_tightPP")
 
-        pt  = []
-        eta = []
-        phi = []
-        chrg= []
+
+        kineList = []
 
         for i in xrange(cletaVec.size()):
             clEta   = cletaVec.at(i)
             clPt    = clptVec.at(i)
             clPhi   = clphiVec.at(i)
-            IsMtchd = isMtchdVec.at(i)
 
             author  = authorVec.at(i)
             softe   = softeVec.at(i)
             clChrg    = chrgVec.at(i)
             medId   = medIdVec.at(i)
             medPPId = medPPIdVec.at(i)
+            tightPPid=tightPPIdVec.at(i)
 
-            if(medPPId ==True and clEta !=-100 and clPt !=-100 and clPhi !=-100 and (author==True or softe==True)):
-                pt  +=  [clPt]
-                eta +=  [clEta]
-                phi +=  [clPhi]
-                chrg+=  [clChrg]
+            if(medPPId==True and (author == True or(author==True and softe==True))):
+ 
+                kineList +=[(clPt,clEta,clPhi,clChrg)]
 
                 self.gethist("ElAuthorEta").Fill(clEta)
                 self.gethist("ElAuthorPt").Fill(clPt)
                 self.gethist("ElAuthorPhi").Fill(clPhi)
 
-                if(IsMtchd ==1):
-                    self.gethist("ElAuthorMtchdEta").Fill(clEta)
-                    self.gethist("ElAuthorMtchdPt").Fill(clPt)
-                    self.gethist("ElAuthorMtchdPhi").Fill(clPhi)
- 
-        self.gethist("ElAuthorMultplcty").Fill(len(pt)) 
+        self.gethist("ElAuthorMultplcty").Fill(len(kineList)) 
         
-        if(len(pt)>1):
+        sortList = sorted(kineList)
+        sortList.reverse()
+        
+        pt  = []
+        eta = []
+        phi = []
+        chrg= []
+        if(len(sortList)>1):
+            el1 = sortList[0]
+            el2 = sortList[1]
+
+            pt = [el1[0],el2[0]]
+            eta= [el1[1],el2[1]]
+            phi= [el1[2],el2[2]]
+            chrg=[el1[3],el2[3]]
+
             self.FillZCandKinematics(pt,eta,phi,chrg)
 
 
@@ -556,68 +433,10 @@ class NtupleAna(NtupleAnaBase):
 
             m = (ePlus + eMinus).M()
 
-            zCandKine= [ptPair[i][0],etaPair[i][0], phiPair[i][0], ptPair[i][1],etaPair[i][1], phiPair[i][0], m]
-            self.gethist("ZCandKine").Fill(array("d",zCandKine))
+            if(m > 20):
+                zCandKine= [ptPair[i][0],etaPair[i][0], phiPair[i][0], ptPair[i][1],etaPair[i][1], phiPair[i][0], m]
+                self.gethist("ZCandKine").Fill(array("d",zCandKine))
 
-
-    '''truth Analysis'''                
-    def trthAna(self):
-        cletaVec    = self.getCurrentValue("el_cl_Eta")
-        clptVec     = self.getCurrentValue("el_cl_Pt")
-        
-        trthetaVec  = self.getCurrentValue("el_truth_Eta")
-        trthptVec   = self.getCurrentValue("el_truth_Pt")
-        trthphiVec  = self.getCurrentValue("el_truth_Phi")
-
-        isMtchdVec  = self.getCurrentValue("elIsMtchd")
-
-        softeVec    = self.getCurrentValue("elAuthorSofte")
-        authorVec   = self.getCurrentValue("elAuthor")
-
-        parentPDg   = self.getCurrentValue("mtchdParent")
-
-
-        nZEl    =   0
-        nBEl    =   0
-        nCEl    =   0
-        nOther  =   0
-
-        for i in xrange(cletaVec.size()):
-            trthEta = trthetaVec.at(i)
-            trthPhi = trthphiVec.at(i)
-            trthPt  = trthptVec.at(i)
-
-            IsMtchd = isMtchdVec.at(i)
-            author  = authorVec.at(i)
-            softe   = softeVec.at(i)
-
-            parent  = parentPDg.at(i)
-
-            clEta   = cletaVec.at(i)
-            clPt    = clptVec.at(i)
-
-
-            #TruthMatched Electrons
-            if( IsMtchd ==1 and abs(clEta)<2.47):
-                from PyAnalysisUtils import PDG
-
-                if(self.isBHadron(parent) or self.isCHadron(parent)):
-                    self.gethist("TrthElParent").Fill(PDG.pdgid_to_root_name(parent),1)
-
-                if(abs(parent) ==23 and author ==1 and clPt >20 and (abs(clEta) < 2.47)):
-                    nZEl    += 1
-
-                elif(self.isBHadron(parent) and softe==1 and trthEta< 2.47 and trthPt>2):
-                    nBEl    +=1
-
-                elif(self.isCHadron(parent) and softe==1 and trthEta< 2.47 and trthPt>2):
-                    nCEl    +=1
-
-                else:
-                    nOther  +=1
-
-        self.gethist("matchedZElVsBEl").Fill(nZEl,nBEl)
-        self.gethist("matchedZElVsCEl").Fill(nZEl,nCEl)
 
     ''''''''''''''''''''''''''''''''
     '''Function to add histograms to the analysis chain'''
@@ -772,8 +591,9 @@ class plotscript:
             method = getattr(self,funcName)
             method()
 
-        '''Write both histogram lists to a file'''
+        #Save histograms
         f = ROOT.TFile("procHist.root","RECREATE")
+        #print self.outHistList
         for hist in self.outHistList:
             hist.Write()
 
@@ -805,34 +625,11 @@ class plotscript:
         self.__saveHist(self.__getInHist("ElAuthorEta"))
         self.__saveHist(self.__getInHist("ElAuthorPhi"))
 
-        self.__saveHist(self.__getInHist("ElAuthorMtchdPt"))
-        self.__saveHist(self.__getInHist("ElAuthorMtchdEta"))
-        self.__saveHist(self.__getInHist("ElAuthorMtchdPhi"))
+        h_nElAuthor = self.__getInHist("ElAuthorMultplcty")
+        h_nElAuthor.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElAuthor)
 
-        
         ###################################################
-        self.__saveHist(self.__getInHist("EltrkPt"))
-        self.__saveHist(self.__getInHist("EltrkEta"))
-        self.__saveHist(self.__getInHist("EltrkPhi"))
-
-        self.__saveHist(self.__getInHist("EltrkMtchdPt"))
-        self.__saveHist(self.__getInHist("EltrkMtchdEta"))
-        self.__saveHist(self.__getInHist("EltrkMtchdPhi"))
-
-        #################################################
-        self.__saveHist(self.__getInHist("ElclPt"))
-        self.__saveHist(self.__getInHist("ElclEta"))
-        self.__saveHist(self.__getInHist("ElclPhi"))
-        
-        self.__saveHist(self.__getInHist("ElclMtchdPt"))
-        self.__saveHist(self.__getInHist("ElclMtchdEta"))
-        self.__saveHist(self.__getInHist("ElclMtchdPhi"))
-
-        ##################################################### 
-        self.__saveHist(self.__getInHist("ElAuthorPt"))
-        self.__saveHist(self.__getInHist("ElAuthorEta"))
-        self.__saveHist(self.__getInHist("ElAuthorPhi"))
-
         #ZBoson kinematics from THnSparse.
         h_ZCandSparse    = self.__getInHist("ZCandKine")
 
@@ -852,16 +649,7 @@ class plotscript:
             h_ZBosonMass.GetXaxis().SetTitle("[GeV]")
             self.__saveHist(h_ZBosonMass)
 
-        #Multiplcty
-        self.__saveHist(self.__getInHist("ElAuthorMultplcty"))
-
-    def MakeTruthHists(self):
-        self.__saveHist(self.__getInHist("TrthElParent"))
-
-        self.__saveHist(self.__getInHist("matchedZElVsBEl"))
-        self.__saveHist(self.__getInHist("matchedZElVsCEl"))
-
-
+    
     def MakeHistBSemiElectron(self):
         #Retrieve the THnSparse
         BSparse         = self.__getInHist("BSemiElectron")

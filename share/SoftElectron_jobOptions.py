@@ -33,8 +33,7 @@ MySoftElectron = SoftElectron(
         #SelectBFromRun = run_number # use only u-jets from this run
         #SelectUFromRun = run_number # use only u-jets from this run
         #HforType  = "isCC",
-        FillGenInfo     =   decisionGenInfo,
-        DoTruthMatching =   decisionTruthMatch)
+        FillGenInfo     =   decisionGenInfo)
 
 from AthenaCommon.AlgSequence import AlgSequence
 topSequence = AlgSequence()

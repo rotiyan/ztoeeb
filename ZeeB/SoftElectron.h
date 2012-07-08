@@ -27,6 +27,8 @@
 #include "EventInfo/EventType.h"
 
 #include "TruthUtils/IHforTool.h"
+#include "TrigDecisionTool/TrigDecisionTool.h"
+
 
 namespace Rec { class TrackParticleContainer; }
 namespace HepMC {class GenParticle; }
@@ -141,7 +143,7 @@ class SoftElectron : public Algorithm
          * check if a particle is in 
          * the supplied vector container
          */
-    
+
     private:
         StoreGateSvc* m_storeGate;
 
@@ -162,21 +164,25 @@ class SoftElectron : public Algorithm
         ToolHandle< IHforTool > m_hfor_tool;
         std::string m_hforType;
         ToolHandle< IMCTruthClassifier> m_mcTruthClassifier;
+        ToolHandle< Trig::TrigDecisionTool > m_trigDec;
 
         TTree* m_tree; 
+        unsigned int            m_runNumber;
+        unsigned int            m_lumiNumber;
+
         std::vector<double>*    m_ZElPt;
         std::vector<double>*    m_ZElEta;
         std::vector<double>*    m_ZElPhi;
 
         std::vector<int>*       m_el_charge;
-        std::vector<bool>*       m_elAuthor;
-        std::vector<bool>*       m_elAuthorSofte;
-        std::vector<double>*    m_el_trk_Pt;
-        std::vector<double>*    m_el_trk_Eta;
-        std::vector<double>*    m_el_trk_Phi;
+        std::vector<bool>*      m_elAuthor;
+        std::vector<bool>*      m_elAuthorSofte;
         std::vector<double>*    m_el_cl_Pt;
         std::vector<double>*    m_el_cl_Eta;
         std::vector<double>*    m_el_cl_Phi;
+        std::vector<double>*    m_el_cl_E;
+        std::vector<double>*    m_el_trk_Eta;
+        std::vector<double>*     m_el_trk_Phi;
 
         std::vector<bool>*      m_el_id_loose;
         std::vector<bool>*      m_el_id_loosepp;
@@ -220,7 +226,6 @@ class SoftElectron : public Algorithm
         std::vector<int>*       m_bQuarkME_pdg;
 
         bool                    m_fillGenInfo;
-        bool                    m_doTruthMatching;
 
         double                  m_elPtCut;
         double                  m_elEtaCut;

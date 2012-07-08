@@ -13,6 +13,13 @@ zljDict = {\
         'znp3': 'mc11_7TeV.107653.AlpgenJimmyZeeNp3_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
         'znp4': 'mc11_7TeV.107654.AlpgenJimmyZeeNp4_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
         'znp5': 'mc11_7TeV.107655.AlpgenJimmyZeeNp5_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/'}
+wenuDict ={\
+        'wenunp0':'mc11_7TeV.107680.AlpgenJimmyWenuNp0_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
+        'wenunp1':'mc11_7TeV.107681.AlpgenJimmyWenuNp1_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
+        'wenunp2':'mc11_7TeV.107682.AlpgenJimmyWenuNp2_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
+        'wenunp3':'mc11_7TeV.107683.AlpgenJimmyWenuNp3_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
+        'wenunp4':'mc11_7TeV.107684.AlpgenJimmyWenuNp4_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
+        'wenunp5':'mc11_7TeV.107685.AlpgenJimmyWenuNp5_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/'}
 
 zccDict = {\
         'zccnp0': 'mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993/',
@@ -30,7 +37,24 @@ zzDict  ={\
         'zznp0': 'mc11_7TeV.107108.AlpgenJimmyZZincllNp0.merge.AOD.e995_s1372_s1370_r3043_r2993/',
         'zznp1': 'mc11_7TeV.107109.AlpgenJimmyZZincllNp1.merge.AOD.e995_s1372_s1370_r3043_r2993/',
         'zznp2': 'mc11_7TeV.107110.AlpgenJimmyZZincllNp2.merge.AOD.e995_s1372_s1370_r3043_r2993/',
-        'zznp3': 'mc11_7TeV.107111.AlpgenJimmyZZincllNp3.merge.AOD.e995_s1372_s1370_r3043_r2993/'}
+        'zznp3': 'mc11_7TeV.107111.AlpgenJimmyZZincllNp3.merge.AOD.e995_s1372_s1370_r3043_r2993/',
+        }
+
+herwigzzDict={\
+        'zzqqqq':'mc11_7TeV.126759.HerwigZZ_qqqq_pt100.merge.AOD.e1143_s1372_s1370_r3043_r2993/',
+        'zzqqbb':'mc11_7TeV.126761.HerwigZZ_qqbb_pt100.merge.AOD.e1143_s1372_s1370_r3043_r2993/'
+        }
+
+herwigwzDict={\
+        'wz':'mc11_7TeV.116125.HerwigWZ_pt100.merge.AOD.e825_s1310_s1300_r3043_r2993/',
+        'wzqqqq':'mc11_7TeV.126758.HerwigWZ_qqqq_pt100.merge.AOD.e1143_s1372_s1370_r3043_r2993/',
+        'wzqqbb':'mc11_7TeV.126758.HerwigWZ_qqqq_pt100.merge.AOD.e1143_s1372_s1370_r3043_r2993/'
+        }
+
+herwigwwDict={\
+        'ww':'mc11_7TeV.116124.HerwigWW_pt100.merge.AOD.e825_s1310_s1300_r3043_r2993/',
+        'wwqqqq':'mc11_7TeV.126757.HerwigWW_qqqq_pt100.merge.AOD.e1143_s1372_s1370_r3043_r2993/'
+        }
 
 
 wzDict  = {\
@@ -39,10 +63,19 @@ wzDict  = {\
         'wznp2': 'mc11_7TeV.107106.AlpgenJimmyWZincllNp2.merge.AOD.e995_s1372_s1370_r3043_r2993/',
         'wznp3': 'mc11_7TeV.107107.AlpgenJimmyWZincllNp3.merge.AOD.e995_s1372_s1370_r3043_r2993/'}
 
+ttbarDict = {\
+        'ttbar':'mc11_7TeV.105200.T1_McAtNlo_Jimmy.merge.AOD.e835_s1272_s1274_r3043_r2993/'}
+
+singleTopDict = {\
+        'singleTop':'mc11_7TeV.117316.singletop_wtch_DR_PowHeg_Pythia.merge.AOD.e887_s1310_s1300_r3043_r2993/'}
+
+jf17Dict  = {\
+        'jf17':'mc11_7TeV.105830.JF17_herwig_jet_filter.merge.AOD.e995_s1372_s1370_r3043_r2993/'}
+
 data    = {\
         'PeriodD' : 'data11_7TeV.periodD.physics_Egamma.PhysCont.AOD.pro10_v01/',
         'PeriodE' : 'data11_7TeV.periodE.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        #'PeriodF' : 'data11_7TeV.periodF.physics_Egamma.PhysCont.AOD.pro10_v01/',
+        'PeriodF' : 'data11_7TeV.periodF.physics_Egamma.PhysCont.AOD.pro10_v01/',
         'PeriodG' : 'data11_7TeV.periodG.physics_Egamma.PhysCont.AOD.pro10_v01/',
         'PeriodH' : 'data11_7TeV.periodH.physics_Egamma.PhysCont.AOD.pro10_v01/',
         'PeriodI' : 'data11_7TeV.periodI.physics_Egamma.PhysCont.AOD.pro10_v01/',
@@ -53,10 +86,10 @@ data    = {\
 
 
 
-dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"ww" : wwDict,"zz" : zzDict,"wz" : wzDict,"data": data}
+dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"wenu":wenuDict,"ww" : wwDict,"herwigww":herwigwwDict,"herwigzz":herwigzzDict,"herwigwz":herwigwzDict,"zz" : zzDict,"wz" : wzDict,"ttbar":ttbarDict,"singleTop":singleTopDict,"jf17":jf17Dict,"data": data}
 
 #Map the hfor type to each dataset
-hforDict    = {"zbb" : "isBB", "zinc": "isLightFlavor", "zcc": "", "ww": "isLightFlavor","zz":"isLightFlavor","wz": "isLightFlavor","data":""}
+hforDict    = {"zbb" : "isBB", "zinc": "isLightFlavor", "zcc": "","wenu":"", "ww": "isLightFlavor","herwigww":"","herwigzz":"","herwigwz":"","zz":"isLightFlavor","wz": "isLightFlavor","ttbar": "","singleTop":"","jf17":"","data":""}
 #Hfor doens't work for Zcc sample !!
 
 def gangaSub(dsDictName,dsName,dslist):

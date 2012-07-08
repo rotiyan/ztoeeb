@@ -13,6 +13,7 @@
 #include "TMath.h"
 #include "TVector3.h"
 
+#include <utility>
 
 #include "McParticleEvent/TruthParticleContainer.h"
 #include "Navigation/NavigationToken.h"
@@ -62,6 +63,7 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     m_electronCollection(0),
     m_histos(0),
     m_mcTruthClassifier("MCTruthClassifier"),
+    m_trigDec( "Trig::TrigDecisionTool" ),
     m_tree(0),
     m_elEtaCut(2.5),
     m_elCrackEtaCutLow(1.37),
@@ -75,8 +77,8 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     declareProperty("MCEventContainer", m_mcEventContainerName = "GEN_AOD");
     declareProperty("HforType",m_hforType ="isBB");
     declareProperty("FillGenInfo",m_fillGenInfo=false);
-    declareProperty("DoTruthMatching",m_doTruthMatching=false);
     declareProperty("ElPtCut",m_elPtCut=15);//GeV
+    declareProperty("TrigDecisionTool",m_trigDec);
 }
 
 SoftElectron::~SoftElectron() {}
@@ -87,10 +89,10 @@ StatusCode SoftElectron::initialize()
 
     mlog <<MSG::INFO<< "HFOR TYPE: "<< m_hforType << endreq;
     mlog <<MSG::INFO<< "FILLGENINFO "<<m_fillGenInfo <<endreq;
-    mlog <<MSG::INFO<< "DOTRUTHMATCHING"<<m_doTruthMatching <<endreq;
 
     StatusCode sc = service("StoreGateSvc", m_storeGate);
     
+    //Retrieve Hfor tool
     m_hfor_tool = ToolHandle<IHforTool>("HforTool/hforTool", this);
     if(m_hfor_tool.retrieve().isFailure()){
         mlog <<MSG::ERROR 
@@ -99,14 +101,20 @@ StatusCode SoftElectron::initialize()
         return StatusCode::FAILURE;
     }
 
-    if(m_doTruthMatching)
+    //Retrive MCTruth Classifier
+    if(m_mcTruthClassifier.retrieve().isFailure())
     {
-        if(m_mcTruthClassifier.retrieve().isFailure())
-        {
-            mlog <<MSG::FATAL
-               << "Failed to retrieve Truth Classifier Tool"
-               << endreq;
-        }
+        mlog <<MSG::FATAL
+           << "Failed to retrieve Truth Classifier Tool"
+           << endreq;
+    }
+
+    //Retrieve Trig Decision Tool
+    if(m_trigDec.retrieve().isFailure())
+    {
+        mlog<<MSG::FATAL
+            << "Failed to retrieve Trigger Decision Tool"
+            <<endreq;
     }
 
     // THistSvc init:
@@ -139,7 +147,9 @@ StatusCode SoftElectron::execute()
         return StatusCode::FAILURE;
     }
 
-    bool vxPass = false;
+    bool vxPass     = false;
+    bool trigPass   = false;
+
     if(m_vxContainer)
     {
         VxContainer::const_iterator vxIter = m_vxContainer->begin();
@@ -147,8 +157,35 @@ StatusCode SoftElectron::execute()
         if(nTracks>=3)
             vxPass = true;
     }
+    
+    //Run Number
+    m_runNumber     = m_eventInfo->event_ID()->run_number();
+    m_lumiNumber    = m_eventInfo->event_ID()->lumi_block();
 
-    if( vxPass)
+    unsigned int runD_Min       = 179710;
+    unsigned int runJ_Max       = 186775;
+    unsigned int runK_Min       = 186873;
+    unsigned int runK_Max       = 187815;
+    unsigned int runL_Min       = 188902;
+    unsigned int runM_Max       = 191933;
+
+    //Check the trigger
+    if(m_runNumber >= runD_Min && m_runNumber <= runJ_Max)
+    {
+        trigPass = m_trigDec->isPassed("EF_2e12_medium");
+    }
+    else if(m_runNumber >= runK_Min && m_runNumber <= runK_Max)
+    {
+        trigPass = m_trigDec->isPassed("EF_2e12T_medium");
+    }
+    else if(m_runNumber >= runL_Min && m_runNumber <= runM_Max)
+    {
+        trigPass = m_trigDec->isPassed("EF_2e12Tvh_medium");
+    }
+
+    //Entering the event loop
+    //
+    if( vxPass && trigPass )
     {
         //Book Ntuple Containers
         this->BookNtupleContainers();
@@ -164,13 +201,12 @@ StatusCode SoftElectron::execute()
             {
                 this->FillElectrons();
                 this->FindTruthParticle();
-                if(m_doTruthMatching)
-                    this->DoElectronMatch();
             }
         }
         else //data
+        {
             this->FillElectrons();
-
+        }
 
         m_tree->Fill();
         this->ClearContainers();
@@ -197,23 +233,30 @@ StatusCode SoftElectron::BookHistograms()
      */
     m_tree  = new TTree("el","Electron Tree");
 
+    m_tree->Branch("RunNumber",&m_runNumber);
+    m_tree->Branch("LumiblockNumber",&m_lumiNumber);
+    
     //Electrons
-    m_tree->Branch("el_trk_Pt",&m_el_trk_Pt);
-    m_tree->Branch("el_trk_Eta",&m_el_trk_Eta);
-    m_tree->Branch("el_trk_Phi",&m_el_trk_Phi);
     m_tree->Branch("el_cl_Pt",&m_el_cl_Pt);
     m_tree->Branch("el_cl_Eta",&m_el_cl_Eta);
     m_tree->Branch("el_cl_Phi",&m_el_cl_Phi);
-    m_tree->Branch("el_truth_Pt",&m_el_truth_Pt);
-    m_tree->Branch("el_truth_Eta",&m_el_truth_Eta);
-    m_tree->Branch("el_truth_Phi",&m_el_truth_Phi);
+    m_tree->Branch("el_cl_E",&m_el_cl_E);
+    m_tree->Branch("el_trk_Eta",&m_el_trk_Eta);
+    m_tree->Branch("el_trk_Phi",&m_el_trk_Phi);
+
+
     m_tree->Branch("elIsMtchd",&m_elMtchd);
     m_tree->Branch("mtchdParent",&m_mtchdParent);
     m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
+ 
     m_tree->Branch("elAuthor",&m_elAuthor);
     m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
     m_tree->Branch("el_charge",&m_el_charge);
 
+    m_tree->Branch("el_truth_Pt",&m_el_truth_Pt);
+    m_tree->Branch("el_truth_Eta",&m_el_truth_Eta);
+    m_tree->Branch("el_truth_Phi",&m_el_truth_Phi);
+    
     m_tree->Branch("el_loose",&m_el_id_loose);
     m_tree->Branch("el_loosePP",&m_el_id_loosepp);
     m_tree->Branch("el_medium",&m_el_id_medium);
@@ -466,71 +509,63 @@ void SoftElectron::FillElectrons()
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
 
-        //Fill Common electron properties
-        m_el_charge->at(i)      = Electron->charge();
-        m_el_id_loose->at(i)    = Electron->passID(egammaPID::ElectronIDLoose);
-        m_el_id_loosepp->at(i)  = Electron->passID(egammaPID::ElectronIDLoosePP);
-        m_el_id_medium->at(i)   = Electron->passID(egammaPID::ElectronIDMedium);
-        m_el_id_mediumpp->at(i) = Electron->passID(egammaPID::ElectronIDMediumPP);
-        m_el_id_tight->at(i)    = Electron->passID(egammaPID::ElectronIDTight);
-        m_el_id_tightpp->at(i)  = Electron->passID(egammaPID::ElectronIDTightPP);
-        
-        //Track Particle 
-        const Rec::TrackParticle* ElTrkPartcl = Electron->trackParticle();
-        if(ElTrkPartcl)
-        {
-            double elTrkPt  = ElTrkPartcl->pt()/1000;
-            if(elTrkPt > m_elPtCut)
-            {
-                m_el_trk_Pt->at(i)  = ElTrkPartcl->pt()/1000;
-                m_el_trk_Eta->at(i) = ElTrkPartcl->eta();
-                m_el_trk_Phi->at(i) = ElTrkPartcl->phi();
-            }
-        }
-
         //Cluster
         const CaloCluster* ElCluster = Electron->cluster();
         if(ElCluster)
         {
-            double elClPt   = ElCluster->pt()/1000;
-            double elClEta  = ElCluster->eta();
-            double elClPhi  = ElCluster->phi();
+            double elClPt       = ElCluster->pt()/1000;
+            double elClEta      = ElCluster->eta();
+            double elClPhi      = ElCluster->phi();
+            double elClE        = ElCluster->e()/1000;
 
-            if( (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
+            double elTrkEta     = -100;
+            double elTrkPhi     = -100;
+
+            if(Electron->trackParticle())
+            {
+                double elTrkEta     = Electron->trackParticle()->eta();
+                double elTrkPhi     = Electron->trackParticle()->phi();
+            }
+
+            double elCharge     = Electron->charge();
+            bool isEmLoose      = Electron->passID(egammaPID::ElectronIDLoose);
+            bool isEmLoosePP    = Electron->passID(egammaPID::ElectronIDLoosePP);
+            bool isEmMedium     = Electron->passID(egammaPID::ElectronIDMedium);
+            bool isEmMediumPP   = Electron->passID(egammaPID::ElectronIDMediumPP);
+            bool isEmTight      = Electron->passID(egammaPID::ElectronIDTight);
+            bool isEmTightPP    = Electron->passID(egammaPID::ElectronIDTightPP);
+
+            
+            bool isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
+
+            mlog<<MSG::INFO <<"Good OQ: "<<isGoodOQ <<endreq;
+
+
+
+            if( isGoodOQ && 
+                    (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
                     std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
             {
-                m_el_cl_Pt->at(i)   = elClPt;
-                m_el_cl_Eta->at(i)  = elClEta;
-                m_el_cl_Phi->at(i)  = elClPhi;
+                m_el_charge     ->push_back(elCharge);
+                m_el_id_loosepp ->push_back(isEmLoose);
+                m_el_id_loose   ->push_back(isEmLoosePP);
+                m_el_id_medium  ->push_back(isEmMedium);
+                m_el_id_mediumpp->push_back(isEmMediumPP);
+                m_el_id_tight   ->push_back(isEmTight);
+                m_el_id_tightpp ->push_back(isEmTightPP);
+
+                //El Reco  Alg
+                m_elAuthorSofte ->push_back(Electron->author(egammaParameters::AuthorSofte));
+                m_elAuthor      ->push_back(Electron->author(egammaParameters::AuthorElectron));
+
+                //El Kinematics
+                m_el_cl_Pt      ->push_back(elClPt);
+                m_el_cl_Eta     ->push_back(elClEta);
+                m_el_cl_Phi     ->push_back(elClPhi);
+                m_el_cl_E       ->push_back(elClE);
+                m_el_trk_Eta    ->push_back(elTrkEta);
+                m_el_trk_Phi    ->push_back(elTrkPhi);
             }
-        }
-
-        //Soft Electrons
-        m_elAuthorSofte->at(i)  =  Electron->author(egammaParameters::AuthorSofte);
-        //Standard Egamma Algorithm
-        m_elAuthor->at(i)       =  Electron->author(egammaParameters::AuthorElectron);
-
-    }
-}
-
-void SoftElectron::DoElectronMatch()
-{
-    for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
-    {
-        const Analysis::Electron* Electron = m_electronCollection->at(i);
-        const HepMC::GenParticle* elParent = this->GetElectronParent(Electron);
-
-        if(elParent)
-        {
-            const HepMC::GenParticle* elgrndParent = this->GetMother(elParent);
-            if(elgrndParent)
-                m_mtchdGrndParent->at(i)    = elgrndParent->pdg_id();
-
-            m_elMtchd->at(i)        = 1;
-            m_mtchdParent->at(i)    = elParent->pdg_id();
-            m_el_truth_Pt->at(i)    = elParent->momentum().perp()/1000;
-            m_el_truth_Eta->at(i)   = elParent->momentum().eta();
-            m_el_truth_Phi->at(i)   = elParent->momentum().phi();
         }
     }
 }
@@ -584,6 +619,9 @@ StatusCode SoftElectron::LoadContainers()
 
 void SoftElectron::BookNtupleContainers()
 {
+    m_runNumber     = 0;
+    m_lumiNumber    = 0;
+
     //Truth
     m_ZElPt         = new std::vector<double>();
     m_ZElEta        = new std::vector<double>();
@@ -618,44 +656,44 @@ void SoftElectron::BookNtupleContainers()
     m_bQuarkME_pdg  = new std::vector<int>();
 
     //TruthMatch Electron
-    int ElSize      = m_electronCollection->size();
-    m_elMtchd           =   new std::vector<int>(ElSize,-100);       
-    m_mtchdParent       =   new std::vector<int>(ElSize,-100);       
-    m_mtchdGrndParent   =   new std::vector<int>(ElSize,-100);
-    m_el_truth_Pt       =   new std::vector<double>(ElSize,-100);    
-    m_el_truth_Eta      =   new std::vector<double>(ElSize,-100);    
-    m_el_truth_Phi      =   new std::vector<double>(ElSize,-100);    
+    m_elMtchd           =   new std::vector<int>();       
+    m_mtchdParent       =   new std::vector<int>();       
+    m_mtchdGrndParent   =   new std::vector<int>();
+    m_el_truth_Pt       =   new std::vector<double>();    
+    m_el_truth_Eta      =   new std::vector<double>();    
+    m_el_truth_Phi      =   new std::vector<double>();    
 
     //Reco Electron
-    m_el_trk_Pt     =   new std::vector<double>(ElSize,-100);    
-    m_el_trk_Eta    =   new std::vector<double>(ElSize,-100);    
-    m_el_trk_Phi    =   new std::vector<double>(ElSize,-100);    
-    m_el_cl_Pt      =   new std::vector<double>(ElSize,-100);    
-    m_el_cl_Eta     =   new std::vector<double>(ElSize,-100);    
-    m_el_cl_Phi     =   new std::vector<double>(ElSize,-100);    
+    m_el_cl_Pt          =   new std::vector<double>();    
+    m_el_cl_Eta         =   new std::vector<double>();    
+    m_el_cl_Phi         =   new std::vector<double>();
+    m_el_cl_E           =   new std::vector<double>();
+    m_el_trk_Eta        =   new std::vector<double>();
+    m_el_trk_Phi        =   new std::vector<double>();
     
-    m_elAuthor      =   new std::vector<bool>(ElSize,false);       
-    m_elAuthorSofte =   new std::vector<bool>(ElSize,false);       
-    m_el_charge     =   new std::vector<int>(ElSize,-100);
+    m_elAuthor          =   new std::vector<bool>();       
+    m_elAuthorSofte     =   new std::vector<bool>();       
+    m_el_charge         =   new std::vector<int>();
 
 
-    m_el_id_loose   =   new std::vector<bool>(ElSize,false);
-    m_el_id_loosepp =   new std::vector<bool>(ElSize,false);
-    m_el_id_medium  =   new std::vector<bool>(ElSize,false);
-    m_el_id_mediumpp=   new std::vector<bool>(ElSize,false);
-    m_el_id_tight   =   new std::vector<bool>(ElSize,false);
-    m_el_id_tightpp =   new std::vector<bool>(ElSize,false);
+    m_el_id_loose       =   new std::vector<bool>();
+    m_el_id_loosepp     =   new std::vector<bool>();
+    m_el_id_medium      =   new std::vector<bool>();
+    m_el_id_mediumpp    =   new std::vector<bool>();
+    m_el_id_tight       =   new std::vector<bool>();
+    m_el_id_tightpp     =   new std::vector<bool>();
 
 }
 
 void SoftElectron::ClearContainers()
 {
-    delete m_el_trk_Pt;
-    delete m_el_trk_Eta;
-    delete m_el_trk_Phi;
+
     delete m_el_cl_Pt;
     delete m_el_cl_Eta;
     delete m_el_cl_Phi;
+    delete m_el_cl_E;
+    delete m_el_trk_Eta;
+    delete m_el_trk_Phi;
 
     delete m_elAuthor;
     delete m_elAuthorSofte;
