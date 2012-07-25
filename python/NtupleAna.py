@@ -1,9 +1,12 @@
 import abc
 from NtupleAnaBase import NtupleAnaBase
 from array import array
+import math
 
 import ROOT, sys,os,glob 
 from multiprocessing import Process,Queue,current_process
+
+from PyAnalysisUtils import PDG
 
 
 class NtupleAna(NtupleAnaBase):
@@ -17,20 +20,22 @@ class NtupleAna(NtupleAnaBase):
         self.outFileName    = outFileName
     
     def initialize(self):
-        #GRL Shared object
-        #ROOT.gSystem.Load("libGoodRunsListsLib.so")
-        #ROOT.DQ.SetXMLFile("../share/data12_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_WZjets_allchannels.xml")
-
-        #Used in DoAuthorEl()
-        self.regPtHist("ElAuthorPt")
-        self.regEtaHist("ElAuthorEta")
-        self.regPhiHist("ElAuthorPhi")
-        self.regTH1("ElAuthorMultplcty","",20,-0.5,19.5)
+        #Used in doAuthorEl()
+        self.regPtHist("AuthorElPt")
+        self.regEtaHist("AuthorElEta")
+        self.regPhiHist("AuthorElPhi")
+        self.regTH1("AuthorElE","",500,0,500)
+        self.regTH1("AuthorElMultplcty","",8,-0.5,7.5)
 
         self.regTHnSparse("ZCandKine","",nbins=7,\
                 bins=[1000,100,500, 1000, 100, 500,400],\
                 fmin=[0  , -5, -5, 0   , -5 , -5 ,0 ],\
                 fmax=[500, 5 ,  5, 500 , 5  , 5  ,200])
+
+        self.regTH1("ElParentPDG","ElParentPDG",10,0,10)
+        self.regTH1("ElGrndParentPDG","El Grand Parent PDG",10,0,10)
+        self.regTH1("BMtchElMultplcty","",8,-0.5,7.5)
+        self.regTH1("BGrndMtchElMultplcty","",8,-0.5,7.5)
 
         '''Truth'''
         self.regTH1("Bhadrons")
@@ -38,8 +43,6 @@ class NtupleAna(NtupleAnaBase):
         self.regTH1("BHdrneta","",100,-5,5)
         self.regTH2("BHdrnBElPtCorr","",500,0,500,100,0,100)
         self.regTH2("BHdrnEvents","",35,0.5,35.5,10,-0.5,9.5)
-        self.regTH2("BElEvents","",35,0.5,35.5,10,-0.5,9.5)
-        self.regProfHist2D("BElEvntEff","",35,0.5,35.5,10,-0.5,9.5)
 
         self.regTH1("Chadrons")
         self.regTH2("CHdrnCElPtCorr","",500,0,500,100,0,100)
@@ -48,33 +51,23 @@ class NtupleAna(NtupleAnaBase):
         self.regPtHist("CscdPt")
         self.regEtaHist("CscdEta")
         self.regTH2("CHdrnEvents","",35,0.5,35.5,10,-0.5,9.5)
-        self.regTH2("CElEvents","",35,0.5,35.5,10,-0.5,9.5)
-
+        
         self.regTH2("hardVsSoftEl","",10,0.5,10.5,10,0.5,10.5)
 
         '''SemiElectron decay '''
-        #ptcut,nBEl,nCEl
-        self.regTHnSparse("BSemiElectron","",nbins=3,\
-                bins=[35  ,11  ,11],\
-                fmin=[0.5 ,-0.5,-0.5  ],\
-                fmax=[35.5,10.5,10.5 ])
+        #Bptcut,elptCut,nBEl,nBHadrons
+        self.regTHnSparse("BSemiElectron","",nbins=4,\
+                bins=[35  ,35  ,11  , 11],\
+                fmin=[0.5 ,0.5 ,-0.5, -0.5  ],\
+                fmax=[35.5,35.5,10.5, 10.5 ])
 
-        self.regTHnSparse("CSemiElectron","",nbins=3,\
-                bins=[35  ,11  ,10],\
-                fmin=[0.5 ,-0.5,0.5  ],\
-                fmax=[35.5,10.5,10.5 ])
-
-
-        '''ZB electron'''
-        self.regTHnSparse("ZBEl","",nbins=5,\
-                bins=[200,200,100,100,10],\
-                fmin=[0  ,0  ,-5 , -5,0.5 ],\
-                fmax=[200,200,5  ,  5,10.5])
-
-        '''bquark correlation'''
-        self.regPtHist("bQuarkPt")
+        self.regTHnSparse("CSemiElectron","",nbins=4,\
+                bins=[35  ,35  ,11  , 11],\
+                fmin=[0.5 ,0.5 ,-0.5, -0.5  ],\
+                fmax=[35.5,35.5,10.5, 10.5 ])
 
         self.regTH3("bquarkPtDeltaR",";b1;b2",200,0,200,200,0,200,100,0,2)
+        
         self.regTHnSparse("bquarkKinematics",nbins=7,\
                 bins=[200,200,100,100,100,100,100],\
                 fmin=[0  ,0  ,0  ,-5 ,-5 ,-5 ,-4 ],\
@@ -89,10 +82,8 @@ class NtupleAna(NtupleAnaBase):
 
 
     def execute(self):
-        #Check if the event passes GRL
-        #if(ROOT.DQ.PassRunLB(self.getCurrentValue("RunNumber"),self.getCurrentValue("LumiblockNumber"))):
-        #Analyse the author electrons
-        self.DoAuthorEl()
+        self.doAuthorEl()
+        self.doTruthAna()
         
     def finalize(self):
         #Save histograms to disk
@@ -120,52 +111,116 @@ class NtupleAna(NtupleAnaBase):
                 self.gethist("ZElEta").Fill(ZElEtaVec.at(i))
                 self.gethist("ZElPhi").Fill(ZElPhiVec.at(i))
 
-    def hadronElectronMatching(self):
-        BPtVec      = self.getCurrentValue("BPt")
-        BPhiVec     = self.getCurrentValue("BPhi")
+    
+    def doTruthAna(self):
+        ptcutlist = [5,10,15,20,25,30]
+        for hadPtCut in ptcutlist:
+            for ElptCut in ptcutlist:
+                nBHadrons   = self.getBMultplcty(hadPtCut,2.5)
+                nBEl        = self.getBElMultplcty(hadPtCut,ElptCut,2.5,2.5)
+                nCHadrons   = self.getCMultplcty(hadPtCut,2.5)
+                nCEl        = self.getCElMultplcty(hadPtCut,ElptCut,2.5,2.5)
 
-        BSemiElPtVec= self.getCurrentValue("BsemiElPt")
-        BSemiElEtaVec=self.getCurrentValue("BsemiElEta")
-        BSemiElPhiVec=self.getCurrentValue("BsemiElPhi")
-        BisSemiVec  = self.getCurrentValue("BisSemiElectron")
 
-        CSemiElPtVec= self.getCurrentValue("CsemiElPt")
-        CSemiElEtaVec=self.getCurrentValue("CsemiElEta")
-        CSemiElPhiVec=self.getCurrentValue("CsemiElPhi")
-        CisSemiVec  = self.getCurrentValue("CisSemiElectron")
+                x = [hadPtCut,ElptCut,nBEl,nBHadrons]
+                self.gethist("BSemiElectron").Fill(array("d",x))
 
-        ptcutlist = [2,5,10,15,20,25,30]
+                x = [hadPtCut,ElptCut,nCEl,nCHadrons]
+                self.gethist("CSemiElectron").Fill(array("d",x))
 
-        ZElPt       = self.getCurrentValue("ZElPt")
-        ZElEta      = self.getCurrentValue("ZElEta")
+    '''The Author Electron is an electron with track pointing to the cluster identified'''
+    def doAuthorEl(self):
+        clptVec     = self.getCurrentValue("el_cl_Pt")
+        cletaVec    = self.getCurrentValue("el_cl_Eta")
+        clphiVec    = self.getCurrentValue("el_cl_Phi")
+        clEVec      = self.getCurrentValue("el_cl_E")
 
-        for ptcut in ptcutlist:
-            nBHadrons   = self.getBMultplcty(ptcut,2.5)
-            nBEl        = self.getBElMultplcty(ptcut,2.5)
+        softeVec    = self.getCurrentValue("elAuthorSofte")
+        authorVec   = self.getCurrentValue("elAuthor")
 
-            x = [ptcut,nBEl,nBHadrons]
-            self.gethist("BSemiElectron").Fill(array("d",x))
+        chrgVec     = self.getCurrentValue("el_charge")
+        medIdVec    = self.getCurrentValue("el_medium")
+        medPPIdVec  = self.getCurrentValue("el_mediumPP")
+        tightPPIdVec= self.getCurrentValue("el_tightPP")
 
-            self.gethist("BHdrnEvents").Fill(ptcut,nBHadrons)
-            isSemiB  = 0
-            if(nBEl):
-                isSemiB = 1
-                self.gethist("BElEvents").Fill(ptcut,nBHadrons)
+        elParentVec = self.getCurrentValue("mtchdParent")
+        elGrndParentVec = self.getCurrentValue("mtchdGrndParent")
 
-            self.gethist("BElEvntEff").Fill(ptcut,nBHadrons,isSemiB)
+        kineList = []
 
-            nCHadrons   = self.getCMultplcty(ptcut,2.5)
-            nCEl        = self.getCElMultplcty(ptcut,2.5)
+        nBMtchEl    = 0
+        nBGrndMtchEl= 0
 
-            x = [ptcut,nCEl,nCHadrons]
-            self.gethist("CSemiElectron").Fill(array("d",x))
+        nCMtchEl    = 0
+        nCGrndMtchEl= 0
 
-            if(nCEl):
-                self.gethist("CElEvents").Fill(ptcut,nCHadrons)
+        for i in xrange(cletaVec.size()):
+            clEta   = cletaVec.at(i)
+            clPt    = clptVec.at(i)
+            clPhi   = clphiVec.at(i)
+            clE     = clEVec.at(i)
 
+            author  = authorVec.at(i)
+            softe   = softeVec.at(i)
+            clChrg    = chrgVec.at(i)
+            medId   = medIdVec.at(i)
+            medPPId = medPPIdVec.at(i)
+            tightPPid=tightPPIdVec.at(i)
+
+            elParentPDG     = elParentVec.at(i)
+            elGrnParentPDG  = elGrndParentVec.at(i)
+
+            if(medPPId==True and (author == True or(author==True and softe==True)) and clPt > 15):
+                kineList +=[(clPt,clEta,clPhi,clE,clChrg)]
+
+                self.gethist("AuthorElEta").Fill(clEta)
+                self.gethist("AuthorElPt").Fill(clPt)
+                self.gethist("AuthorElPhi").Fill(clPhi)
+                self.gethist("AuthorElE").Fill(clE)
+
+                """Truth match"""
+                if(elParentPDG != -100):
+                    self.gethist("ElParentPDG").Fill(PDG.pdgid_to_name(elParentPDG),1)
+                    if(self.isBHadron(elParentPDG)):
+                        nBMtchEl +=1
+                    elif(self.isCHadron(elParentPDG)):
+                        nCMtchEl +=1
+
+                if(elGrnParentPDG != -100):
+                    self.gethist("ElGrndParentPDG").Fill(PDG.pdgid_to_name(elGrnParentPDG),1)
+                    if(self.isBHadron(elGrnParentPDG)):
+                        nBGrndMtchEl +=1
+                    elif(self.isCHadron(elParentPDG)):
+                        nCGrndMtchEl +=1
+
+        #End of loop
+
+        self.gethist("AuthorElMultplcty").Fill(len(kineList))
+        self.gethist("BMtchElMultplcty").Fill(nBMtchEl)
+        self.gethist("BGrndMtchElMultplcty").Fill(nBGrndMtchEl)
+        
+        #Sorts kinelist in pt order (the first element of the tuple)
+        sortList = sorted(kineList)
+        sortList.reverse()
+        
+        pt  = []
+        eta = []
+        phi = []
+        enrg= []
+        chrg= []
+        if(len(sortList)>1):
+            el1 = sortList[0]
+            el2 = sortList[1]
+
+            pt = [el1[0],el2[0]]
+            eta= [el1[1],el2[1]]
+            phi= [el1[2],el2[2]]
+            enrg=[el1[3],el2[3]]
+            chrg=[el1[3],el2[4]]
+
+            self.FillZCandKinematics(pt,eta,phi,enrg,chrg)
 
     def makeDeltaRPlots(self):
-
         bQuarkME_pt     = self.getCurrentValue("bQuarkME_pt")
         bQuarkME_eta    = self.getCurrentValue("bQuarkME_eta")
         bQuarkME_phi    = self.getCurrentValue("bQuarkME_phi")
@@ -204,7 +259,9 @@ class NtupleAna(NtupleAnaBase):
 
         return nBHadrons
 
-    def getBElMultplcty(self,ptcut,etacut):
+    '''Return the multiplicity of B decay electrons as a function of 
+    the El pt cut and B-hadron pt cut'''
+    def getBElMultplcty(self,Bptcut, Elptcut,Betacut, Eletacut):
         BPtVec      = self.getCurrentValue("BPt")
         BEtaVec     = self.getCurrentValue("BEta")
         BElPtVec    = self.getCurrentValue("BsemiElPt")
@@ -218,15 +275,15 @@ class NtupleAna(NtupleAnaBase):
             BHdrnEta= BEtaVec.at(i)
             SemiEl  = isSemiElVec.at(i)
 
-            if(BHdrnPt > ptcut and abs(BHdrnEta) < etacut):
+            if(BHdrnPt > Bptcut and abs(BHdrnEta) < Betacut):
                 if(SemiEl ==1):
 
                     elPass = False
                     for k in xrange(BElPtVec.size()):
                         BElPt   = BElPtVec.at(k)
                         BElEta  = BElEtaVec.at(k)
-                        '''10 GeV Soft El cut'''
-                        if(BElPt> 10 and abs(BElEta) < etacut):
+                        
+                        if(BElPt> Elptcut and abs(BElEta) < Eletacut):
                             elPass = True
 
                     if(elPass):
@@ -308,8 +365,9 @@ class NtupleAna(NtupleAnaBase):
 
         return nCHadrons
 
-    '''# Soft Electrons in C-hadron PtCut,etacut bins'''
-    def getCElMultplcty(self,ptcut,etacut):
+    '''Return the multiplicity of C decay electrons as a function of 
+    the El pt cut and C-hadron pt cut'''
+    def getCElMultplcty(self,Cptcut, Elptcut,Cetacut, Eletacut):
         CPtVec      = self.getCurrentValue("CPt")
         CEtaVec     = self.getCurrentValue("CEta")
         CElPtVec    = self.getCurrentValue("CsemiElPt")
@@ -323,15 +381,15 @@ class NtupleAna(NtupleAnaBase):
             CHdrnEta= CEtaVec.at(i)
             SemiEl  = isSemiElVec.at(i)
 
-            if(CHdrnPt > ptcut and abs(CHdrnEta) < etacut):
+            if(CHdrnPt > Cptcut and abs(CHdrnEta) < Cetacut):
                 if(SemiEl ==1):
 
                     elPass = False
                     for k in xrange(CElPtVec.size()):
                         CElPt   = CElPtVec.at(k)
                         CElEta  = CElEtaVec.at(k)
-                        '''Soft Electron cut 10 GeV'''
-                        if(CElPt> 10 and abs(CElEta) < etacut):
+                        
+                        if(CElPt> Elptcut and abs(CElEta) < Eletacut):
                             elPass = True
 
                     if(elPass):
@@ -354,90 +412,74 @@ class NtupleAna(NtupleAnaBase):
 
         return nCEl
 
+    def getNBEl(self,elptcut,eletacut):
+        BElEtaVec   = self.getCurrentValue("BsemiElEta")
+        BElPtVec    = self.getCurrentValue("BsemiElPt")
+        isSemiElVec = self.getCurrentValue("BisSemiElectron")
 
-    '''The Author Electron is an electron with track pointing to the cluster identified'''
-    def DoAuthorEl(self):
-        clptVec     = self.getCurrentValue("el_cl_Pt")
-        cletaVec    = self.getCurrentValue("el_cl_Eta")
-        clphiVec    = self.getCurrentValue("el_cl_Phi")
+        nBEl = 0
+        for i in xrange(BElPtVec.size()):
+            BElPt   = BElPtVec.at(i)
+            BElEta  = BElPtVec.at(i)
+            isSemi  = isSemiElVec.at(i)
+            if(isSemi and BElPt>= elptcut and abs(BElEta) < eletacut):
+                nBEl +=1
 
-        softeVec    = self.getCurrentValue("elAuthorSofte")
-        authorVec   = self.getCurrentValue("elAuthor")
-
-        chrgVec     = self.getCurrentValue("el_charge")
-        medIdVec    = self.getCurrentValue("el_medium")
-        medPPIdVec  = self.getCurrentValue("el_mediumPP")
-        tightPPIdVec= self.getCurrentValue("el_tightPP")
-
-
-        kineList = []
-
-        for i in xrange(cletaVec.size()):
-            clEta   = cletaVec.at(i)
-            clPt    = clptVec.at(i)
-            clPhi   = clphiVec.at(i)
-
-            author  = authorVec.at(i)
-            softe   = softeVec.at(i)
-            clChrg    = chrgVec.at(i)
-            medId   = medIdVec.at(i)
-            medPPId = medPPIdVec.at(i)
-            tightPPid=tightPPIdVec.at(i)
-
-            if(medPPId==True and (author == True or(author==True and softe==True))):
- 
-                kineList +=[(clPt,clEta,clPhi,clChrg)]
-
-                self.gethist("ElAuthorEta").Fill(clEta)
-                self.gethist("ElAuthorPt").Fill(clPt)
-                self.gethist("ElAuthorPhi").Fill(clPhi)
-
-        self.gethist("ElAuthorMultplcty").Fill(len(kineList)) 
-        
-        sortList = sorted(kineList)
-        sortList.reverse()
-        
-        pt  = []
-        eta = []
-        phi = []
-        chrg= []
-        if(len(sortList)>1):
-            el1 = sortList[0]
-            el2 = sortList[1]
-
-            pt = [el1[0],el2[0]]
-            eta= [el1[1],el2[1]]
-            phi= [el1[2],el2[2]]
-            chrg=[el1[3],el2[3]]
-
-            self.FillZCandKinematics(pt,eta,phi,chrg)
+        return nBEl
 
 
     '''Get Invariant mass list of OS electrons'''
     '''DEBUG:The el mass should be removed'''
-    def FillZCandKinematics(self,pt,eta,phi,chrg):
+    def FillZCandKinematics(self,pt,eta,phi,enrg,chrg):
         negIdx = [chrg.index(x) for x in chrg if x <0]
         plusIdx= [chrg.index(x) for x in chrg if x >0]
 
         ptPair = [(pt[ePidx],pt[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
         etaPair = [(eta[ePidx],eta[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
         phiPair = [(phi[ePidx],phi[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
+        enrgPair= [(enrg[ePidx],enrg[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
+
+        nominalZMass = 91.187
+        InvMassList  = []
 
         invmass = []
         for i in xrange(len(ptPair)):
             ePlus = ROOT.TLorentzVector()
             eMinus= ROOT.TLorentzVector()
 
-            ePlus.SetPtEtaPhiM(float(ptPair[i][0]),float(etaPair[i][0]),float(phiPair[i][0]),0.000511)
-            eMinus.SetPtEtaPhiM(float(ptPair[i][1]),float(etaPair[i][1]),float(phiPair[i][1]),0.000511)
+            eOneMassCalc2   =   enrgPair[i][0]**2 - (ptPair[i][0]*math.cosh(etaPair[i][0]))**2
+            eTwoMassCalc2   =   enrgPair[i][1]**2 - (ptPair[i][1]*math.cosh(etaPair[i][1]))**2
+            ePdgMass2       =   0.000511**2 # GeV
 
+            ePlus.SetPtEtaPhiM(float(ptPair[i][0]),float(etaPair[i][0]),float(phiPair[i][0]), math.sqrt(ePdgMass2) if (eOneMassCalc2 - ePdgMass2) < 0 else math.sqrt(eOneMassCalc2))
+            eMinus.SetPtEtaPhiM(float(ptPair[i][1]),float(etaPair[i][1]),float(phiPair[i][1]),math.sqrt(ePdgMass2) if (eTwoMassCalc2 - ePdgMass2) < 0 else math.sqrt(eTwoMassCalc2))
+                    
             m = (ePlus + eMinus).M()
-
             if(m > 20):
-                zCandKine= [ptPair[i][0],etaPair[i][0], phiPair[i][0], ptPair[i][1],etaPair[i][1], phiPair[i][0], m]
-                self.gethist("ZCandKine").Fill(array("d",zCandKine))
+                InvMassList +=[m]
+        #End of loop
 
+        #Get the best boson candidate
+        if(len(InvMassList)>0):
+            Idx = self.getBestBosIndx(InvMassList)
+            zCandKine   = [ptPair[Idx][0],etaPair[Idx][0], phiPair[Idx][0], ptPair[Idx][1],etaPair[Idx][1], phiPair[Idx][0], InvMassList[Idx]]
+            self.gethist("ZCandKine").Fill(array("d",zCandKine))
 
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''Best boson the one which is closer to nominal mass'''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    def getBestBosIndx(self,InvMassList):
+        nominalZMass = 91.187
+        mDiff        = 100
+        BestBosIndx  = -1
+        for m in InvMassList:
+            if(abs(m - nominalZMass) < mDiff):
+                mDiff       = abs(m - nominalZMass)
+                BestBosIndx = InvMassList.index(m)
+
+        return BestBosIndx
+
+    
     ''''''''''''''''''''''''''''''''
     '''Function to add histograms to the analysis chain'''
     ''''''''''''''''''''''''''''''''
@@ -446,7 +488,7 @@ class NtupleAna(NtupleAnaBase):
 
 
     def regEtaHist(self,name):
-        self.regTH1(name,";#eta",100,-5,5)
+        self.regTH1(name,";#eta",500,-5,5)
 
     def regPhiHist(self,name):
         self.regTH1(name,"",100,-4,4)
@@ -621,13 +663,19 @@ class plotscript:
 
 
     def MakeRecoHists(self):
-        self.__saveHist(self.__getInHist("ElAuthorPt"))
-        self.__saveHist(self.__getInHist("ElAuthorEta"))
-        self.__saveHist(self.__getInHist("ElAuthorPhi"))
+        self.__saveHist(self.__getInHist("AuthorElPt"))
+        self.__saveHist(self.__getInHist("AuthorElEta"))
+        self.__saveHist(self.__getInHist("AuthorElPhi"))
 
-        h_nElAuthor = self.__getInHist("ElAuthorMultplcty")
-        h_nElAuthor.GetXaxis().SetTitle("#")
-        self.__saveHist(h_nElAuthor)
+        h_nAuthorEl = self.__getInHist("AuthorElMultplcty")
+        h_nAuthorEl.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nAuthorEl)
+
+        """Truth Match Electrons"""
+        self.__saveHist(self.__getInHist("ElParentPDG"))
+        self.__saveHist(self.__getInHist("ElGrndParentPDG"))
+        self.__saveHist(self.__getInHist("BMtchElMultplcty"))
+        self.__saveHist(self.__getInHist("BGrndMtchElMultplcty"))
 
         ###################################################
         #ZBoson kinematics from THnSparse.
@@ -635,17 +683,18 @@ class plotscript:
 
         if(h_ZCandSparse):
             h_ZBosonEplusPt  = h_ZCandSparse.Projection(0)
-            h_ZBosonEplusPt.SetName("Boson Candidate Eplus pt")
+            h_ZBosonEplusPt.SetName("BosonCandidateEplusPt")
             h_ZBosonEplusPt.GetXaxis().SetTitle("[GeV]")
+            h_ZBosonEplusPt.GetXaxis().SetRangeUser(0,250)
             self.__saveHist(h_ZBosonEplusPt)
 
             h_ZBosonEMinusPt = h_ZCandSparse.Projection(3)
-            h_ZBosonEMinusPt.SetName("Boson Candidate EMinus pt")
+            h_ZBosonEMinusPt.SetName("BosonCandidateEMinusPt")
             h_ZBosonEMinusPt.GetXaxis().SetTitle("[GeV]")
             self.__saveHist(h_ZBosonEMinusPt)
 
             h_ZBosonMass    = h_ZCandSparse.Projection(6)
-            h_ZBosonMass.SetName("Z Boson Mass")
+            h_ZBosonMass.SetName("ZBosonMass")
             h_ZBosonMass.GetXaxis().SetTitle("[GeV]")
             self.__saveHist(h_ZBosonMass)
 
@@ -653,72 +702,116 @@ class plotscript:
     def MakeHistBSemiElectron(self):
         #Retrieve the THnSparse
         BSparse         = self.__getInHist("BSemiElectron")
-
         if(BSparse):
-            #B Multiplicity as a function of B-hadron pt cut
-            h_mulVsPtCut    = BSparse.Projection(2,0)
-            h_mulVsPtCut.SetName("MultVsPtCut")
-            h_mulVsPtCut.GetXaxis().SetTitle("pt cut")
-            h_mulVsPtCut.GetYaxis().SetTitle("# B-hadrons")
-            self.__saveHist(h_mulVsPtCut)
+            #B Electron Multiplicity as a function of B Electron pt cut
+            h_ElMulVsElPtCut    = BSparse.Projection(2,1)
+            h_ElMulVsElPtCut.SetName("B_ElMultVsElPtCut")
+            h_ElMulVsElPtCut.GetXaxis().SetTitle("pt cut")
+            h_ElMulVsElPtCut.GetYaxis().SetTitle("# B-hadrons")
+            self.__saveHist(h_ElMulVsElPtCut)
+
+            #B Hadron B Electron Correlation
+            h_ElPtCutVsBPtCut   = BSparse.Projection(1,0)
+            h_ElPtCutVsBPtCut.SetName("B_ElPtCutCorrelation")
+            h_ElPtCutVsBPtCut.GetXaxis().SetTitle("B pt [GeV]")
+            h_ElPtCutVsBPtCut.GetYaxis().SetTitle("El pt [GeV]")
+            self.__saveHist(h_ElPtCutVsBPtCut)
 
             #BSemiElectron multiplicity as a function of B-hadron pt cut
-            h_BElVsPtCut    = BSparse.Projection(1,0)
+            h_BElVsPtCut    = BSparse.Projection(2,0)
             h_BElVsPtCut.SetName("BElVsPtCut")
             h_BElVsPtCut.GetXaxis().SetTitle("pt cut")
             h_BElVsPtCut.GetYaxis().SetTitle("# B-el")
             self.__saveHist(h_BElVsPtCut)
 
             #Multiplicity of B Electrons as a function of B- multiplicity
-            h_BElVsBMul     = BSparse.Projection(1,2)
+            h_BElVsBMul     = BSparse.Projection(2,3)
             h_BElVsBMul.SetName("BElVsBMul")
             h_BElVsBMul.GetXaxis().SetTitle("nBHadrons")
             h_BElVsBMul.GetYaxis().SetRangeUser(0,8)
             h_BElVsBMul.GetYaxis().SetTitle("# B-el")
             self.__saveHist(h_BElVsBMul)
 
-            #Multiplicity of B-hadrons
+            #Multiplicity of B-hadrons at a give B-hadron pt
             BSparse.GetAxis(0).SetRangeUser(5,6)
-            h_BMult_5       = BSparse.Projection(2)
-            h_BMult_5.SetMarkerColor(ROOT.kRed+1)
+            h_BMult_5       = BSparse.Projection(3)
+            h_BMult_5.SetFillStyle(3644)
             h_BMult_5.SetName("BMult_5")
             self.__saveHist(h_BMult_5)
 
             BSparse.GetAxis(0).SetRangeUser(10,11)
-            h_BMult_10      = BSparse.Projection(2)
-            h_BMult_10.SetMarkerColor(ROOT.kGreen+1)
+            h_BMult_10      = BSparse.Projection(3)
+            h_BMult_10.SetFillStyle(3544)
             h_BMult_10.SetName("BMult_10")
             self.__saveHist(h_BMult_10)
 
             BSparse.GetAxis(0).SetRangeUser(15,16)
-            h_BMult_15      = BSparse.Projection(2)
-            h_BMult_15.SetMarkerColor(ROOT.kBlue+1)
+            h_BMult_15      = BSparse.Projection(3)
+            h_BMult_15.SetFillStyle(3444)
             h_BMult_15.SetName("BMult_15")
             self.__saveHist(h_BMult_15)
 
             BSparse.GetAxis(0).SetRangeUser(20,21)
-            h_BMult_20      = BSparse.Projection(2)
-            h_BMult_20.SetMarkerColor(ROOT.kYellow+1)
+            h_BMult_20      = BSparse.Projection(3)
+            h_BMult_20.SetFillStyle(3344)
             h_BMult_20.SetName("BMult_20")
             self.__saveHist(h_BMult_20)
 
             BSparse.GetAxis(0).SetRangeUser(25,26)
-            h_BMult_25      = BSparse.Projection(2)
-            h_BMult_25.SetMarkerColor(ROOT.kViolet+1)
+            h_BMult_25      = BSparse.Projection(3)
+            h_BMult_25.SetFillStyle(3244)
             h_BMult_25.SetName("BMult_25 ")
             self.__saveHist(h_BMult_25)
 
             BSparse.GetAxis(0).SetRangeUser(30,31)
-            h_BMult_30      = BSparse.Projection(2)
-            h_BMult_30.SetMarkerColor(ROOT.kMagenta+1)
+            h_BMult_30      = BSparse.Projection(3)
+            h_BMult_30.SetFillStyle(3144)
             h_BMult_30.SetName("BMult_30")
             self.__saveHist(h_BMult_30)
 
-            #B Semi electron events as a function of B ptcut and B multiplicity
-            h_BElEvents     = self.__getInHist("BElEvents")
-            h_BElEvents.GetXaxis().SetTitle("B-hadron pt cut [GeV]")
-            h_BElEvents.GetYaxis().SetTitle("# B-hadrons")
-            self.__saveHist(h_BElEvents)
+            #Multiplicity of B-electrons at a a given el-pt
+            BSparse.GetAxis(0).SetRangeUser(BSparse.GetAxis(0).GetXmin(),BSparse.GetAxis(0).GetXmax())
+            BSparse.GetAxis(1).SetRangeUser(BSparse.GetAxis(1).GetXmin(),BSparse.GetAxis(1).GetXmax())
+            BSparse.GetAxis(2).SetRangeUser(BSparse.GetAxis(2).GetXmin(),BSparse.GetAxis(2).GetXmax())
+            BSparse.GetAxis(3).SetRangeUser(BSparse.GetAxis(3).GetXmin(),BSparse.GetAxis(3).GetXmax())
+
+
+            BSparse.GetAxis(1).SetRangeUser(5,6)
+            h_BMult_elPt_5  = BSparse.Projection(2)
+            h_BMult_elPt_5.SetName("BElMult_5")
+            h_BMult_elPt_5.SetFillStyle(3644)
+            self.__saveHist(h_BMult_elPt_5)
+
+            BSparse.GetAxis(1).SetRangeUser(10,11)
+            h_BMult_elPt_10 = BSparse.Projection(2)
+            h_BMult_elPt_10.SetName("BElMult_10")
+            h_BMult_elPt_10.SetFillStyle(3544)
+            self.__saveHist(h_BMult_elPt_10)
+
+            BSparse.GetAxis(1).SetRangeUser(15,16)
+            h_BMult_elPt_15 = BSparse.Projection(2)
+            h_BMult_elPt_15.SetName("BElMult_15")
+            h_BMult_elPt_15.SetFillStyle(3444)
+            self.__saveHist(h_BMult_elPt_15)
+
+            BSparse.GetAxis(1).SetRangeUser(20,21)
+            h_BMult_elPt_20 = BSparse.Projection(2)
+            h_BMult_elPt_20.SetName("BElMult_20")
+            h_BMult_elPt_20.SetFillStyle(3344)
+            self.__saveHist(h_BMult_elPt_20)
+
+            BSparse.GetAxis(1).SetRangeUser(25,26)
+            h_BMult_elPt_25 = BSparse.Projection(2)
+            h_BMult_elPt_25.SetName("BElMult_25")
+            h_BMult_elPt_25.SetFillStyle(3244)
+            self.__saveHist(h_BMult_elPt_25)
+
+            BSparse.GetAxis(1).SetRangeUser(30,31)
+            h_BMult_elPt_30 = BSparse.Projection(2)
+            h_BMult_elPt_30.SetName("BElMult_30")
+            h_BMult_elPt_30.SetFillStyle(3144)
+            self.__saveHist(h_BMult_elPt_30)
+
 
     def MakeHistBKinematics(self):
         #Retrieve the kinematics histograms
@@ -735,11 +828,6 @@ class plotscript:
             h_BElPt.SetName("BElPt")
             h_BElPt.GetXaxis().SetTitle("B- el pt [GeV]")
             self.__saveHist(h_BElPt)
-
-            h_BElEff    = self.__getInHist("BElEvntEff")
-            h_BElEff.GetXaxis().SetTitle("B-hadron pt-cut [GeV]")
-            h_BElEff.GetYaxis().SetTitle("# B-hadrons")
-            self.__saveHist(h_BElEff)
 
             h_BHdrnEvnt = self.__getInHist("BHdrnEvents")
             h_BHdrnEvnt.GetXaxis().SetTitle("B-hadron pt-cut [GeV]")
@@ -763,69 +851,116 @@ class plotscript:
             self.__saveHist(h_CElPt)
 
     def MakeHistCSemiElectron(self):
-        #Retrieve THnSparse
+        #Retrieve the THnSparse
         CSparse         = self.__getInHist("CSemiElectron")
         if(CSparse):
-            h_mulVsPtCut    = CSparse.Projection(2,0)
-            h_mulVsPtCut.SetName("MultVsPtCut")
-            h_mulVsPtCut.GetXaxis().SetTitle("pt cut")
-            h_mulVsPtCut.GetYaxis().SetTitle("# C-hadrons")
-            self.__saveHist(h_mulVsPtCut)
+            #C Electron Multiplicity as a function of C Electron pt cut
+            h_ElMulVsElPtCut    = CSparse.Projection(2,1)
+            h_ElMulVsElPtCut.SetName("C_ElMultVsElPtCut")
+            h_ElMulVsElPtCut.GetXaxis().SetTitle("pt cut")
+            h_ElMulVsElPtCut.GetYaxis().SetTitle("# C-hadrons")
+            self.__saveHist(h_ElMulVsElPtCut)
 
-            h_CElVsPtCut    = CSparse.Projection(1,0)
+            #C Hadron C Electron Correlation
+            h_ElPtCutVsCPtCut   = CSparse.Projection(1,0)
+            h_ElPtCutVsCPtCut.SetName("C_ElPtCutCorrelation")
+            h_ElPtCutVsCPtCut.GetXaxis().SetTitle("C pt [GeV]")
+            h_ElPtCutVsCPtCut.GetYaxis().SetTitle("El pt [GeV]")
+            self.__saveHist(h_ElPtCutVsCPtCut)
+
+            #CSemiElectron multiplicity as a function of C-hadron pt cut
+            h_CElVsPtCut    = CSparse.Projection(2,0)
             h_CElVsPtCut.SetName("CElVsPtCut")
             h_CElVsPtCut.GetXaxis().SetTitle("pt cut")
             h_CElVsPtCut.GetYaxis().SetTitle("# C-el")
             self.__saveHist(h_CElVsPtCut)
 
-            h_CElVsCMul     = CSparse.Projection(1,2)
-            h_CElVsCMul.SetName("CElVsCMult")
-            h_CElVsCMul.GetXaxis().SetTitle("# C-hadrons")
-            h_CElVsCMul.GetYaxis().SetTitle("# C-el")
+            #Multiplicity of C Electrons as a function of C- multiplicity
+            h_CElVsCMul     = CSparse.Projection(2,3)
+            h_CElVsCMul.SetName("CElVsCMul")
+            h_CElVsCMul.GetXaxis().SetTitle("nCHadrons")
             h_CElVsCMul.GetYaxis().SetRangeUser(0,8)
+            h_CElVsCMul.GetYaxis().SetTitle("# C-el")
             self.__saveHist(h_CElVsCMul)
 
-            #Multiplicity of C-hadrons
+            #Multiplicity of C-hadrons at a give C-hadron pt
             CSparse.GetAxis(0).SetRangeUser(5,6)
-            h_CMult_5       = CSparse.Projection(2)
-            h_CMult_5.SetMarkerColor(ROOT.kRed+1)
+            h_CMult_5       = CSparse.Projection(3)
+            h_CMult_5.SetFillStyle(3644)
             h_CMult_5.SetName("CMult_5")
             self.__saveHist(h_CMult_5)
 
             CSparse.GetAxis(0).SetRangeUser(10,11)
-            h_CMult_10      = CSparse.Projection(2)
-            h_CMult_10.SetMarkerColor(ROOT.kGreen+1)
+            h_CMult_10      = CSparse.Projection(3)
+            h_CMult_10.SetFillStyle(3544)
             h_CMult_10.SetName("CMult_10")
             self.__saveHist(h_CMult_10)
 
             CSparse.GetAxis(0).SetRangeUser(15,16)
-            h_CMult_15      = CSparse.Projection(2)
-            h_CMult_15.SetMarkerColor(ROOT.kBlue+1)
+            h_CMult_15      = CSparse.Projection(3)
+            h_CMult_15.SetFillStyle(3444)
             h_CMult_15.SetName("CMult_15")
             self.__saveHist(h_CMult_15)
 
             CSparse.GetAxis(0).SetRangeUser(20,21)
-            h_CMult_20      = CSparse.Projection(2)
-            h_CMult_20.SetMarkerColor(ROOT.kYellow+1)
+            h_CMult_20      = CSparse.Projection(3)
+            h_CMult_20.SetFillStyle(3344)
             h_CMult_20.SetName("CMult_20")
             self.__saveHist(h_CMult_20)
 
             CSparse.GetAxis(0).SetRangeUser(25,26)
-            h_CMult_25      = CSparse.Projection(2)
-            h_CMult_25.SetMarkerColor(ROOT.kViolet+1)
-            h_CMult_25.SetName("CMult_25")
+            h_CMult_25      = CSparse.Projection(3)
+            h_CMult_25.SetFillStyle(3244)
+            h_CMult_25.SetName("CMult_25 ")
             self.__saveHist(h_CMult_25)
 
             CSparse.GetAxis(0).SetRangeUser(30,31)
-            h_CMult_30      = CSparse.Projection(2)
-            h_CMult_30.SetMarkerColor(ROOT.kMagenta+1)
+            h_CMult_30      = CSparse.Projection(3)
+            h_CMult_30.SetFillStyle(3144)
             h_CMult_30.SetName("CMult_30")
             self.__saveHist(h_CMult_30)
 
-            #C Semi electron events as a function of C ptcut and C multiplicity
-            h_CElEvents     = self.__getInHist("CElEvents")
-            h_CElEvents.GetXaxis().SetTitle("C-hadron pt cut [GeV]")
-            h_CElEvents.GetYaxis().SetTitle("# C-hadrons")
-            self.__saveHist(h_CElEvents)
+            #Multiplicity of C-electrons at a a given el-pt
+            CSparse.GetAxis(0).SetRangeUser(CSparse.GetAxis(0).GetXmin(),CSparse.GetAxis(0).GetXmax())
+            CSparse.GetAxis(1).SetRangeUser(CSparse.GetAxis(1).GetXmin(),CSparse.GetAxis(1).GetXmax())
+            CSparse.GetAxis(2).SetRangeUser(CSparse.GetAxis(2).GetXmin(),CSparse.GetAxis(2).GetXmax())
+            CSparse.GetAxis(3).SetRangeUser(CSparse.GetAxis(3).GetXmin(),CSparse.GetAxis(3).GetXmax())
 
-#End of class plotscript
+
+            CSparse.GetAxis(1).SetRangeUser(5,6)
+            h_CMult_elPt_5  = CSparse.Projection(2)
+            h_CMult_elPt_5.SetName("CElMult_5")
+            h_CMult_elPt_5.SetFillStyle(3644)
+            self.__saveHist(h_CMult_elPt_5)
+
+            CSparse.GetAxis(1).SetRangeUser(10,11)
+            h_CMult_elPt_10 = CSparse.Projection(2)
+            h_CMult_elPt_10.SetName("CElMult_10")
+            h_CMult_elPt_10.SetFillStyle(3544)
+            self.__saveHist(h_CMult_elPt_10)
+
+            CSparse.GetAxis(1).SetRangeUser(15,16)
+            h_CMult_elPt_15 = CSparse.Projection(2)
+            h_CMult_elPt_15.SetName("CElMult_15")
+            h_CMult_elPt_15.SetFillStyle(3444)
+            self.__saveHist(h_CMult_elPt_15)
+
+            CSparse.GetAxis(1).SetRangeUser(20,21)
+            h_CMult_elPt_20 = CSparse.Projection(2)
+            h_CMult_elPt_20.SetName("CElMult_20")
+            h_CMult_elPt_20.SetFillStyle(3344)
+            self.__saveHist(h_CMult_elPt_20)
+
+            CSparse.GetAxis(1).SetRangeUser(25,26)
+            h_CMult_elPt_25 = CSparse.Projection(2)
+            h_CMult_elPt_25.SetName("CElMult_25")
+            h_CMult_elPt_25.SetFillStyle(3244)
+            self.__saveHist(h_CMult_elPt_25)
+
+            CSparse.GetAxis(1).SetRangeUser(30,31)
+            h_CMult_elPt_30 = CSparse.Projection(2)
+            h_CMult_elPt_30.SetName("CElMult_30")
+            h_CMult_elPt_30.SetFillStyle(3144)
+            self.__saveHist(h_CMult_elPt_30)
+
+#End of plotscript class
