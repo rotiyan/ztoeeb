@@ -178,10 +178,10 @@ def gangaSub(dsDictName,dsName,dslist):
 
 
 
-if(len(sys.argv)>1):
+if(len(sys.argv)==2):
     if(sys.argv[1] =="-1"):
         #Submit All datasets
-        li = [(dsDictName,dsName,ds) for dsDictName,dsDict in dsDict.iteritems() for dsName,ds in dsDict.iteritems()]
+        li = [(dsDictName,dsName,ds) for dsDictName,dataDict in dsDict.iteritems() for dsName,ds in dataDict.iteritems()]
         for dsTuple in li:
             gangaSub(dsTuple[0],dsTuple[1],[dsTuple[2]])
     elif(dsDict[sys.argv[1]]):
@@ -194,6 +194,12 @@ if(len(sys.argv)>1):
     
     else:
         print "Dataset Collection ",sys.argv[1]," not found"
+
+elif(len(sys.argv) >2):
+    li = [(dsDictName,dsName,ds) for dsDictName,dataDict in dsDict.iteritems() for dsName,ds in dataDict.iteritems() if dsDictName in sys.argv]
+    for dsTuple in li:
+        gangaSub(dsTuple[0],dsTuple[1],dsTuple[2])
+    
     
 else:
     for name, ds in dsDict.iteritems():
