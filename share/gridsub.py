@@ -6,6 +6,20 @@ zbbDict  = {\
         'zbbnp2': 'mc11_7TeV.109302.AlpgenJimmyZeebbNp2_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993/',
         'zbbnp3': 'mc11_7TeV.109303.AlpgenJimmyZeebbNp3_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993/'}
 
+ztautaubbDict= {
+        'ztautaubbnp0':'mc11_7TeV.109310.AlpgenJimmyZtautaubbNp0_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993/',
+        'ztautaubbnp1':'mc11_7TeV.109311.AlpgenJimmyZtautaubbNp1_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993/',
+        'ztautaubbnp2':'mc11_7TeV.109312.AlpgenJimmyZtautaubbNp2_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993/',
+        'ztautaubbnp3':'mc11_7TeV.109313.AlpgenJimmyZtautaubbNp3_nofilter.merge.AOD.e835_s1310_s1300_r3043_r2993/'}
+
+ztautauincDict={\
+        'ztautauNp0':'mc11_7TeV.128520.AlpgenJimmyZtautauNp0_Mll250to400_pt20.merge.AOD.e997_s1372_s1370_r3043_r2993/',
+        'ztautauNp1':'mc11_7TeV.128521.AlpgenJimmyZtautauNp1_Mll250to400_pt20.merge.AOD.e997_s1372_s1370_r3043_r2993/',
+        'ztautauNp2':'mc11_7TeV.128522.AlpgenJimmyZtautauNp2_Mll250to400_pt20.merge.AOD.e997_s1372_s1370_r3043_r2993/',
+        'ztautauNp3':'mc11_7TeV.128523.AlpgenJimmyZtautauNp3_Mll250to400_pt20.merge.AOD.e997_s1372_s1370_r3043_r2993/',
+        'ztautauNp4':'mc11_7TeV.128524.AlpgenJimmyZtautauNp4_Mll250to400_pt20.merge.AOD.e997_s1372_s1370_r3043_r2993/',
+        'ztautauNp5':'mc11_7TeV.128525.AlpgenJimmyZtautauNp5_Mll250to400_pt20.merge.AOD.e997_s1372_s1370_r3043_r2993/'}
+
 zljDict = {\
         'znp0': 'mc11_7TeV.107650.AlpgenJimmyZeeNp0_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
         'znp1': 'mc11_7TeV.107651.AlpgenJimmyZeeNp1_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
@@ -13,6 +27,7 @@ zljDict = {\
         'znp3': 'mc11_7TeV.107653.AlpgenJimmyZeeNp3_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
         'znp4': 'mc11_7TeV.107654.AlpgenJimmyZeeNp4_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
         'znp5': 'mc11_7TeV.107655.AlpgenJimmyZeeNp5_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/'}
+
 wenuDict ={\
         'wenunp0':'mc11_7TeV.107680.AlpgenJimmyWenuNp0_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
         'wenunp1':'mc11_7TeV.107681.AlpgenJimmyWenuNp1_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
@@ -20,6 +35,14 @@ wenuDict ={\
         'wenunp3':'mc11_7TeV.107683.AlpgenJimmyWenuNp3_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
         'wenunp4':'mc11_7TeV.107684.AlpgenJimmyWenuNp4_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/',
         'wenunp5':'mc11_7TeV.107685.AlpgenJimmyWenuNp5_pt20.merge.AOD.e825_s1299_s1300_r3043_r2993/'}
+
+wtaunuDict={\
+        'wtaununp0':'mc11_7TeV.107700.AlpgenJimmyWtaunuNp0_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
+        'wtaununp1':'mc11_7TeV.107701.AlpgenJimmyWtaunuNp1_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
+        'wtaununp2':'mc11_7TeV.107702.AlpgenJimmyWtaunuNp2_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
+        'wtaununp3':'mc11_7TeV.107703.AlpgenJimmyWtaunuNp3_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
+        'wtaununp4':'mc11_7TeV.107704.AlpgenJimmyWtaunuNp4_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/',
+        'wtaununp5':'mc11_7TeV.107705.AlpgenJimmyWtaunuNp5_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993/'}
 
 zccDict = {\
         'zccnp0': 'mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993/',
@@ -86,10 +109,44 @@ data    = {\
 
 
 
-dsDict      = {"zbb" : zbbDict,"zinc" : zljDict,"zcc" : zccDict,"wenu":wenuDict,"ww" : wwDict,"herwigww":herwigwwDict,"herwigzz":herwigzzDict,"herwigwz":herwigwzDict,"zz" : zzDict,"wz" : wzDict,"ttbar":ttbarDict,"singleTop":singleTopDict,"jf17":jf17Dict,"data": data}
+dsDict      = {\
+        "zbb"       : zbbDict,
+        "zinc"      : zljDict,
+        "zcc"       : zccDict,
+        "ztautaubb" : ztautaubbDict,
+        "ztautauinc": ztautauincDict,
+        "wenu"      : wenuDict,
+        "wtaunu"    : wtaunuDict,
+        "ww"        : wwDict,
+        "herwigww"  : herwigwwDict,
+        "herwigzz"  : herwigzzDict,
+        "herwigwz"  : herwigwzDict,
+        "zz"        : zzDict,
+        "wz"        : wzDict,
+        "ttbar"     : ttbarDict,
+        "singleTop" : singleTopDict,
+        "jf17"      : jf17Dict,
+        "data"      : data}
 
 #Map the hfor type to each dataset
-hforDict    = {"zbb" : "isBB", "zinc": "isLightFlavor", "zcc": "","wenu":"", "ww": "isLightFlavor","herwigww":"","herwigzz":"","herwigwz":"","zz":"isLightFlavor","wz": "isLightFlavor","ttbar": "","singleTop":"","jf17":"","data":""}
+hforDict    = {\
+        "zbb"       : "isBB",
+        "zinc"      : "isLightFlavor",
+        "zcc"       : "isCC",
+        "ztautaubb" : "isBB",
+        "ztautauinc": "isLightFlavor",
+        "wenu"      : "", 
+        "wtaunu"    : "",
+        "ww"        : "isLightFlavor",
+        "herwigww"  : "",
+        "herwigzz"  : "",
+        "herwigwz"  : "",
+        "zz"        : "isLightFlavor",
+        "wz"        : "isLightFlavor",
+        "ttbar"     : "",
+        "singleTop" : "",
+        "jf17"      : "",
+        "data"      : ""}
 #Hfor doens't work for Zcc sample !!
 
 def gangaSub(dsDictName,dsName,dslist):
@@ -107,7 +164,7 @@ def gangaSub(dsDictName,dsName,dslist):
     #j.inputdata.goodRunListXML = File('/afs/cern.ch/user/n/narayan/public/data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_WZjets_allchannels.xml')
     j.outputdata = DQ2OutputDataset()
     j.splitter = DQ2JobSplitter()
-    j.splitter.numsubjobs = 10
+    j.splitter.numsubjobs = 200
     j.merger = AthenaOutputMerger()
 
     j.application.athena_compile = False
