@@ -1,4 +1,5 @@
 import ROOT
+ROOT.TH1.AddDirectory(False)
 import os,sys
 
 
@@ -19,9 +20,13 @@ class histCombiner():
         self.fileDict   = dict([(dir,ROOT.TFile(dir+"/"+rootFileName)) for dir in os.listdir(".") if os.path.isdir(dir)])
         self.mergeDict  = {}
 
-        self.mergeDS("zbb","zbb")
-        self.mergeDS("zcc","zcc")
-        self.mergeDS("znp","zinc")
+        self.mergeDS("zbb","zeebb")
+        self.mergeDS("zcc","zeecc")
+        self.mergeDS("znp","zeeinc")
+        self.mergeDS("ztautaubb","ztautaubb")
+        self.mergeDS("ztautaunp","ztautauinc")
+        self.mergeDS("wtaununp","wtaunu")
+        self.mergeDS("wenunp","wenunp")
         self.mergeDS("ttbar","ttbar")
         self.mergeDS("singleTop","singleTop")
         self.mergeDS("data","data")
@@ -60,49 +65,138 @@ class histCombiner():
         fMerger.Clear()
         '''
 
-    def makeStack(self,histname,ymax=1e6,logy=1):
-        mcHistTuple  = [(name,file.Get(histname)) for name,file in self.mergeDict.iteritems() if name !='data']
-        mcHistTuple.sort(key=lambda x:x[1].Integral())
+    def makeStack(self,histname,ratio=0,ymax=1e7,logy=1):
+        mcHistTuple  = [(name,file.Get(histname)) for name,file in self.mergeDict.iteritems() if name !='data' and file.Get(histname)]
 
-        dataHist    = self.mergeDict['data'].Get(histname)
-        dataHist.SetMarkerStyle(1)
+        iColor = 3
+        for i in xrange(len(mcHistTuple)):
+            if(iColor ==10):
+                iColor +=1
 
-        hs = ROOT.THStack(histname,histname+"Stack")
-        leg = ROOT.TLegend(0.6,0.6,0.85,0.85)
-        leg.SetFillStyle(0)
-        leg.SetLineColor(0)
-        
-        iColor = 2
-        for ob in mcHistTuple:
-            hist = ob[1].Clone()
-            
-            hist.SetLineColor(iColor)
-            hist.SetFillColor(iColor)
-
-            hist.SetMarkerStyle(0)
-            
-            hs.Add(hist)
-            leg.AddEntry(hist,ob[0],"F")
+            mcHistTuple[i][1].SetFillColor(iColor)
+            mcHistTuple[i][1].SetLineStyle(0)
+            mcHistTuple[i][1].SetLineColor(iColor)
+            mcHistTuple[i][1].SetFillColor(iColor)
+            #mcHistTuple[i][1].SetFillStyle(3004)
+            mcHistTuple[i][1].SetMarkerStyle(0)
 
             iColor +=1
 
-        leg.AddEntry(dataHist,'data')
-        hs.Draw()
-        hs.SetMaximum(ymax)
-        hs.SetMinimum(1)
+        if(len(mcHistTuple)==0):
+            print histname,"not found"
+        else:
+            mcHistTuple.sort(key=lambda x:x[1].Integral())
 
+            dataHist    = self.mergeDict['data'].Get(histname)
 
-   
-        hs.GetHistogram().GetXaxis().SetTitle(dataHist.GetXaxis().GetTitle())
- 
-        leg.Draw("same")
-        dataHist.Draw("same")
+            hs = ROOT.THStack(histname,histname+"Stack")
+            ROOT.SetOwnership(hs,False)
+            leg = ROOT.TLegend(0.6,0.5,0.95,0.9)
+            ROOT.SetOwnership(leg,False)
+            leg.SetFillStyle(0)
+            leg.SetLineColor(0)
 
-        ROOT.gPad.SetLogy(logy)
-        ROOT.gPad.Print(histname+".pdf","Landscapepdf")
+            legEntryList = []
+            
+            for ob in mcHistTuple:
+                hist = ob[1].Clone()
+                
+                hs.Add(hist)
+                legEntryList +=[(hist,ob[0])]
+
+            """Legend"""
+            if(dataHist.GetRMS() !=0):
+                leg.AddEntry(dataHist,'data')
+
+            legEntryList.reverse()
+            for entry in legEntryList:
+                leg.AddEntry(entry[0],entry[1])
+
+            '''if requested to make ratio plot'''
+            if(ratio):
+                c = ROOT.TCanvas("c1","Canvas",600,848)
+                pad1    = ROOT.TPad("pad1","pad1",0,0.3,1,1)
+                pad2    = ROOT.TPad("pad2","pad2",0,0,1,0.3)
+                pad1.SetBottomMargin(0)
+                pad2.SetTopMargin(0)
+
+                pad1.cd()
+                hs.Draw("HIST")
+                hs.SetMaximum(ymax)
+                hs.SetMinimum(10)
+
+                leg.Draw('same')
+                if(dataHist.GetRMS() !=0):
+                    dataHist.Draw('same')
+                    #hs.GetHistogram().GetXaxis().SetTitle(dataHist.GetXaxis().GetTitle())
+
+                pad2.cd()
+                sumHist = reduce(lambda x,y: x + y,mcHistTuple)
+
+                h0 = mcHistTuple[0][1].Clone()
+                for i in xrange(1,len(mcHistTuple)):
+                    h0.Add(mcHistTuple[i][1])
+
+                d = dataHist.Clone()
+                d.Divide(h0)
+                d.GetXaxis().SetLabelFont(63)
+                d.GetXaxis().SetTitleSize(0.08)
+                d.GetXaxis().SetLabelSize(16)
+                d.GetYaxis().SetLabelFont(63)
+                d.GetYaxis().SetLabelSize(16)
+                
+                d.SetMinimum(0)
+                d.SetMaximum(3)
+                d.GetYaxis().SetTitle("data/MC")
+                d.Draw()
+
+                c.cd()
+                pad1.SetLogy(logy)
+                pad1.Draw()
+                pad2.Draw()
+
+                ROOT.gPad.Print(histname+".ps","Portrait")
+                ROOT.gPad.Update()
+
+            else:
+                hs.Draw("HIST")
+                hs.SetMaximum(ymax)
+                hs.SetMinimum(10)
+
+                leg.Draw("same")
+                if(dataHist.GetRMS() !=0):
+                    dataHist.Draw("same")
+                    hs.GetHistogram().GetXaxis().SetTitle(dataHist.GetXaxis().GetTitle())
+
+                ROOT.gPad.SetLogy(logy)
+                ROOT.gPad.Print(histname+".ps","Landscape")
+                ROOT.gPad.Update()
+
+    def makeDataHists(self):
+        self.makeStack("AuthorElMultplcty",11e9)
+        self.makeStack("AuthorElPt",1)
+        self.makeStack("AuthorElEta",1)
+        self.makeStack("AuthorElPhi",1)
+        self.makeStack("ZBosonMass",1)
+        self.makeStack("BosonCandidateEplusPt",1)
+        self.makeStack("BosonCandidateEMinusPt",1)
+
+    def makeMCHists(self):
+        self.makeStack("BElMult_5")
+        self.makeStack("BMult_5")
+        self.makeStack("BElMult_10")
+        self.makeStack("BMult_10")
+        self.makeStack("BElMult_15")
+        self.makeStack("BMult_15")
+        self.makeStack("BElMult_20")
+        self.makeStack("BMult_20")
+        self.makeStack("BElMult_25")
+        self.makeStack("BMult_25")
+        self.makeStack("BElMult_30")
+        self.makeStack("BMult_30")
+
 
 
 myHC    = histCombiner("procHist.root")
-print myHC.getHistList()
-
-myHC.makeStack("ElAuthorMultplcty",1e7)
+#myHC.makeDataHists()
+myHC.makeMCHists()
