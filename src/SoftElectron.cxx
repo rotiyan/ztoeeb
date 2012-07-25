@@ -565,6 +565,32 @@ void SoftElectron::FillElectrons()
                 m_el_cl_E       ->push_back(elClE);
                 m_el_trk_Eta    ->push_back(elTrkEta);
                 m_el_trk_Phi    ->push_back(elTrkPhi);
+
+                //Do Truth Matching
+                const HepMC::GenParticle* elParent = this->GetElectronParent(Electron);
+                if(elParent)
+                {
+                    m_elMtchd       ->push_back(1);
+                    m_mtchdParent   ->push_back(elParent->pdg_id());
+                    m_el_truth_Pt   ->push_back(elParent->momentum().perp()/1000);
+                    m_el_truth_Eta  ->push_back(elParent->momentum().eta());
+                    m_el_truth_Phi  ->push_back(elParent->momentum().phi());
+
+                    const HepMC::GenParticle* elgrndParent = this->GetMother(elParent);
+                    if(elgrndParent)
+                        m_mtchdGrndParent->push_back(elgrndParent->pdg_id());
+                    else
+                        m_mtchdGrndParent->push_back(-100);
+                }
+                else
+                {
+                    m_elMtchd       ->push_back(-100);
+                    m_mtchdParent   ->push_back(-100);
+                    m_mtchdGrndParent->push_back(-100);
+                    m_el_truth_Pt   ->push_back(-100);
+                    m_el_truth_Eta  ->push_back(-100);
+                    m_el_truth_Phi  ->push_back(-100);
+                }
             }
         }
     }
@@ -766,9 +792,9 @@ const HepMC::GenParticle*  SoftElectron::GetMother(const HepMC::GenParticle* the
     long MotherPDG(0);
 
     const HepMC::GenVertex*   MothOriVert(0);
-    const HepMC::GenParticle* theMoth(0);
+    const HepMC::GenParticle* theMother(0);
 
-    if(!partOriVert) return theMoth;
+    if(!partOriVert) return theMother;
 
     int itr=0;
     do
@@ -781,7 +807,7 @@ const HepMC::GenParticle*  SoftElectron::GetMother(const HepMC::GenParticle* the
         {
             MotherPDG   = (*itrMother)->pdg_id();
             MothOriVert = (*itrMother)->production_vertex();
-            theMoth     = (*itrMother); 
+            theMother   = (*itrMother); 
             if(MotherPDG==partPDG) break;
         }
         itr++;
@@ -792,7 +818,7 @@ const HepMC::GenParticle*  SoftElectron::GetMother(const HepMC::GenParticle* the
         }
     }while (MothOriVert !=0 &&MotherPDG==partPDG && partBarcode<200000);
 
-    return theMoth;
+    return theMother;
 }
 
 std::vector<const HepMC::GenParticle*> SoftElectron::GetChildren(const HepMC::GenParticle* p)
