@@ -19,13 +19,13 @@ if( not IsData()):
     # parameters used for the jetbased method
     #ToolSvc.hforTool.MinJetPt = 15000
 
-    import MCTruthClassifier.MCTruthClassifierBase
-    from  MCTruthClassifier.MCTruthClassifierConf import MCTruthClassifier
-    ToolSvc += MCTruthClassifier()
+import MCTruthClassifier.MCTruthClassifierBase
+from  MCTruthClassifier.MCTruthClassifierConf import MCTruthClassifier
+ToolSvc += MCTruthClassifier()
 
-    #MCTruthClassifier.deltaRMatchCut   = 0.1
-    #MCTruthClassifier.deltaPhiMatchCut = 0.1
-    #MCTruthClassifier.NumOfSiHitsCut   = 4
+#MCTruthClassifier.deltaRMatchCut   = 0.1
+#MCTruthClassifier.deltaPhiMatchCut = 0.1
+#MCTruthClassifier.NumOfSiHitsCut   = 4
 
 from ZeeB.ZeeBConf import SoftElectron
 MySoftElectron = SoftElectron(
