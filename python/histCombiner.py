@@ -159,7 +159,8 @@ class histCombiner():
                 ROOT.gPad.Update()
 
             else:
-                hs.Draw("HIST")
+                ROOT.gStyle.SetMarkerSize(1.5)
+                hs.Draw("HISTTEXT")
                 hs.SetMaximum(ymax)
                 hs.SetMinimum(10)
 
@@ -173,13 +174,18 @@ class histCombiner():
                 ROOT.gPad.Update()
 
     def makeDataHists(self):
-        self.makeStack("AuthorElMultplcty",11e9)
-        self.makeStack("AuthorElPt",1)
-        self.makeStack("AuthorElEta",1)
-        self.makeStack("AuthorElPhi",1)
+        self.makeStack("ElMultplcty",1,1e9)
+        self.makeStack("ElPt",1)
+        self.makeStack("ElEta",1)
+        self.makeStack("ElPhi",1)
         self.makeStack("ZBosonMass",1)
         self.makeStack("BosonCandidateEplusPt",1)
         self.makeStack("BosonCandidateEMinusPt",1)
+
+        self.makeStack("SlctdElMultplcty",1,1e9)
+        self.makeStack("SlctdElPt",1)
+        self.makeStack("SlctdElEta",1)
+        self.makeStack("SlctdElPhi",1)
 
     def makeMCHists(self):
         self.makeStack("BElMult_5")
@@ -198,5 +204,5 @@ class histCombiner():
 
 
 myHC    = histCombiner("procHist.root")
-#myHC.makeDataHists()
-myHC.makeMCHists()
+myHC.makeDataHists()
+#myHC.makeMCHists()
