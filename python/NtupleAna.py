@@ -1,5 +1,6 @@
 import abc
 from NtupleAnaBase import NtupleAnaBase
+from ZeeBParticle import ZeeBElectron
 from array import array
 import math
 
@@ -21,11 +22,17 @@ class NtupleAna(NtupleAnaBase):
     
     def initialize(self):
         #Used in doAuthorEl()
-        self.regPtHist("AuthorElPt")
-        self.regEtaHist("AuthorElEta")
-        self.regPhiHist("AuthorElPhi")
-        self.regTH1("AuthorElE","",500,0,500)
-        self.regTH1("AuthorElMultplcty","",8,-0.5,7.5)
+        self.regPtHist("ElPt")
+        self.regEtaHist("ElEta")
+        self.regPhiHist("ElPhi")
+        self.regTH1("ElEnrgy","",500,0,500)
+        self.regTH1("ElMultplcty","",20,-0.5,19.5)
+
+        self.regPtHist("SlctdElPt")
+        self.regEtaHist("SlctdElEta")
+        self.regPhiHist("SlctdElPhi")
+        self.regTH1("SlctdElE","",4500,0,500)
+        self.regTH1("SlctdElMultplcty","",8,-0.5,7.5)
 
         self.regTHnSparse("ZCandKine","",nbins=7,\
                 bins=[1000,100,500, 1000, 100, 500,400],\
@@ -83,7 +90,7 @@ class NtupleAna(NtupleAnaBase):
 
     def execute(self):
         self.doAuthorEl()
-        self.doTruthAna()
+        #self.doTruthAna()
         
     def finalize(self):
         #Save histograms to disk
@@ -139,20 +146,23 @@ class NtupleAna(NtupleAnaBase):
         authorVec   = self.getCurrentValue("elAuthor")
 
         chrgVec     = self.getCurrentValue("el_charge")
+        looseIdVec  = self.getCurrentValue("el_loose")
+        lossePPIdVec= self.getCurrentValue("el_loosePP")
         medIdVec    = self.getCurrentValue("el_medium")
         medPPIdVec  = self.getCurrentValue("el_mediumPP")
+        tightIdVec  = self.getCurrentValue("el_tight")
         tightPPIdVec= self.getCurrentValue("el_tightPP")
 
         elParentVec = self.getCurrentValue("mtchdParent")
         elGrndParentVec = self.getCurrentValue("mtchdGrndParent")
-
-        kineList = []
 
         nBMtchEl    = 0
         nBGrndMtchEl= 0
 
         nCMtchEl    = 0
         nCGrndMtchEl= 0
+
+        elList      = []
 
         for i in xrange(cletaVec.size()):
             clEta   = cletaVec.at(i)
@@ -162,21 +172,34 @@ class NtupleAna(NtupleAnaBase):
 
             author  = authorVec.at(i)
             softe   = softeVec.at(i)
-            clChrg    = chrgVec.at(i)
+            clChrg  = chrgVec.at(i)
+            looseId = looseIdVec.at(i)
+            loosePPId=lossePPIdVec.at(i)
             medId   = medIdVec.at(i)
             medPPId = medPPIdVec.at(i)
+            tightId = tightIdVec.at(i)
             tightPPid=tightPPIdVec.at(i)
 
             elParentPDG     = elParentVec.at(i)
             elGrnParentPDG  = elGrndParentVec.at(i)
 
-            if(medPPId==True and (author == True or(author==True and softe==True)) and clPt > 15):
-                kineList +=[(clPt,clEta,clPhi,clE,clChrg)]
+            if(clPt > 20):
 
-                self.gethist("AuthorElEta").Fill(clEta)
-                self.gethist("AuthorElPt").Fill(clPt)
-                self.gethist("AuthorElPhi").Fill(clPhi)
-                self.gethist("AuthorElE").Fill(clE)
+                elCand = ZeeBElectron(clPt,clEta,clPhi,clE,clChrg)
+                elCand.setAuthor(author)
+                elCand.setSofte(softe)
+                elCand.setLoose(looseId)
+                elCand.setLoosePP(loosePPId)
+                elCand.setTight(tightId)
+                elCand.setMedium(medId)
+                elCand.setMediumPP(medPPId)
+
+                elList += [elCand]
+
+                self.gethist("ElEta").Fill(clEta)
+                self.gethist("ElPt").Fill(clPt)
+                self.gethist("ElPhi").Fill(clPhi)
+                self.gethist("ElEnrgy").Fill(clE)
 
                 """Truth match"""
                 if(elParentPDG != -100):
@@ -192,33 +215,39 @@ class NtupleAna(NtupleAnaBase):
                         nBGrndMtchEl +=1
                     elif(self.isCHadron(elParentPDG)):
                         nCGrndMtchEl +=1
+            
 
         #End of loop
 
-        self.gethist("AuthorElMultplcty").Fill(len(kineList))
-        self.gethist("BMtchElMultplcty").Fill(nBMtchEl)
-        self.gethist("BGrndMtchElMultplcty").Fill(nBGrndMtchEl)
-        
-        #Sorts kinelist in pt order (the first element of the tuple)
-        sortList = sorted(kineList)
-        sortList.reverse()
-        
-        pt  = []
-        eta = []
-        phi = []
-        enrg= []
-        chrg= []
-        if(len(sortList)>1):
-            el1 = sortList[0]
-            el2 = sortList[1]
+        if(len(elList)>1):
+            self.gethist("ElMultplcty").Fill(len(elList))
+            self.gethist("BMtchElMultplcty").Fill(nBMtchEl)
+            self.gethist("BGrndMtchElMultplcty").Fill(nBGrndMtchEl)
+            
+            elSelectList= [x for x in elList if x.isLoose() and (x.isAuthorSofte() or x.isAuthor()) ]
+            self.gethist("SlctdElMultplcty").Fill(len(elSelectList))
+            for el in elSelectList:
+                self.gethist("SlctdElPt").Fill(el.getPt())
+                self.gethist("SlctdElEta").Fill(el.getEta())
+                self.gethist("SlctdElPhi").Fill(el.getPhi())
 
-            pt = [el1[0],el2[0]]
-            eta= [el1[1],el2[1]]
-            phi= [el1[2],el2[2]]
-            enrg=[el1[3],el2[3]]
-            chrg=[el1[3],el2[4]]
+            '''Invariant mass of Z boson'''
+            elPairList = [(ePlus,eMinus) for ePlus in [x for  x in elList if x.getCharge()==1] \
+                    for eMinus in [x for x in elList if x.getCharge()==-1] \
+                    if  ePlus != eMinus and ePlus.isZElectron() and eMinus.isZElectron()]
 
-            self.FillZCandKinematics(pt,eta,phi,enrg,chrg)
+            ZElList = [x for x in elList if x.isZElectron()]
+            ZElList.sort(key = lambda x: x.getPt() )
+            el1 = ZElList.pop()
+            el2 = ZElList.pop()
+
+            if((el1.getCharge()==1 and el2.getCharge() ==-1) or (el1.getCharge()==-1 and el2.getCharge()==1)):
+                InvMass = (el1.getLorentzVector() + el2.getLorentzVector()).M()
+                
+                if(InvMass > 40):
+                    zCandKine   = [el1.getPt(),el1.getEta(),el1.getPhi(),el2.getPt(),el2.getEta(),el2.getPhi(),InvMass]
+                    self.gethist("ZCandKine").Fill(array("d",zCandKine))
+
 
     def makeDeltaRPlots(self):
         bQuarkME_pt     = self.getCurrentValue("bQuarkME_pt")
@@ -428,54 +457,27 @@ class NtupleAna(NtupleAnaBase):
         return nBEl
 
 
-    '''Get Invariant mass list of OS electrons'''
-    '''DEBUG:The el mass should be removed'''
-    def FillZCandKinematics(self,pt,eta,phi,enrg,chrg):
-        negIdx = [chrg.index(x) for x in chrg if x <0]
-        plusIdx= [chrg.index(x) for x in chrg if x >0]
-
-        ptPair = [(pt[ePidx],pt[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
-        etaPair = [(eta[ePidx],eta[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
-        phiPair = [(phi[ePidx],phi[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
-        enrgPair= [(enrg[ePidx],enrg[eMidx]) for eMidx in negIdx for ePidx in plusIdx]
-
-        nominalZMass = 91.187
-        InvMassList  = []
-
-        invmass = []
-        for i in xrange(len(ptPair)):
-            ePlus = ROOT.TLorentzVector()
-            eMinus= ROOT.TLorentzVector()
-
-            eOneMassCalc2   =   enrgPair[i][0]**2 - (ptPair[i][0]*math.cosh(etaPair[i][0]))**2
-            eTwoMassCalc2   =   enrgPair[i][1]**2 - (ptPair[i][1]*math.cosh(etaPair[i][1]))**2
-            ePdgMass2       =   0.000511**2 # GeV
-
-            ePlus.SetPtEtaPhiM(float(ptPair[i][0]),float(etaPair[i][0]),float(phiPair[i][0]), math.sqrt(ePdgMass2) if (eOneMassCalc2 - ePdgMass2) < 0 else math.sqrt(eOneMassCalc2))
-            eMinus.SetPtEtaPhiM(float(ptPair[i][1]),float(etaPair[i][1]),float(phiPair[i][1]),math.sqrt(ePdgMass2) if (eTwoMassCalc2 - ePdgMass2) < 0 else math.sqrt(eTwoMassCalc2))
-                    
-            m = (ePlus + eMinus).M()
-            if(m > 20):
-                InvMassList +=[m]
-        #End of loop
-
-        #Get the best boson candidate
-        if(len(InvMassList)>0):
-            Idx = self.getBestBosIndx(InvMassList)
-            zCandKine   = [ptPair[Idx][0],etaPair[Idx][0], phiPair[Idx][0], ptPair[Idx][1],etaPair[Idx][1], phiPair[Idx][0], InvMassList[Idx]]
-            self.gethist("ZCandKine").Fill(array("d",zCandKine))
+    
+    #Fill Z Boson Mass and its Z cand electrons
+    #kinematics into a THnSparse  
+    def FillZCandKinematics(self,el1,el2):
+        fourVector  = el1.getLorentzVector() + el2.getLorentzVector()
+        InvMass     = fourVector.M()
+        zCandKine   = [el1.getPt(),el1.getEta(),el1.getPhi(),el2.getPt(),el2.getEta(),el2.getPhi(),InvMass]
+        self.gethist("ZCandKine").Fill(array("d",zCandKine))
 
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''Best boson the one which is closer to nominal mass'''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    def getBestBosIndx(self,InvMassList):
+    def getBestBosIndx(self,elPairList):
         nominalZMass = 91.187
         mDiff        = 100
         BestBosIndx  = -1
-        for m in InvMassList:
+        for elPair  in elPairList:
+            m        = (elPair[0].getLorentzVector() + elPair[1].getLorentzVector()).M()
             if(abs(m - nominalZMass) < mDiff):
                 mDiff       = abs(m - nominalZMass)
-                BestBosIndx = InvMassList.index(m)
+                BestBosIndx = elPairList.index(elPair)
 
         return BestBosIndx
 
@@ -616,10 +618,6 @@ class plotscript:
         self.inHistFile     = histFile 
         self.outHistList    = []
 
-        '''Make output pdf directory'''
-        self.pdfPath= "pdf"
-        os.system("mkdir -p "+ self.pdfPath)
-
         '''Plot the histograms'''
         self.__run()
 
@@ -663,13 +661,22 @@ class plotscript:
 
 
     def MakeRecoHists(self):
-        self.__saveHist(self.__getInHist("AuthorElPt"))
-        self.__saveHist(self.__getInHist("AuthorElEta"))
-        self.__saveHist(self.__getInHist("AuthorElPhi"))
+        self.__saveHist(self.__getInHist("ElPt"))
+        self.__saveHist(self.__getInHist("ElEta"))
+        self.__saveHist(self.__getInHist("ElPhi"))
+        self.__saveHist(self.__getInHist("ElEnrgy"))
 
-        h_nAuthorEl = self.__getInHist("AuthorElMultplcty")
-        h_nAuthorEl.GetXaxis().SetTitle("#")
-        self.__saveHist(h_nAuthorEl)
+        h_nEl = self.__getInHist("ElMultplcty")
+        h_nEl.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nEl)
+
+        self.__saveHist(self.__getInHist("SlctdElPt"))
+        self.__saveHist(self.__getInHist("SlctdElEta"))
+        self.__saveHist(self.__getInHist("SlctdElPhi"))
+
+        h_nSlctdEl = self.__getInHist("SlctdElMultplcty")
+        h_nSlctdEl.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nSlctdEl)
 
         """Truth Match Electrons"""
         self.__saveHist(self.__getInHist("ElParentPDG"))
