@@ -139,10 +139,9 @@ class SoftElectron : public Algorithm
                 TH1F* prodHist,TH1F* semiHist, int &counter);
 
         /**
-         * Miscellaneous function to 
-         * check if a particle is in 
-         * the supplied vector container
+         * EmShower variables
          */
+        void DoShowerAnalysis(const Analysis::Electron*);
 
     private:
         StoreGateSvc* m_storeGate;
@@ -170,68 +169,15 @@ class SoftElectron : public Algorithm
         unsigned int            m_runNumber;
         unsigned int            m_lumiNumber;
 
-        std::vector<double>*    m_ZElPt;
-        std::vector<double>*    m_ZElEta;
-        std::vector<double>*    m_ZElPhi;
-
-        std::vector<int>*       m_el_charge;
-        std::vector<bool>*      m_elAuthor;
-        std::vector<bool>*      m_elAuthorSofte;
-        std::vector<double>*    m_el_cl_Pt;
-        std::vector<double>*    m_el_cl_Eta;
-        std::vector<double>*    m_el_cl_Phi;
-        std::vector<double>*    m_el_cl_E;
-        std::vector<double>*    m_el_trk_Eta;
-        std::vector<double>*     m_el_trk_Phi;
-
-        std::vector<bool>*      m_el_id_loose;
-        std::vector<bool>*      m_el_id_loosepp;
-        std::vector<bool>*      m_el_id_medium;
-        std::vector<bool>*      m_el_id_mediumpp;
-        std::vector<bool>*      m_el_id_tight;
-        std::vector<bool>*      m_el_id_tightpp;
-
-        std::vector<double>*    m_el_truth_Pt;
-        std::vector<double>*    m_el_truth_Eta;
-        std::vector<double>*    m_el_truth_Phi;
-        std::vector<int>*       m_elMtchd;
-        std::vector<int>*       m_mtchdParent;
-        std::vector<int>*       m_mtchdGrndParent;
-
-        std::vector<int>*       m_BPDG;
-        std::vector<int>*       m_BStatus;
-        std::vector<double>*    m_BPt;
-        std::vector<double>*    m_BEta;
-        std::vector<double>*    m_BPhi;
-        std::vector<int>*       m_BBC;
-        std::vector<int>*       m_BisSemiElectron;
-        std::vector<double>*    m_BsemiElPt;
-        std::vector<double>*    m_BsemiElEta;
-        std::vector<double>*    m_BsemiElPhi;
-        std::vector<int>*       m_CPDG;
-        std::vector<int>*       m_CStatus;
-        std::vector<double>*    m_CPt;
-        std::vector<double>*    m_CEta;
-        std::vector<double>*    m_CPhi;
-        std::vector<int>*       m_CisSemiElectron;
-        std::vector<int>*       m_CparentBC;
-        std::vector<int>*       m_CgrndParentBC;
-        std::vector<double>*    m_CsemiElPt;
-        std::vector<double>*    m_CsemiElEta;
-        std::vector<double>*    m_CsemiElPhi;
-
-        std::vector<double>*    m_bQuarkME_pt;
-        std::vector<double>*    m_bQuarkME_eta;
-        std::vector<double>*    m_bQuarkME_phi;
-        std::vector<int>*       m_bQuarkME_pdg;
-
         bool                    m_fillGenInfo;
-
         double                  m_elPtCut;
         double                  m_elEtaCut;
         double                  m_elCrackEtaCutLow;
         double                  m_elCrackEtaCutHigh;
+
+        //Histograms
+        std::map<std::string,TH1F*> m_h1_histMap;
+        std::map<std::string,TH2F*> m_h2_histMap;
 };
   
-
 #endif // SoftElectron
