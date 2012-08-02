@@ -64,7 +64,6 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     m_histos(0),
     m_mcTruthClassifier("MCTruthClassifier"),
     m_trigDec( "Trig::TrigDecisionTool" ),
-    m_tree(0),
     m_elEtaCut(2.5),
     m_elCrackEtaCutLow(1.37),
     m_elCrackEtaCutHigh(1.52)
@@ -137,6 +136,7 @@ StatusCode SoftElectron::execute()
 {
     MsgStream mlog( msgSvc(), name() );
 
+
     StatusCode sc = StatusCode::SUCCESS;
 
     /** Retrieve AOD Containers */
@@ -185,19 +185,19 @@ StatusCode SoftElectron::execute()
 
     //Entering the event loop
     //
-    if( vxPass && trigPass )
+    //if( vxPass && trigPass )
     {
         //Book Ntuple Containers
         this->BookNtupleContainers();
 
         if(m_fillGenInfo) //MC
         {
-            /** Heavy Flavor Overlap Removal **/
+            // Heavy Flavor Overlap Removal 
             std::string hfor_type ="";
-            if ( m_hfor_tool->execute().isSuccess() )
-                hfor_type = m_hfor_tool->getDecision();
+            //if ( m_hfor_tool->execute().isSuccess() )
+            //    hfor_type = m_hfor_tool->getDecision();
 
-            if(hfor_type ==m_hforType)
+            //if(hfor_type ==m_hforType)
             {
                 this->FillElectrons();
                 this->FindTruthParticle();
@@ -208,8 +208,7 @@ StatusCode SoftElectron::execute()
             this->FillElectrons();
         }
 
-        m_tree->Fill();
-        this->ClearContainers();
+        this->ClearContainers(); 
     }
     return sc;
 }
@@ -227,80 +226,28 @@ StatusCode SoftElectron::BookHistograms()
     StatusCode sc ;
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-
-    /**
-     * TTree
-     */
-    m_tree  = new TTree("el","Electron Tree");
-
-    m_tree->Branch("RunNumber",&m_runNumber);
-    m_tree->Branch("LumiblockNumber",&m_lumiNumber);
-    
-    //Electrons
-    m_tree->Branch("el_cl_Pt",&m_el_cl_Pt);
-    m_tree->Branch("el_cl_Eta",&m_el_cl_Eta);
-    m_tree->Branch("el_cl_Phi",&m_el_cl_Phi);
-    m_tree->Branch("el_cl_E",&m_el_cl_E);
-    m_tree->Branch("el_trk_Eta",&m_el_trk_Eta);
-    m_tree->Branch("el_trk_Phi",&m_el_trk_Phi);
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>("h1_etCone30",new TH1F("etCone30","etCone30",500,0,10)));
 
 
-    m_tree->Branch("elIsMtchd",&m_elMtchd);
-    m_tree->Branch("mtchdParent",&m_mtchdParent);
-    m_tree->Branch("mtchdGrndParent",&m_mtchdGrndParent);
- 
-    m_tree->Branch("elAuthor",&m_elAuthor);
-    m_tree->Branch("elAuthorSofte",&m_elAuthorSofte);
-    m_tree->Branch("el_charge",&m_el_charge);
+    //register TH1F
+    for(std::map<std::string,TH1F*>::iterator iter = m_h1_histMap.begin(); iter != m_h1_histMap.end(); ++iter)
+    {
+        sc = m_histos->regHist("/AANT/hist/"+iter->first,iter->second);
+        if (sc.isFailure())
+        {
+            return sc;
+        }
+    }
 
-    m_tree->Branch("el_truth_Pt",&m_el_truth_Pt);
-    m_tree->Branch("el_truth_Eta",&m_el_truth_Eta);
-    m_tree->Branch("el_truth_Phi",&m_el_truth_Phi);
-    
-    m_tree->Branch("el_loose",&m_el_id_loose);
-    m_tree->Branch("el_loosePP",&m_el_id_loosepp);
-    m_tree->Branch("el_medium",&m_el_id_medium);
-    m_tree->Branch("el_mediumPP",&m_el_id_mediumpp);
-    m_tree->Branch("el_tight",&m_el_id_tight);
-    m_tree->Branch("el_tightPP",&m_el_id_tightpp);
-
-    //Truth 
-    m_tree->Branch("ZElPt",&m_ZElPt);
-    m_tree->Branch("ZElEta",&m_ZElEta);
-    m_tree->Branch("ZElPhi",&m_ZElPhi);
-
-    m_tree->Branch("BPDG",&m_BPDG);
-    m_tree->Branch("BStatus",&m_BStatus);
-    m_tree->Branch("BPt",&m_BPt);
-    m_tree->Branch("BEta",&m_BEta);
-    m_tree->Branch("BPhi",&m_BPhi);
-    m_tree->Branch("BBC",&m_BBC);
-    m_tree->Branch("BisSemiElectron",&m_BisSemiElectron);
-    m_tree->Branch("BsemiElPt",&m_BsemiElPt);
-    m_tree->Branch("BsemiElEta",&m_BsemiElEta);
-    m_tree->Branch("BsemiElPhi",&m_BsemiElPhi);
-    
-    m_tree->Branch("CPDG",&m_CPDG);
-    m_tree->Branch("CStatus",&m_CStatus);
-    m_tree->Branch("CPt",&m_CPt);
-    m_tree->Branch("CEta",&m_CEta);
-    m_tree->Branch("CPhi",&m_CPhi);
-    m_tree->Branch("CisSemiElectron",&m_CisSemiElectron);
-    m_tree->Branch("CParentBC",&m_CparentBC);
-    m_tree->Branch("CGrndParentBC",&m_CgrndParentBC);
-    m_tree->Branch("CsemiElPt",&m_CsemiElPt);
-    m_tree->Branch("CsemiElEta",&m_CsemiElEta);
-    m_tree->Branch("CsemiElPhi",&m_CsemiElPhi);
-
-    //Truth ME quark
-    m_tree->Branch("bQuarkME_pt",&m_bQuarkME_pt);
-    m_tree->Branch("bQuarkME_eta",&m_bQuarkME_eta);
-    m_tree->Branch("bQuarkME_phi",&m_bQuarkME_phi);
-    m_tree->Branch("bQuarkME_pdg",&m_bQuarkME_pdg);
-
-
-    //Register TTree
-    sc = m_histos->regTree("/AANT/el",m_tree);
+    //register TH2F
+    for(std::map<std::string,TH2F*>::iterator iter = m_h2_histMap.begin(); iter != m_h2_histMap.end(); ++iter)
+    {
+        sc = m_histos->regHist("/AANT/"+iter->first,iter->second);
+        if(sc.isFailure())
+        {
+            return sc;
+        }
+    }
     return StatusCode::SUCCESS;
 }
 
@@ -328,9 +275,6 @@ void SoftElectron::FindTruthParticle()
             std::vector<const HepMC::GenParticle*> zchildren = this->GetChildren(part);
             for(std::vector<const HepMC::GenParticle*>::iterator Iter = zchildren.begin(); Iter != zchildren.end(); ++Iter)
             {
-                m_ZElPt->push_back((*Iter)->momentum().perp()/1000);
-                m_ZElEta->push_back((*Iter)->momentum().eta());
-                m_ZElPhi->push_back((*Iter)->momentum().phi());
             }
 
         }
@@ -359,10 +303,6 @@ void SoftElectron::FindTruthParticle()
                 {
                     if(abs(part->pdg_id())==5 && (part->status() == 123  || part->status() ==124))
                     {
-                        m_bQuarkME_pt->push_back(part->momentum().perp()/1000);
-                        m_bQuarkME_eta->push_back(part->momentum().eta());
-                        m_bQuarkME_phi->push_back(part->momentum().phi());
-                        m_bQuarkME_pdg->push_back(part->pdg_id());
                     }
                 }
             }
@@ -378,14 +318,6 @@ void SoftElectron::FindTruthParticle()
             {
                 if(isFinalState(part,5))
                 {
-                    m_BPDG->push_back(part->pdg_id());
-                    m_BStatus->push_back(part->status());
-
-                    m_BPt->push_back(part->momentum().perp()/1000);
-                    m_BEta->push_back(part->momentum().eta());
-                    m_BPhi->push_back(part->momentum().phi());
-                    m_BBC->push_back(part->barcode());
-
                     bool hasDaughterEl(false);
                     std::vector<const HepMC::GenParticle*> children = this->GetChildren(part);
                     for(std::vector<const HepMC::GenParticle*>::iterator Iter = children.begin(); Iter != children.end(); ++Iter)
@@ -393,20 +325,14 @@ void SoftElectron::FindTruthParticle()
                         if(std::abs((*Iter)->pdg_id()) ==11)
                         {
                             hasDaughterEl = true;
-                            m_BsemiElPt->push_back((*Iter)->momentum().perp()/1000);
-                            m_BsemiElEta->push_back((*Iter)->momentum().eta());
-                            m_BsemiElPhi->push_back((*Iter)->momentum().phi());
-
                             break;
                         }
                     }
                     if(hasDaughterEl)
                     {
-                        m_BisSemiElectron->push_back(1);
                     }
                     else
                     {
-                        m_BisSemiElectron->push_back(0);
                     }
                 }
             }
@@ -414,22 +340,12 @@ void SoftElectron::FindTruthParticle()
             {
                 if(isFinalState(part,4))
                 {
-                    m_CPDG->push_back(part->pdg_id());
-                    m_CStatus->push_back(part->status());
-
-                    m_CPt->push_back(part->momentum().perp()/1000);
-                    m_CEta->push_back(part->momentum().eta());
-                    m_CPhi->push_back(part->momentum().phi());
-
                     std::vector<const HepMC::GenParticle*>parentVec     = this->GetParents(part);
                     for(std::vector<const HepMC::GenParticle*>::iterator Iter = parentVec.begin(); Iter != parentVec.end(); ++Iter)
                     {
-                        m_CparentBC->push_back((*Iter)->barcode());
-
                         std::vector<const HepMC::GenParticle*> grndPrntVec  = this->GetParents((*Iter));
                         for (std::vector<const HepMC::GenParticle*>::iterator gIter = grndPrntVec.begin(); gIter != grndPrntVec.end(); ++gIter)
                         {
-                            m_CgrndParentBC->push_back((*gIter)->barcode());
                         }
                     }
 
@@ -440,21 +356,15 @@ void SoftElectron::FindTruthParticle()
                         if(std::abs((*Iter)->pdg_id()) ==11)
                         {
                             hasDaughterEl = true;
-                            m_CsemiElPt->push_back((*Iter)->momentum().perp()/1000);
-                            m_CsemiElEta->push_back((*Iter)->momentum().eta());
-                            m_CsemiElPhi->push_back((*Iter)->momentum().phi());
-
                             //It is highly unlikely a HF hadron to have 2 electron daughters. But still 
                             break;
                         }
                     }
                     if(hasDaughterEl)
                     {
-                        m_CisSemiElectron->push_back(1);
                     }
                     else
                     {
-                        m_CisSemiElectron->push_back(0);
                     }
                 }
             }
@@ -509,6 +419,10 @@ void SoftElectron::FillElectrons()
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
 
+
+        //ISO study
+        this->DoShowerAnalysis(Electron);
+
         //Cluster
         const CaloCluster* ElCluster = Electron->cluster();
         if(ElCluster)
@@ -546,6 +460,7 @@ void SoftElectron::FillElectrons()
                     (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
                     std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
             {
+                /*
                 m_el_charge     ->push_back(elCharge);
                 m_el_id_loosepp ->push_back(isEmLoose);
                 m_el_id_loose   ->push_back(isEmLoosePP);
@@ -591,6 +506,7 @@ void SoftElectron::FillElectrons()
                     m_el_truth_Eta  ->push_back(-100);
                     m_el_truth_Phi  ->push_back(-100);
                 }
+                */
             }
         }
     }
@@ -647,128 +563,11 @@ void SoftElectron::BookNtupleContainers()
 {
     m_runNumber     = 0;
     m_lumiNumber    = 0;
-
-    //Truth
-    m_ZElPt         = new std::vector<double>();
-    m_ZElEta        = new std::vector<double>();
-    m_ZElPhi        = new std::vector<double>();
-
-    m_BPDG          = new std::vector<int>();
-    m_BStatus       = new std::vector<int>();
-    m_BPt           = new std::vector<double>();
-    m_BEta          = new std::vector<double>();
-    m_BPhi          = new std::vector<double>();
-    m_BBC           = new std::vector<int>();
-    m_BisSemiElectron= new std::vector<int>();
-    m_BsemiElPt     = new std::vector<double>();
-    m_BsemiElEta    = new std::vector<double>();
-    m_BsemiElPhi    = new std::vector<double>();
-
-    m_CPDG          = new std::vector<int>();
-    m_CStatus       = new std::vector<int>();
-    m_CPt           = new std::vector<double>();
-    m_CEta          = new std::vector<double>();
-    m_CPhi          = new std::vector<double>();
-    m_CisSemiElectron= new std::vector<int>();
-    m_CparentBC     = new std::vector<int>();
-    m_CgrndParentBC = new std::vector<int>();
-    m_CsemiElPt     = new std::vector<double>();
-    m_CsemiElEta    = new std::vector<double>();
-    m_CsemiElPhi    = new std::vector<double>();
-
-    m_bQuarkME_pt   = new std::vector<double>();
-    m_bQuarkME_eta  = new std::vector<double>();
-    m_bQuarkME_phi  = new std::vector<double>();
-    m_bQuarkME_pdg  = new std::vector<int>();
-
-    //TruthMatch Electron
-    m_elMtchd           =   new std::vector<int>();       
-    m_mtchdParent       =   new std::vector<int>();       
-    m_mtchdGrndParent   =   new std::vector<int>();
-    m_el_truth_Pt       =   new std::vector<double>();    
-    m_el_truth_Eta      =   new std::vector<double>();    
-    m_el_truth_Phi      =   new std::vector<double>();    
-
-    //Reco Electron
-    m_el_cl_Pt          =   new std::vector<double>();    
-    m_el_cl_Eta         =   new std::vector<double>();    
-    m_el_cl_Phi         =   new std::vector<double>();
-    m_el_cl_E           =   new std::vector<double>();
-    m_el_trk_Eta        =   new std::vector<double>();
-    m_el_trk_Phi        =   new std::vector<double>();
-    
-    m_elAuthor          =   new std::vector<bool>();       
-    m_elAuthorSofte     =   new std::vector<bool>();       
-    m_el_charge         =   new std::vector<int>();
-
-
-    m_el_id_loose       =   new std::vector<bool>();
-    m_el_id_loosepp     =   new std::vector<bool>();
-    m_el_id_medium      =   new std::vector<bool>();
-    m_el_id_mediumpp    =   new std::vector<bool>();
-    m_el_id_tight       =   new std::vector<bool>();
-    m_el_id_tightpp     =   new std::vector<bool>();
-
 }
 
 void SoftElectron::ClearContainers()
 {
 
-    delete m_el_cl_Pt;
-    delete m_el_cl_Eta;
-    delete m_el_cl_Phi;
-    delete m_el_cl_E;
-    delete m_el_trk_Eta;
-    delete m_el_trk_Phi;
-
-    delete m_elAuthor;
-    delete m_elAuthorSofte;
-    delete m_el_charge;
-
-    delete m_el_id_loose;
-    delete m_el_id_loosepp;
-    delete m_el_id_medium;
-    delete m_el_id_mediumpp;
-    delete m_el_id_tight;
-    delete m_el_id_tightpp;
-
-    delete m_ZElPt;
-    delete m_ZElEta;
-    delete m_ZElPhi;
-
-    delete m_BPDG;
-    delete m_BStatus;
-    delete m_BPt;
-    delete m_BEta;
-    delete m_BPhi;
-    delete m_BBC;
-    delete m_BisSemiElectron;
-    delete m_BsemiElPt;
-    delete m_BsemiElEta;
-    delete m_BsemiElPhi;
-    delete m_CPDG;
-    delete m_CStatus;
-    delete m_CPt;
-    delete m_CEta;
-    delete m_CPhi;
-    delete m_CisSemiElectron;
-    delete m_CparentBC;
-    delete m_CgrndParentBC;
-    delete m_CsemiElPt;
-    delete m_CsemiElEta;
-    delete m_CsemiElPhi;
-
-    delete m_bQuarkME_pt;
-    delete m_bQuarkME_eta;
-    delete m_bQuarkME_phi;
-    delete m_bQuarkME_pdg;
-
-    delete m_el_truth_Pt;
-    delete m_el_truth_Eta;
-    delete m_el_truth_Phi;
-    delete m_elMtchd;
-    delete m_mtchdParent;
-    delete m_mtchdGrndParent;
 }
 
 const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)
@@ -867,4 +666,14 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetParents(const HepMC::Gen
         }
     }
     return parentVec;
+}
+
+void SoftElectron::DoShowerAnalysis(const Analysis::Electron* Electron)
+{
+    MsgStream mlog( msgSvc(), name() );
+    const EMShower* shower  = Electron->detail<EMShower>(); 
+    
+    //float topoetcone40      = (shower ? shower->topoetcone40() : 0);
+    float etcone30          = (shower ? shower->etcone30() : 0);
+    m_h1_histMap.find("h1_etCone30")->second->Fill(etcone30);
 }
