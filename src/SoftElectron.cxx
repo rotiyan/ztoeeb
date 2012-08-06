@@ -226,7 +226,106 @@ StatusCode SoftElectron::BookHistograms()
     StatusCode sc ;
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>("h1_etCone30",new TH1F("etCone30","etCone30;etCone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone30",new TH1F("etCone30","etCone30;etCone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone30_ptCorr",new TH1F("etCone30_ptCorr","etCone30;etCone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone40",new TH1F("etCone40","etCone40;etCone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone40_ptCorr",new TH1F("etCone40_ptCorr","etCone40/Et",500,0,1)));
+
+
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_elPt",new TH1F("elPt","Electron pt; [GeV]",1000,0,500)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_elEta",new TH1F("elEta","Electron Eta; #eta",1000,-5,5)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_elPhi",new TH1F("elPhi","Electron Phi; #varphi",1000,-5,5)));
+ 
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loose_etcone30",new TH1F("leading_loose_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loose_etcone30_ptCorr",new TH1F("leading_loose_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loosePP_etcone30",new TH1F("leading_loosePP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loosePP_etcone30_ptCorr",new TH1F("leading_loosePP_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_medium_etcone30",new TH1F("leading_medium_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_medium_etcone30_ptCorr",new TH1F("leading_medium_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etcone30",new TH1F("leading_mediumPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etCone30_ptCorr",new TH1F("leading_mediumPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tight_etcone30",new TH1F("leading_tight_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tight_etcone30_ptCorr",new TH1F("leading_tight_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tightPP_etcone30",new TH1F("leading_tightPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tightPP_etcone30_ptCorr",new TH1F("leading_tightPP_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loose_etcone40",new TH1F("leading_loose_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loose_etcone40_ptCorr",new TH1F("leading_loose_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loosePP_etcone40",new TH1F("leading_loosePP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loosePP_etcone40_ptCorr",new TH1F("leading_loosePP_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_medium_etcone40",new TH1F("leading_medium_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_medium_etcone40_ptCorr",new TH1F("leading_medium_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etcone40",new TH1F("leading_mediumPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etCone40_ptCorr",new TH1F("leading_mediumPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tight_etcone40",new TH1F("leading_tight_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tight_etcone40_ptCorr",new TH1F("leading_tight_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tightPP_etcone40",new TH1F("leading_tightPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tightPP_etcone40_ptCorr",new TH1F("leading_tightPP_etcone40_ptCorr","etcone40/Et",500,0,1)));
+
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loose_etcone30_ptCorr",new TH1F("subleading_loose_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loosePP_etcone30",new TH1F("subleading_loosePP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loosePP_etcone30_ptCorr",new TH1F("subleading_loosePP_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_medium_etcone30",new TH1F("subleading_medium_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_medium_etcone30_ptCorr",new TH1F("subleading_medium_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etcone30",new TH1F("subleading_mediumPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etCone30_ptCorr",new TH1F("subleading_mediumPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tight_etcone30",new TH1F("subleading_tight_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tight_etcone30_ptCorr",new TH1F("subleading_tight_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tightPP_etcone30",new TH1F("subleading_tightPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tightPP_etcone30_ptCorr",new TH1F("subleading_tightPP_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loose_etcone40",new TH1F("subleading_loose_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loose_etcone40_ptCorr",new TH1F("subleading_loose_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loosePP_etcone40",new TH1F("subleading_loosePP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loosePP_etcone40_ptCorr",new TH1F("subleading_loosePP_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_medium_etcone40",new TH1F("subleading_medium_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_medium_etcone40_ptCorr",new TH1F("subleading_medium_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etcone40",new TH1F("subleading_mediumPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etCone40_ptCorr",new TH1F("subleading_mediumPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tight_etcone40",new TH1F("subleading_tight_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tight_etcone40_ptCorr",new TH1F("subleading_tight_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tightPP_etcone40",new TH1F("subleading_tightPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tightPP_etcone40_ptCorr",new TH1F("subleading_tightPP_etcone40_ptCorr","etcone40/Et",500,0,1)));
+
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loose_etcone30_ptCorr",new TH1F("other_loose_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loosePP_etcone30",new TH1F("other_loosePP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loosePP_etcone30_ptCorr",new TH1F("other_loosePP_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_medium_etcone30",new TH1F("other_medium_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_medium_etcone30_ptCorr",new TH1F("other_medium_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etcone30",new TH1F("other_mediumPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etCone30_ptCorr",new TH1F("other_mediumPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tight_etcone30",new TH1F("other_tight_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tight_etcone30_ptCorr",new TH1F("other_tight_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tightPP_etcone30",new TH1F("other_tightPP_etcone30","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tightPP_etcone30_ptCorr",new TH1F("other_tightPP_etcone30_ptCorr","etcone30/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loose_etcone40",new TH1F("other_loose_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loose_etcone40_ptCorr",new TH1F("other_loose_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loosePP_etcone40",new TH1F("other_loosePP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loosePP_etcone40_ptCorr",new TH1F("other_loosePP_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_medium_etcone40",new TH1F("other_medium_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_medium_etcone40_ptCorr",new TH1F("other_medium_etcone40_ptCorr","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etcone40",new TH1F("other_mediumPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etCone40_ptCorr",new TH1F("other_mediumPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tight_etcone40",new TH1F("other_tight_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tight_etcone40_ptCorr",new TH1F("other_tight_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tightPP_etcone40",new TH1F("other_tightPP_etcone40","etcone40/Et",500,0,1)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tightPP_etcone40_ptCorr",new TH1F("other_tightPP_etcone40_ptCorr","etcone40/Et",500,0,1)));
+
+
+
+
+    /*
+    //pt,eta,phi,OQ,loose,loosepp,medium,mediumpp,tight,tightpp
+    int const nbins     = 10;
+    int bins[nbins]     = {1000,500, 500,5,5,5,5,5,5,5};
+    double xmin[nbins]  = {0.  ,-5., -5.,0,0,0,0,0,0,0};
+    double xmax[nbins]  = {500., 5.,  5.,5,5,5,5,5,5,5};
+    
+    m_hn_histMap.insert(std::pair<std::string,THnSparseD*>("hn_LeadingElectron",
+                new THnSparseD("LeadingElectron","Leading Electron",nbins,bins,xmin,xmax)));
+    m_hn_histMap.insert(std::pair<std::string,THnSparseD*>("hn_subLeadindElectron",
+                new THnSparseD("SubLeadingElectron","Sub Leading Electron",nbins,bins,xmin,xmax)));
+    m_hn_histMap.insert(std::pair<std::string,THnSparseD*>("hn_otherElectrons",
+                new THnSparseD("OtherElectrons","Other Electrons",nbins,bins,xmin,xmax)));
+    */
 
 
     //register TH1F
@@ -243,6 +342,17 @@ StatusCode SoftElectron::BookHistograms()
     for(std::map<std::string,TH2F*>::iterator iter = m_h2_histMap.begin(); iter != m_h2_histMap.end(); ++iter)
     {
         sc = m_histos->regHist("/AANT/"+iter->first,iter->second);
+        if(sc.isFailure())
+        {
+            return sc;
+        }
+    }
+
+    //register THnSparseD
+    //COULD NOT Register THnSparse.
+    for(std::map<std::string,THnSparseD*>::iterator iter = m_hn_histMap.begin(); iter != m_hn_histMap.end(); ++iter)
+    {
+        //sc = m_histos->regHist("/AANT/"+iter->first,iter->second);
         if(sc.isFailure())
         {
             return sc;
@@ -711,16 +821,48 @@ void SoftElectron::DoShowerAnalysis(const Analysis::Electron* Electron)
 
     if( Electron->cluster() && Electron->trackParticle())
     {
-        double ClE              = Electron->cluster()->e();
-        double trkEta           = Electron->trackParticle()->eta();
-        
-        double trnsEnrgy        = ClE/cosh(trkEta);
 
+        double elCharge         = Electron->charge();
+        bool isEmLoose          = Electron->passID(egammaPID::ElectronIDLoose);
+        bool isEmLoosePP        = Electron->passID(egammaPID::ElectronIDLoosePP);
+        bool isEmMedium         = Electron->passID(egammaPID::ElectronIDMedium);
+        bool isEmMediumPP       = Electron->passID(egammaPID::ElectronIDMediumPP);
+        bool isEmTight          = Electron->passID(egammaPID::ElectronIDTight);
+        bool isEmTightPP        = Electron->passID(egammaPID::ElectronIDTightPP);
+        
+        double ClE              = Electron->cluster()->e();
+        double ClPt             = Electron->cluster()->pt();
+        double ClEta            = Electron->cluster()->eta();
+        double ClPhi            = Electron->cluster()->phi();
+        double trkPt            = Electron->trackParticle()->pt();
+        double trkEta           = Electron->trackParticle()->eta();
+        double trkPhi           = Electron->trackParticle()->phi();
+        double trnsEnrgy        = ClE/cosh(trkEta);
         const EMShower* shower  = Electron->detail<EMShower>(); 
         
-        //float topoetcone40      = (shower ? shower->topoetcone40() : 0);
         float etcone30          = (shower ? shower->etcone30() : 0);
-        m_h1_histMap.find("h1_etCone30")->second->Fill(std::abs(etcone30/trnsEnrgy));
+        float etcone30_ptCorr   = (shower ? shower->etcone30_ptcorrected() : 0);
+        float etcone40          = (shower ? shower->etcone40() : 0);
+        float etcone40_ptCorr   = (shower ? shower->etcone40_ptcorrected() : 0);
+
+        /**
+         * Fill the histograms
+         **/
+
+        //kinematic histograms
+        m_h1_histMap.find("h1_elPt")->second->Fill(ClPt);
+        m_h1_histMap.find("h1_elEta")->second->Fill(ClEta);
+        m_h1_histMap.find("h1_elPhi")->second->Fill(ClPhi);
+
+        //Generic etcone isolation histograms  
+        m_h1_histMap.find("h1_etCone30")            ->second->Fill(std::abs(etcone30/trnsEnrgy));
+        m_h1_histMap.find("h1_etCone30_ptCorr")     ->second->Fill(std::abs(etcone30_ptCorr/trnsEnrgy));
+        m_h1_histMap.find("h1_etCone40")            ->second->Fill(std::abs(etcone40/trnsEnrgy));
+        m_h1_histMap.find("h1_etCone40_ptCorr")     ->second->Fill(std::abs(etcone40_ptCorr/trnsEnrgy));
+
+        //leading pt electron isolations vars
+
+
 
         if(std::abs(etcone30/trnsEnrgy > 1))
             mlog <<MSG::INFO <<" Etcone Norm " << etcone30/trnsEnrgy << endreq;
