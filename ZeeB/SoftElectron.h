@@ -78,6 +78,16 @@ class SoftElectron : public Algorithm
         bool isFinalState(const HepMC::GenParticle* part, int type);
 
         /**
+         * check if the particle is B-hadron
+         */
+        bool isBHadron(const HepMC::GenParticle* part);
+
+        /**
+         * check if the particle is C-hadron
+         */
+        bool isCHadron(const HepMC::GenParticle* part);
+
+        /**
          * Fill Electrons container info into the 
          * ntuple
          */
