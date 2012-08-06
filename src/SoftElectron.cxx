@@ -226,7 +226,7 @@ StatusCode SoftElectron::BookHistograms()
     StatusCode sc ;
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>("h1_etCone30",new TH1F("etCone30","etCone30",500,0,10)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>("h1_etCone30",new TH1F("etCone30","etCone30;etCone30/Et",500,0,1)));
 
 
     //register TH1F
@@ -411,6 +411,24 @@ bool SoftElectron::isFinalState(const HepMC::GenParticle* part, int type)
     return true;
 }
 
+bool SoftElectron::isBHadron(const HepMC::GenParticle* part)
+{
+    int mpdg = part->pdg_id();
+    return  (   ( 500 < mpdg && mpdg < 599 ) ||
+            ( 10500 < mpdg && mpdg < 10599 ) ||
+            (  5000 < mpdg && mpdg < 5999  ) ||
+            ( 20500 < mpdg && mpdg < 20599 ) );
+}
+
+bool SoftElectron::isCHadron(const HepMC::GenParticle* part)
+{
+    int mpdg    = part->pdg_id();
+    return  (   ( 400 < mpdg && mpdg < 499 ) || 
+            ( 10400 < mpdg && mpdg < 10499 ) ||
+            (  4000 < mpdg && mpdg < 4999  ) ||
+            ( 20400 < mpdg && mpdg < 20499 ) );
+}
+
 void SoftElectron::FillElectrons()
 {
     MsgStream mlog(msgSvc(), name());
@@ -421,7 +439,27 @@ void SoftElectron::FillElectrons()
 
 
         //ISO study
-        this->DoShowerAnalysis(Electron);
+        
+        const HepMC::GenParticle* elParent = 0;
+
+        m_mcTruthClassifier->particleTruthClassifier(Electron);
+        const HepMC::GenParticle* particle  = m_mcTruthClassifier->getGenPart();
+        if(particle)
+        {
+            elParent= this->GetMother(particle);
+        }
+
+        if(elParent)
+        {
+            if(this->isBHadron(elParent))
+            {
+                mlog<<MSG::INFO<<"Electron Parent: "<<elParent->pdg_id()<<endreq;
+            }
+            if(this->isCHadron(elParent))
+            {
+                mlog<<MSG::INFO<<"Electron Parent: "<<elParent->pdg_id()<<endreq;
+            }
+        }
 
         //Cluster
         const CaloCluster* ElCluster = Electron->cluster();
@@ -452,14 +490,13 @@ void SoftElectron::FillElectrons()
             
             bool isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
 
-            mlog<<MSG::INFO <<"Good OQ: "<<isGoodOQ <<endreq;
-
-
 
             if( isGoodOQ && 
                     (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
                     std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
             {
+                this->DoShowerAnalysis(Electron);
+
                 /*
                 m_el_charge     ->push_back(elCharge);
                 m_el_id_loosepp ->push_back(isEmLoose);
@@ -671,9 +708,21 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetParents(const HepMC::Gen
 void SoftElectron::DoShowerAnalysis(const Analysis::Electron* Electron)
 {
     MsgStream mlog( msgSvc(), name() );
-    const EMShower* shower  = Electron->detail<EMShower>(); 
-    
-    //float topoetcone40      = (shower ? shower->topoetcone40() : 0);
-    float etcone30          = (shower ? shower->etcone30() : 0);
-    m_h1_histMap.find("h1_etCone30")->second->Fill(etcone30);
+
+    if( Electron->cluster() && Electron->trackParticle())
+    {
+        double ClE              = Electron->cluster()->e();
+        double trkEta           = Electron->trackParticle()->eta();
+        
+        double trnsEnrgy        = ClE/cosh(trkEta);
+
+        const EMShower* shower  = Electron->detail<EMShower>(); 
+        
+        //float topoetcone40      = (shower ? shower->topoetcone40() : 0);
+        float etcone30          = (shower ? shower->etcone30() : 0);
+        m_h1_histMap.find("h1_etCone30")->second->Fill(std::abs(etcone30/trnsEnrgy));
+
+        if(std::abs(etcone30/trnsEnrgy > 1))
+            mlog <<MSG::INFO <<" Etcone Norm " << etcone30/trnsEnrgy << endreq;
+    }
 }
