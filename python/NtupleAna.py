@@ -224,7 +224,7 @@ class NtupleAna(NtupleAnaBase):
             self.gethist("BMtchElMultplcty").Fill(nBMtchEl)
             self.gethist("BGrndMtchElMultplcty").Fill(nBGrndMtchEl)
             
-            elSelectList= [x for x in elList if x.isLoose() and (x.isAuthorSofte() or x.isAuthor()) ]
+            elSelectList= [x for x in elList if x.isLoosePP() and (x.isAuthorSofte() or x.isAuthor()) ]
             self.gethist("SlctdElMultplcty").Fill(len(elSelectList))
             for el in elSelectList:
                 self.gethist("SlctdElPt").Fill(el.getPt())
