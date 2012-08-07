@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <algorithm>
 #include <sys/types.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -152,7 +153,7 @@ class SoftElectron : public Algorithm
         /**
          * EmShower variables
          */
-        void DoShowerAnalysis(const Analysis::Electron*);
+        void DoShowerAnalysis(std::vector<const Analysis::Electron*>);
 
     private:
         StoreGateSvc* m_storeGate;
