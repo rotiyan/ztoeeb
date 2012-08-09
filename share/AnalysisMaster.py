@@ -10,8 +10,7 @@
 import glob
 from AthenaCommon.AthenaCommonFlags import jobproperties as jp
 #jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.126414.AlpgenJimmyZeeccNp0_nofilter.merge.AOD.e1008_s1310_s1300_r3043_r2993_tid679749_00/*root*')
-jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/data11_7TeV.00180124.physics_Egamma.merge.AOD.r2603_p659_tid497212_00/*root*')
-#jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.107650.AlpgenJimmyZeeNp0_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993_tid645586_00/AOD.645586._001079.pool.root.1')
+jp.AthenaCommonFlags.FilesInput = glob.glob('/tmp/narayan/mc11_7TeV.107650.AlpgenJimmyZeeNp0_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993_tid645586_00/AOD.645586._001079.pool.root.1')
 
 from GoodRunsLists.GoodRunsListsConf import *
 ToolSvc += GoodRunsListSelectorTool()
