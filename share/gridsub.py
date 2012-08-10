@@ -172,7 +172,7 @@ def gangaSub(dsDictName,dsName,dslist):
     j.backend.nobuild=True
     j.backend.requirements = PandaRequirements()
     j.backend.requirements.cloud = 'DE'
-    j.backend.requirements.excluded_sites=["ANALY_SLAC","ANALY_SLAC_LMEM"]
+    #j.backend.requirements.excluded_sites=["ANALY_SLAC","ANALY_SLAC_LMEM"]
     #j.backend.requirements.enableMerge = True
     j.submit()
 
