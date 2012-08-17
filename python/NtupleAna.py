@@ -248,7 +248,7 @@ class NtupleAna(NtupleAnaBase):
                     for el in elSelectList:
                         self.gethist("SlctdElPt").Fill(el.getPt())
                         self.gethist("SlctdElEta").Fill(el.getEta())
-                    self.gethist("SlctdElPhi").Fill(el.getPhi())
+                        self.gethist("SlctdElPhi").Fill(el.getPhi())
 
 
 
