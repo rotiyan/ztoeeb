@@ -224,12 +224,6 @@ class NtupleAna(NtupleAnaBase):
             self.gethist("BMtchElMultplcty").Fill(nBMtchEl)
             self.gethist("BGrndMtchElMultplcty").Fill(nBGrndMtchEl)
             
-            elSelectList= [x for x in elList if x.isLoosePP() and (x.isAuthorSofte() or x.isAuthor()) ]
-            self.gethist("SlctdElMultplcty").Fill(len(elSelectList))
-            for el in elSelectList:
-                self.gethist("SlctdElPt").Fill(el.getPt())
-                self.gethist("SlctdElEta").Fill(el.getEta())
-                self.gethist("SlctdElPhi").Fill(el.getPhi())
 
             '''Invariant mass of Z boson'''
             elPairList = [(ePlus,eMinus) for ePlus in [x for  x in elList if x.getCharge()==1] \
@@ -244,9 +238,18 @@ class NtupleAna(NtupleAnaBase):
             if((el1.getCharge()==1 and el2.getCharge() ==-1) or (el1.getCharge()==-1 and el2.getCharge()==1)):
                 InvMass = (el1.getLorentzVector() + el2.getLorentzVector()).M()
                 
-                if(InvMass > 40):
+                if(InvMass > 40 and InvMass < 120):
                     zCandKine   = [el1.getPt(),el1.getEta(),el1.getPhi(),el2.getPt(),el2.getEta(),el2.getPhi(),InvMass]
                     self.gethist("ZCandKine").Fill(array("d",zCandKine))
+
+                    #Make Electron selection if and only if we find Z-boson
+                    elSelectList= [x for x in elList if x.isLoosePP() and (x.isAuthorSofte() or x.isAuthor()) ]
+                    self.gethist("SlctdElMultplcty").Fill(len(elSelectList))
+                    for el in elSelectList:
+                        self.gethist("SlctdElPt").Fill(el.getPt())
+                        self.gethist("SlctdElEta").Fill(el.getEta())
+                    self.gethist("SlctdElPhi").Fill(el.getPhi())
+
 
 
     def makeDeltaRPlots(self):
