@@ -24,7 +24,7 @@ HerwigTruthClassifier::HerwigTruthClassifier(Analysis::Electron* electron)
     const HepMC::GenEvent* GenEvent = *(m_mcEventCollection->begin());
     HepMC::GenEvent::particle_const_iterator  pitr = GenEvent->particles_begin();
     
-    std::vector<const HepMC::GenParticle*> elecVector;
+    std::vector<const HepMC::GenParticle*> genElVector;
     for(; pitr !=  GenEvent->particles_end(); ++pitr)
     {
         const HepMC::GenParticle* part = (*pitr);
@@ -39,7 +39,7 @@ HerwigTruthClassifier::HerwigTruthClassifier(Analysis::Electron* electron)
             }
             else
             {
-                elecVector.push_back(part);
+                genElVector.push_back(part);
             }
         }
     }
