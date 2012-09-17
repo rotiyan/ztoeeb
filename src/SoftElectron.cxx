@@ -232,7 +232,7 @@ StatusCode SoftElectron::BookHistograms()
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
     m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_etcone30",new TH1F("bMatch_etcone30","etCone30",1000,-100,600)));
     m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_etcone30",new TH1F("cMatch_etcone30","etCone30",1000,-100,600)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_zMatch_etcone30",new TH1F("zMatch_etcone30","etCone30",1000,-100,600)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etcone30",new TH1F("Eletcone30","etCone30",1000,-100,600)));
 
     //register TH1F
     for(std::map<std::string,TH1F*>::iterator iter = m_h1_histMap.begin(); iter != m_h1_histMap.end(); ++iter)
@@ -482,7 +482,8 @@ void SoftElectron::FillElectrons()
                         (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
                         std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
                 {
-                    //SelectdElectrons.push_back(Electron);
+                    m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
+                    
                     if(this->isBHadron(elParent))
                     {
                         mlog <<MSG::INFO<< "INSIDE BFill " <<endreq;
@@ -492,12 +493,6 @@ void SoftElectron::FillElectrons()
                     {
                         mlog <<MSG::INFO<< "INSIDE CFill " <<endreq;
                         m_h1_histMap.find("h1_cMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
-                    }
-
-                    if(elParent->pdg_id()==23) //zboson
-                    {
-                        mlog <<MSG::INFO<< "INSIDE ZFill " <<endreq;
-                        m_h1_histMap.find("h1_zMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
                     }
                 }
             }
