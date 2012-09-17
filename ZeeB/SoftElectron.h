@@ -150,11 +150,6 @@ class SoftElectron : public Algorithm
         void GetTruthHadrons(const HepMC::GenParticle* part, std::vector<const HepMC::GenParticle*> &hdrnHolder,
                 TH1F* prodHist,TH1F* semiHist, int &counter);
 
-        /**
-         * EmShower variables
-         */
-        void DoShowerAnalysis(std::vector<const Analysis::Electron*>);
-
     private:
         StoreGateSvc* m_storeGate;
 
