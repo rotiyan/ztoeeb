@@ -189,7 +189,7 @@ StatusCode SoftElectron::execute()
 
     //Entering the event loop
     //
-    //if( vxPass && trigPass )
+    if( vxPass)// && trigPass )
     {
         //Book Ntuple Containers
         this->BookNtupleContainers();
@@ -230,90 +230,9 @@ StatusCode SoftElectron::BookHistograms()
     StatusCode sc ;
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone30",new TH1F("etCone30","etCone30;etCone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone30_ptCorr",new TH1F("etCone30_ptCorr","etCone30;etCone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etCone40",new TH1F("etCone40","etCone40;etCone40/Et",500,0,1)));
-
-
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_elPt",new TH1F("elPt","Electron pt; [GeV]",1000,0,500)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_elEta",new TH1F("elEta","Electron Eta; #eta",1000,-5,5)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_elPhi",new TH1F("elPhi","Electron Phi; #varphi",1000,-5,5)));
- 
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loose_etcone30",new TH1F("leading_loose_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loosePP_etcone30",new TH1F("leading_loosePP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_medium_etcone30",new TH1F("leading_medium_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etcone30",new TH1F("leading_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etCone30_ptCorr",new TH1F("leading_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tight_etcone30",new TH1F("leading_tight_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tightPP_etcone30",new TH1F("leading_tightPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loose_etcone40",new TH1F("leading_loose_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_loosePP_etcone40",new TH1F("leading_loosePP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_medium_etcone40",new TH1F("leading_medium_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etcone40",new TH1F("leading_mediumPP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_mediumPP_etCone40_ptCorr",new TH1F("leading_mediumPP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tight_etcone40",new TH1F("leading_tight_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_leading_tightPP_etcone40",new TH1F("leading_tightPP_etcone40","etcone40/Et",500,0,1)));
-
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loose_etcone30",new TH1F("subleading_loose_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loosePP_etcone30",new TH1F("subleading_loosePP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_medium_etcone30",new TH1F("subleading_medium_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etcone30",new TH1F("subleading_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etCone30_ptCorr",new TH1F("subleading_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tight_etcone30",new TH1F("subleading_tight_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tightPP_etcone30",new TH1F("subleading_tightPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loose_etcone40",new TH1F("subleading_loose_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_loosePP_etcone40",new TH1F("subleading_loosePP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_medium_etcone40",new TH1F("subleading_medium_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etcone40",new TH1F("subleading_mediumPP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_mediumPP_etCone40_ptCorr",new TH1F("subleading_mediumPP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tight_etcone40",new TH1F("subleading_tight_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_subleading_tightPP_etcone40",new TH1F("subleading_tightPP_etcone40","etcone40/Et",500,0,1)));
-
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loose_etcone30",new TH1F("other_loose_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loosePP_etcone30",new TH1F("other_loosePP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_medium_etcone30",new TH1F("other_medium_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etcone30",new TH1F("other_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etCone30_ptCorr",new TH1F("other_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tight_etcone30",new TH1F("other_tight_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tightPP_etcone30",new TH1F("other_tightPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loose_etcone40",new TH1F("other_loose_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_loosePP_etcone40",new TH1F("other_loosePP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_medium_etcone40",new TH1F("other_medium_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etcone40",new TH1F("other_mediumPP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_mediumPP_etCone40_ptCorr",new TH1F("other_mediumPP_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tight_etcone40",new TH1F("other_tight_etcone40","etcone40/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_other_tightPP_etcone40",new TH1F("other_tightPP_etcone40","etcone40/Et",500,0,1)));
-
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_loose_etcone30",new TH1F("bMatch_loose_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_loosePP_etcone30",new TH1F("bMatch_loosePP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_medium_etcone30",new TH1F("bMatch_medium_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_mediumPP_etcone30",new TH1F("bMatch_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_tight_etcone30",new TH1F("bMatch_tight_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_tightPP_etcone30",new TH1F("bMatch_tightPP_etcone30","etcone30/Et",500,0,1)));
-
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_loose_etcone30",new TH1F("cMatch_loose_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_loosePP_etcone30",new TH1F("cMatch_loosePP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_medium_etcone30",new TH1F("cMatch_medium_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_mediumPP_etcone30",new TH1F("cMatch_mediumPP_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_tight_etcone30",new TH1F("cMatch_tight_etcone30","etcone30/Et",500,0,1)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_tightPP_etcone30",new TH1F("cMatch_tightPP_etcone30","etcone30/Et",500,0,1)));
-
-
-    /*
-    //pt,eta,phi,OQ,loose,loosepp,medium,mediumpp,tight,tightpp
-    int const nbins     = 10;
-    int bins[nbins]     = {1000,500, 500,5,5,5,5,5,5,5};
-    double xmin[nbins]  = {0.  ,-5., -5.,0,0,0,0,0,0,0};
-    double xmax[nbins]  = {500., 5.,  5.,5,5,5,5,5,5,5};
-    
-    m_hn_histMap.insert(std::pair<std::string,THnSparseD*>("hn_LeadingElectron",
-                new THnSparseD("LeadingElectron","Leading Electron",nbins,bins,xmin,xmax)));
-    m_hn_histMap.insert(std::pair<std::string,THnSparseD*>("hn_subLeadindElectron",
-                new THnSparseD("SubLeadingElectron","Sub Leading Electron",nbins,bins,xmin,xmax)));
-    m_hn_histMap.insert(std::pair<std::string,THnSparseD*>("hn_otherElectrons",
-                new THnSparseD("OtherElectrons","Other Electrons",nbins,bins,xmin,xmax)));
-    */
-
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_etcone30",new TH1F("bMatch_etcone30","etCone30",1000,-100,600)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_etcone30",new TH1F("cMatch_etcone30","etCone30",1000,-100,600)));
+    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_zMatch_etcone30",new TH1F("zMatch_etcone30","etCone30",1000,-100,600)));
 
     //register TH1F
     for(std::map<std::string,TH1F*>::iterator iter = m_h1_histMap.begin(); iter != m_h1_histMap.end(); ++iter)
@@ -335,17 +254,6 @@ StatusCode SoftElectron::BookHistograms()
         }
     }
 
-    //register THnSparseD
-    //COULD NOT Register THnSparse.
-    for(std::map<std::string,THnSparseD*>::iterator iter = m_hn_histMap.begin(); iter != m_hn_histMap.end(); ++iter)
-    {
-        //sc = m_histos->regHist("/AANT/"+iter->first,iter->second);
-        if(sc.isFailure())
-        {
-            return sc;
-        }
-    }
-    return StatusCode::SUCCESS;
 }
 
 void SoftElectron::FindTruthParticle()
@@ -529,120 +437,72 @@ bool SoftElectron::isCHadron(const HepMC::GenParticle* part)
 void SoftElectron::FillElectrons()
 {
     MsgStream mlog(msgSvc(), name());
-    
     std::vector<const Analysis::Electron*> SelectdElectrons;
-
+    
     for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
         const Analysis::Electron* Electron = m_electronCollection->at(i);
-
-        const HepMC::GenParticle* elParent = 0;
-        m_mcTruthClassifier->particleTruthClassifier(Electron);
-        const HepMC::GenParticle* particle  = m_mcTruthClassifier->getGenPart();
-        if(particle)
+        if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
         {
-            elParent= this->GetMother(particle);
-        }
+            m_mcTruthClassifier->particleTruthClassifier(Electron);
+            const HepMC::GenParticle* elParent    = m_mcTruthClassifier->getMother();
+            const CaloCluster* ElCluster = Electron->cluster();
+            const EMShower* Shower = Electron->detail<EMShower>();
 
-        if(elParent)
-        {
-            if(this->isBHadron(elParent))
+            if(ElCluster && Shower && elParent)
             {
-                mlog<<MSG::INFO<<"Electron Parent: "<<elParent->pdg_id()<<endreq;
-            }
-            if(this->isCHadron(elParent))
-            {
-                mlog<<MSG::INFO<<"Electron Parent: "<<elParent->pdg_id()<<endreq;
-            }
-        }
+                double elClPt       = ElCluster->pt()/1000;
+                double elClEta      = ElCluster->eta();
+                double elClPhi      = ElCluster->phi();
+                double elClE        = ElCluster->e()/1000;
 
-        //Cluster
-        const CaloCluster* ElCluster = Electron->cluster();
-        if(ElCluster)
-        {
-            double elClPt       = ElCluster->pt()/1000;
-            double elClEta      = ElCluster->eta();
-            double elClPhi      = ElCluster->phi();
-            double elClE        = ElCluster->e()/1000;
+                double elTrkEta     = -100;
+                double elTrkPhi     = -100;
 
-            double elTrkEta     = -100;
-            double elTrkPhi     = -100;
+                if(Electron->trackParticle())
+                {
+                    double elTrkEta     = Electron->trackParticle()->eta();
+                    double elTrkPhi     = Electron->trackParticle()->phi();
+                }
 
-            if(Electron->trackParticle())
-            {
-                double elTrkEta     = Electron->trackParticle()->eta();
-                double elTrkPhi     = Electron->trackParticle()->phi();
-            }
-
-            double elCharge     = Electron->charge();
-            bool isEmLoose      = Electron->passID(egammaPID::ElectronIDLoose);
-            bool isEmLoosePP    = Electron->passID(egammaPID::ElectronIDLoosePP);
-            bool isEmMedium     = Electron->passID(egammaPID::ElectronIDMedium);
-            bool isEmMediumPP   = Electron->passID(egammaPID::ElectronIDMediumPP);
-            bool isEmTight      = Electron->passID(egammaPID::ElectronIDTight);
-            bool isEmTightPP    = Electron->passID(egammaPID::ElectronIDTightPP);
-
-            
-            bool isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
+                double elCharge     = Electron->charge();
+                bool isEmLoose      = Electron->passID(egammaPID::ElectronIDLoose);
+                bool isEmLoosePP    = Electron->passID(egammaPID::ElectronIDLoosePP);
+                bool isEmMedium     = Electron->passID(egammaPID::ElectronIDMedium);
+                bool isEmMediumPP   = Electron->passID(egammaPID::ElectronIDMediumPP);
+                bool isEmTight      = Electron->passID(egammaPID::ElectronIDTight);
+                bool isEmTightPP    = Electron->passID(egammaPID::ElectronIDTightPP);
 
 
-            if( isGoodOQ && 
-                    (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
-                    std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
-            {
-                SelectdElectrons.push_back(Electron);
+                
+                bool isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
+
+
+                if( isGoodOQ && 
+                        (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
+                        std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
+                {
+                    //SelectdElectrons.push_back(Electron);
+                    if(this->isBHadron(elParent))
+                    {
+                        mlog <<MSG::INFO<< "INSIDE BFill " <<endreq;
+                        m_h1_histMap.find("h1_bMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
+                    }
+                    if(this->isCHadron(elParent))
+                    {
+                        mlog <<MSG::INFO<< "INSIDE CFill " <<endreq;
+                        m_h1_histMap.find("h1_cMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
+                    }
+
+                    if(elParent->pdg_id()==23) //zboson
+                    {
+                        mlog <<MSG::INFO<< "INSIDE ZFill " <<endreq;
+                        m_h1_histMap.find("h1_zMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
+                    }
+                }
             }
         }
     }
-    this->DoShowerAnalysis(SelectdElectrons);
-
-    /*
-    m_el_charge     ->push_back(elCharge);
-    m_el_id_loosepp ->push_back(isEmLoose);
-    m_el_id_loose   ->push_back(isEmLoosePP);
-    m_el_id_medium  ->push_back(isEmMedium);
-    m_el_id_mediumpp->push_back(isEmMediumPP);
-    m_el_id_tight   ->push_back(isEmTight);
-    m_el_id_tightpp ->push_back(isEmTightPP);
-
-    //El Reco  Alg
-    m_elAuthorSofte ->push_back(Electron->author(egammaParameters::AuthorSofte));
-    m_elAuthor      ->push_back(Electron->author(egammaParameters::AuthorElectron));
-
-    //El Kinematics
-    m_el_cl_Pt      ->push_back(elClPt);
-    m_el_cl_Eta     ->push_back(elClEta);
-    m_el_cl_Phi     ->push_back(elClPhi);
-    m_el_cl_E       ->push_back(elClE);
-    m_el_trk_Eta    ->push_back(elTrkEta);
-    m_el_trk_Phi    ->push_back(elTrkPhi);
-
-    //Do Truth Matching
-    const HepMC::GenParticle* elParent = this->GetElectronParent(Electron);
-    if(elParent)
-    {
-        m_elMtchd       ->push_back(1);
-        m_mtchdParent   ->push_back(elParent->pdg_id());
-        m_el_truth_Pt   ->push_back(elParent->momentum().perp()/1000);
-        m_el_truth_Eta  ->push_back(elParent->momentum().eta());
-        m_el_truth_Phi  ->push_back(elParent->momentum().phi());
-
-        const HepMC::GenParticle* elgrndParent = this->GetMother(elParent);
-        if(elgrndParent)
-            m_mtchdGrndParent->push_back(elgrndParent->pdg_id());
-        else
-            m_mtchdGrndParent->push_back(-100);
-    }
-    else
-    {
-        m_elMtchd       ->push_back(-100);
-        m_mtchdParent   ->push_back(-100);
-        m_mtchdGrndParent->push_back(-100);
-        m_el_truth_Pt   ->push_back(-100);
-        m_el_truth_Eta  ->push_back(-100);
-        m_el_truth_Phi  ->push_back(-100);
-    }
-    */
 }
 
 StatusCode SoftElectron::LoadContainers()
@@ -799,311 +659,4 @@ std::vector<const HepMC::GenParticle*> SoftElectron::GetParents(const HepMC::Gen
         }
     }
     return parentVec;
-}
-
-void SoftElectron::DoShowerAnalysis(std::vector<const Analysis::Electron*> SelectdElectrons)
-{
-    MsgStream mlog( msgSvc(), name() );
-
-    if(SelectdElectrons.size() > 2)
-    {
-        sort(SelectdElectrons.begin(),SelectdElectrons.end(),cmp);
-
-        //Leading Electron
-        const Analysis::Electron* LeadingEl     = SelectdElectrons[SelectdElectrons.size() - 1];
-        SelectdElectrons.pop_back();
-        const EMShower* leadingElShower         = LeadingEl->detail<EMShower>();
-
-        
-
-        //leading
-        if(leadingElShower && LeadingEl->cluster() && LeadingEl->trackParticle())
-        {
-            bool isEmLoose          = LeadingEl->passID(egammaPID::ElectronIDLoose);
-            bool isEmLoosePP        = LeadingEl->passID(egammaPID::ElectronIDLoosePP);
-            bool isEmMedium         = LeadingEl->passID(egammaPID::ElectronIDMedium);
-            bool isEmMediumPP       = LeadingEl->passID(egammaPID::ElectronIDMediumPP);
-            bool isEmTight          = LeadingEl->passID(egammaPID::ElectronIDTight);
-            bool isEmTightPP        = LeadingEl->passID(egammaPID::ElectronIDTightPP);
-
-            double ClE              = LeadingEl->cluster()->e();
-            double ClPt             = LeadingEl->cluster()->pt();
-            double ClEta            = LeadingEl->cluster()->eta();
-            double ClPhi            = LeadingEl->cluster()->phi();
-            double trkPt            = LeadingEl->trackParticle()->pt();
-            double trkEta           = LeadingEl->trackParticle()->eta();
-            double trkPhi           = LeadingEl->trackParticle()->phi();
-            double trnsEnrgy        = ClE/cosh(trkEta);
-            if(trnsEnrgy >0)
-            {
-                if(isEmLoose)
-                {
-                    m_h1_histMap.find("h1_leading_loose_etcone30")->second->Fill(leadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmLoosePP)
-                {
-                    m_h1_histMap.find("h1_leading_loosePP_etcone30")->second->Fill(leadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmMedium)
-                {
-                    m_h1_histMap.find("h1_leading_medium_etcone30")->second->Fill(leadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmMediumPP)
-                {
-                    m_h1_histMap.find("h1_leading_mediumPP_etcone30")->second->Fill(leadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmTight)
-                {
-                    m_h1_histMap.find("h1_leading_tight_etcone30")->second->Fill(leadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmTightPP)
-                {
-                    m_h1_histMap.find("h1_leading_tightPP_etcone30")->second->Fill(leadingElShower->etcone30()/trnsEnrgy);
-                }
-            }
-        }
- 
-        const Analysis::Electron* SubLeadingEl  = SelectdElectrons[SelectdElectrons.size() -1];
-        SelectdElectrons.pop_back();
-        const EMShower* subleadingElShower      = SubLeadingEl->detail<EMShower>();
-
-        if(subleadingElShower && SubLeadingEl->cluster() && SubLeadingEl->trackParticle())
-        {
-            bool isEmLoose          = SubLeadingEl->passID(egammaPID::ElectronIDLoose);
-            bool isEmLoosePP        = SubLeadingEl->passID(egammaPID::ElectronIDLoosePP);
-            bool isEmMedium         = SubLeadingEl->passID(egammaPID::ElectronIDMedium);
-            bool isEmMediumPP       = SubLeadingEl->passID(egammaPID::ElectronIDMediumPP);
-            bool isEmTight          = SubLeadingEl->passID(egammaPID::ElectronIDTight);
-            bool isEmTightPP        = SubLeadingEl->passID(egammaPID::ElectronIDTightPP);
-
-            double ClE              = SubLeadingEl->cluster()->e();
-            double ClPt             = SubLeadingEl->cluster()->pt();
-            double ClEta            = SubLeadingEl->cluster()->eta();
-            double ClPhi            = SubLeadingEl->cluster()->phi();
-            double trkPt            = SubLeadingEl->trackParticle()->pt();
-            double trkEta           = SubLeadingEl->trackParticle()->eta();
-            double trkPhi           = SubLeadingEl->trackParticle()->phi();
-            double trnsEnrgy        = ClE/cosh(trkEta);
-
-            //subleading
-            if(trnsEnrgy > 0)
-            {
-                if(isEmLoose)
-                {
-                    m_h1_histMap.find("h1_subleading_loose_etcone30")->second->Fill( subleadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmLoosePP)
-                {
-                    m_h1_histMap.find("h1_subleading_loosePP_etcone30")->second->Fill( subleadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmMedium)
-                {
-                    m_h1_histMap.find("h1_subleading_medium_etcone30")->second->Fill( subleadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmMediumPP)
-                {
-                    m_h1_histMap.find("h1_subleading_mediumPP_etcone30")->second->Fill( subleadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmTight)
-                {
-                    m_h1_histMap.find("h1_subleading_tight_etcone30")->second->Fill(subleadingElShower->etcone30()/trnsEnrgy);
-                }
-                if(isEmTightPP)
-                {
-                    m_h1_histMap.find("h1_subleading_tightPP_etcone30")->second->Fill( subleadingElShower->etcone30()/trnsEnrgy);
-                }
-            }
-        }
- 
-        for(std::vector<const Analysis::Electron*>::const_iterator iter = SelectdElectrons.begin(); iter != SelectdElectrons.end(); ++iter)
-        {
-            const Analysis::Electron* Electron = (*iter);
-
-            if( Electron->cluster() && Electron->trackParticle())
-            {
-
-                double elCharge         = Electron->charge();
-                const EMShower* shower  = Electron->detail<EMShower>(); 
-
-                if(shower && Electron->trackParticle() && Electron->cluster())
-                {
-                    bool isEmLoose          = Electron->passID(egammaPID::ElectronIDLoose);
-                    bool isEmLoosePP        = Electron->passID(egammaPID::ElectronIDLoosePP);
-                    bool isEmMedium         = Electron->passID(egammaPID::ElectronIDMedium);
-                    bool isEmMediumPP       = Electron->passID(egammaPID::ElectronIDMediumPP);
-                    bool isEmTight          = Electron->passID(egammaPID::ElectronIDTight);
-                    bool isEmTightPP        = Electron->passID(egammaPID::ElectronIDTightPP);
-                    
-                    double ClE              = Electron->cluster()->e();
-                    double ClPt             = Electron->cluster()->pt();
-                    double ClEta            = Electron->cluster()->eta();
-                    double ClPhi            = Electron->cluster()->phi();
-                    double trkPt            = Electron->trackParticle()->pt();
-                    double trkEta           = Electron->trackParticle()->eta();
-                    double trkPhi           = Electron->trackParticle()->phi();
-                    double trnsEnrgy        = ClE/cosh(trkEta);
-                    
-                    float etcone30          = (shower ? shower->etcone30() : 0);
-                    float etcone40          = (shower ? shower->etcone40() : 0);
-
-                    
-                    const HepMC::GenParticle* elParent = 0;
-                    const Analysis::Electron* bMatchEl = 0;
-                    const Analysis::Electron* cMatchEl = 0;
-
-                    m_mcTruthClassifier->particleTruthClassifier(Electron);
-                    const HepMC::GenParticle* particle  = m_mcTruthClassifier->getGenPart();
-                    if(particle)
-                    {
-                        elParent= this->GetMother(particle);
-                    }
-
-                    if(elParent)
-                    {
-                        if(this->isBHadron(elParent))
-                        {
-                            bMatchEl = Electron;
-                            mlog<<MSG::INFO<<"Electron Parent: "<<elParent->pdg_id()<<endreq;
-                        }
-                        if(this->isCHadron(elParent))
-                        {
-                            cMatchEl = Electron;
-                            mlog<<MSG::INFO<<"Electron Parent: "<<elParent->pdg_id()<<endreq;
-                        }
-                    }
-
-                     /// Fill the histograms
-                     
-
-                    //kinematic histograms
-                    m_h1_histMap.find("h1_elPt")->second->Fill(ClPt);
-                    m_h1_histMap.find("h1_elEta")->second->Fill(ClEta);
-                    m_h1_histMap.find("h1_elPhi")->second->Fill(ClPhi);
-
-
-                    if( trnsEnrgy >0)
-                    {
-                        //Generic etcone isolation histograms  
-                        m_h1_histMap.find("h1_etCone30")            ->second->Fill(std::abs(etcone30/trnsEnrgy));
-
-                        if(isEmLoose)
-                        {
-                            m_h1_histMap.find("h1_other_loose_etcone30")->second->Fill(shower->etcone30()/trnsEnrgy);
-                            if(bMatchEl)
-                            {
-                                if(bMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_bMatch_loose_etcone30")->second->Fill(bMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                            if(cMatchEl)
-                            {
-                                if(cMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_cMatch_loose_etcone30")->second->Fill(cMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                        }
-
-                        if(isEmLoosePP)
-                        {
-                            m_h1_histMap.find("h1_other_loosePP_etcone30")->second->Fill(shower->etcone30()/trnsEnrgy);
-                            if(bMatchEl)
-                            {
-                                if(bMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_bMatch_loosePP_etcone30")->second->Fill(bMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                            if(cMatchEl)
-                            {
-                                if(cMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_cMatch_loosePP_etcone30")->second->Fill(cMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                        }
-                        if(isEmMedium)
-                        {
-                            m_h1_histMap.find("h1_other_medium_etcone30")->second->Fill(shower->etcone30()/trnsEnrgy);
-                            if(bMatchEl)
-                            {
-                                if(bMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_bMatch_medium_etcone30")->second->Fill(bMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                            if(cMatchEl)
-                            {
-                                if(cMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_cMatch_medium_etcone30")->second->Fill(cMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-
-                        }
-                        if(isEmMediumPP)
-                        {
-                            m_h1_histMap.find("h1_other_mediumPP_etcone30")->second->Fill(shower->etcone30()/trnsEnrgy);
-                            if(bMatchEl)
-                            {
-                                if(bMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_bMatch_mediumPP_etcone30")->second->Fill(bMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                            if(cMatchEl)
-                            {
-                                if(cMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_cMatch_mediumPP_etcone30")->second->Fill(cMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-
-                        }
-                        if(isEmTight)
-                        {
-                            m_h1_histMap.find("h1_other_tight_etcone30")->second->Fill(shower->etcone30()/trnsEnrgy);
-                            if(bMatchEl)
-                            {
-                                if(bMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_bMatch_tight_etcone30")->second->Fill(bMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                            if(cMatchEl)
-                            {
-                                if(cMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_cMatch_tight_etcone30")->second->Fill(cMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-
-                        }
-                        if(isEmTightPP)
-                        {
-                            m_h1_histMap.find("h1_other_tightPP_etcone30")->second->Fill(shower->etcone30()/trnsEnrgy);
-                            if(bMatchEl)
-                            {
-                                if(bMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_bMatch_tightPP_etcone30")->second->Fill(bMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                            if(cMatchEl)
-                            {
-                                if(cMatchEl->detail<EMShower>())
-                                {
-                                    m_h1_histMap.find("h1_cMatch_tightPP_etcone30")->second->Fill(cMatchEl->detail<EMShower>()->etcone30());
-                                }
-                            }
-                        }
-                    }
-
-                    if(std::abs(etcone30/trnsEnrgy > 1))
-                        mlog <<MSG::INFO <<" Etcone Norm " << etcone30/trnsEnrgy << endreq;
-                }
-            }
-        }
-    }
 }
