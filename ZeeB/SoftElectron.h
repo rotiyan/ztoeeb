@@ -10,8 +10,9 @@
 #include <vector>
 #include <algorithm>
 #include <sys/types.h>
-#include <TH1.h>
-#include <TH2.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 #include <TTree.h>
 #include "GaudiKernel/ITHistSvc.h"
@@ -185,7 +186,7 @@ class SoftElectron : public Algorithm
         //Histograms
         std::map<std::string,TH1F*> m_h1_histMap;
         std::map<std::string,TH2F*> m_h2_histMap;
-        std::map<std::string,THnSparseD*> m_hn_histMap;
+        std::map<std::string,TH3F*> m_h3_histMap;
 };
   
 #endif // SoftElectron

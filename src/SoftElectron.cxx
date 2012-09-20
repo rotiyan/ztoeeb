@@ -9,6 +9,7 @@
 //ROOT includes
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "TTree.h"
 #include "TMath.h"
 #include "TVector3.h"
@@ -230,9 +231,9 @@ StatusCode SoftElectron::BookHistograms()
     StatusCode sc ;
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_etcone30",new TH1F("bMatch_etcone30","etCone30",1000,-100,600)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_etcone30",new TH1F("cMatch_etcone30","etCone30",1000,-100,600)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etcone30",new TH1F("Eletcone30","etCone30",1000,-100,600)));
+    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_bMatch", new TH3F("bMatch_trtHits","B electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",50,-0.5,45.5,50,-0.5,45.5,50,-0.5,45.5)));
+    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_cMatch", new TH3F("cMatch_trtHits","C electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",50,-0.5,45.5,50,-0.5,45.5,50,-0.5,45.5)));
+    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_unMatch",new TH3F("unMatch_trtHits","Unmatched  electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",50,-0.5,45.5,50,-0.5,45.5,50,-0.5,45.5)));
 
     //register TH1F
     for(std::map<std::string,TH1F*>::iterator iter = m_h1_histMap.begin(); iter != m_h1_histMap.end(); ++iter)
@@ -254,6 +255,15 @@ StatusCode SoftElectron::BookHistograms()
         }
     }
 
+    //register TH3F
+    for(std::map<std::string,TH3F*>::iterator iter = m_h3_histMap.begin(); iter != m_h3_histMap.end(); ++iter)
+    {
+        sc = m_histos->regHist("/AANT/"+iter->first,iter->second);
+        if(sc.isFailure())
+        {
+            return sc;
+        }
+    }
 }
 
 void SoftElectron::FindTruthParticle()
@@ -447,9 +457,8 @@ void SoftElectron::FillElectrons()
             m_mcTruthClassifier->particleTruthClassifier(Electron);
             const HepMC::GenParticle* elParent    = m_mcTruthClassifier->getMother();
             const CaloCluster* ElCluster = Electron->cluster();
-            const EMShower* Shower = Electron->detail<EMShower>();
 
-            if(ElCluster && Shower && elParent)
+            if(ElCluster && elParent)
             {
                 double elClPt       = ElCluster->pt()/1000;
                 double elClEta      = ElCluster->eta();
@@ -482,17 +491,26 @@ void SoftElectron::FillElectrons()
                         (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
                         std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
                 {
-                    m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
-                    
-                    if(this->isBHadron(elParent))
+                    const Rec::TrackParticle* elTrack = Electron->trackParticle();
+                    if(elTrack)
                     {
-                        mlog <<MSG::INFO<< "INSIDE BFill " <<endreq;
-                        m_h1_histMap.find("h1_bMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
-                    }
-                    if(this->isCHadron(elParent))
-                    {
-                        mlog <<MSG::INFO<< "INSIDE CFill " <<endreq;
-                        m_h1_histMap.find("h1_cMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
+                        const Trk::TrackSummary* ElSummary = elTrack->trackSummary();
+                        int trtHits     = ElSummary->get(Trk::numberOfTRTHits);
+                        int trtHtHits   = ElSummary->get(Trk::numberOfTRTHighThresholdHits);
+                        int trtLtHits   = std::abs(trtHtHits - trtHtHits);
+
+                        m_h3_histMap.find("h3_unMatch")->second->Fill(trtHits,trtHtHits,trtLtHits);
+                        
+                        if(this->isBHadron(elParent))
+                        {
+                            mlog <<MSG::INFO<< "INSIDE BFill " <<endreq;
+                            m_h3_histMap.find("h3_bMatch")->second->Fill(trtHits,trtHtHits,trtLtHits);
+                        }
+                        if(this->isCHadron(elParent))
+                        {
+                            mlog <<MSG::INFO<< "INSIDE CFill " <<endreq;
+                            m_h3_histMap.find("h3_cMatch")->second->Fill(trtHits,trtHtHits,trtLtHits);
+                        }
                     }
                 }
             }
