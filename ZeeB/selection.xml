@@ -1,0 +1,4 @@
+<lcgdict>
+    <class name="Analysis::Electron" />
+    <class name="DataVector<Analysis::Electron>" />
+</lcgdict>
