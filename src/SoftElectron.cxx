@@ -231,9 +231,9 @@ StatusCode SoftElectron::BookHistograms()
     StatusCode sc ;
 
     mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_bMatch", new TH3F("bMatch_trtHits","B electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",50,-0.5,45.5,50,-0.5,45.5,50,-0.5,45.5)));
-    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_cMatch", new TH3F("cMatch_trtHits","C electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",50,-0.5,45.5,50,-0.5,45.5,50,-0.5,45.5)));
-    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_unMatch",new TH3F("unMatch_trtHits","Unmatched  electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",50,-0.5,45.5,50,-0.5,45.5,50,-0.5,45.5)));
+    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_bMatch", new TH3F("bMatch_trtHits","B electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",500,-0.5,45.5,500,-0.5,45.5,500,-0.5,45.5)));
+    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_cMatch", new TH3F("cMatch_trtHits","C electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",500,-0.5,45.5,500,-0.5,45.5,500,-0.5,45.5)));
+    m_h3_histMap.insert(std::pair<std::string,TH3F*>( "h3_unMatch",new TH3F("unMatch_trtHits","Unmatched  electrons TRT hits;TRThits_tot;TRThits_ht; TRThits_lt",500,-0.5,45.5,500,-0.5,45.5,500,-0.5,45.5)));
 
     //register TH1F
     for(std::map<std::string,TH1F*>::iterator iter = m_h1_histMap.begin(); iter != m_h1_histMap.end(); ++iter)
