@@ -12,6 +12,7 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "TVector3.h"
+#include "TString.h"
 
 #include <utility>
 
@@ -65,6 +66,7 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     m_mcEventCollection(0),
     m_vxContainer(0),
     m_electronCollection(0),
+    m_tree(0),
     m_histos(0),
     m_mcTruthClassifier("MCTruthClassifier"),
     m_trigDec( "Trig::TrigDecisionTool" ),
@@ -84,7 +86,11 @@ SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator)
     declareProperty("TrigDecisionTool",m_trigDec);
 }
 
-SoftElectron::~SoftElectron() {}
+SoftElectron::~SoftElectron() 
+{
+
+
+}
 
 StatusCode SoftElectron::initialize() 
 {
@@ -128,10 +134,10 @@ StatusCode SoftElectron::initialize()
     }
     
     // histograms:
-    sc = this->BookHistograms();
+    sc = this->BookTree();
     if( sc.isFailure())
     {
-        mlog <<MSG::FATAL << "Could not register histograms" <<endreq;
+        mlog <<MSG::FATAL << "Could not book tree" <<endreq;
     }
     return StatusCode::SUCCESS;
 }		 
@@ -223,37 +229,54 @@ StatusCode SoftElectron::finalize()
   return StatusCode::SUCCESS;
 }
 
-StatusCode SoftElectron::BookHistograms() 
+StatusCode SoftElectron::BookTree() 
 {
     MsgStream mlog( msgSvc(), name() );
 
     StatusCode sc ;
 
-    mlog<<MSG::INFO<<"Booking histograms" <<endreq;
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_bMatch_etcone30",new TH1F("bMatch_etcone30","etCone30",1000,-100,600)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_cMatch_etcone30",new TH1F("cMatch_etcone30","etCone30",1000,-100,600)));
-    m_h1_histMap.insert(std::pair<std::string,TH1F*>( "h1_etcone30",new TH1F("Eletcone30","etCone30",1000,-100,600)));
+    m_tree      = new TTree("elId","Electron ID Variables");
 
-    //register TH1F
-    for(std::map<std::string,TH1F*>::iterator iter = m_h1_histMap.begin(); iter != m_h1_histMap.end(); ++iter)
+    m_tree->Branch("numBLayerHits", &m_numberOfbLayerHits);
+    m_tree->Branch("numBLayerOutliers",&m_numberOfbLayerOutliers);  
+    m_tree->Branch("numBLayerShared",&m_numberOfbLayerSharedHits);  
+    m_tree->Branch("numBLayerSplit",&m_numberOfbLayerSplitHits);
+    m_tree->Branch("numBLayerExpect",&m_numberOfexpectBLayerHit);
+    m_tree->Branch("numPixelHits",&m_numberOfPixelHits);
+    m_tree->Branch("numPixelOutliers",&m_numberOfPixelOutliers);
+    m_tree->Branch("numPixelHoles",&m_numberOfPixelHoles);
+    m_tree->Branch("numPixelShared",&m_numberOfPixelSharedHits);   
+    m_tree->Branch("numPixelSplit",&m_numberOfPixelSplitHits);  
+    m_tree->Branch("numGangedPixels",&m_numberOfGangedPixels);
+    m_tree->Branch("numGangedFlaggedFakes",&m_numberOfGangedFlaggedFakes);
+    m_tree->Branch("numPixelDeadSensors",&m_numberOfPixelDeadSensors);  
+    m_tree->Branch("numPixelSpoiltHits",&m_numberOfPixelSpoiltHits);
+
+    m_tree->Branch("numSCTHits",&m_numberOfSCTHits);
+    m_tree->Branch("numSCTOutliers",&m_numberOfSCTOutliers);
+    m_tree->Branch("numSCTHoles",&m_numberOfSCTHoles);
+    m_tree->Branch("numSCTDoubleHoles",&m_numberOfSCTDoubleHoles);
+    m_tree->Branch("numSCTSharedHits",&m_numberOfSCTSharedHits);
+    m_tree->Branch("numSCTDeadSensors",&m_numberOfSCTDeadSensors);
+    m_tree->Branch("numSCTSpoitHits",&m_numberOfSCTSpoiltHits);
+
+    m_tree->Branch("numTRTHits",&m_numberOfTRTHits);
+    m_tree->Branch("numTRTOutliers",&m_numberOfTRTOutliers);
+    m_tree->Branch("numTRTHoles",&m_numberOfTRTHoles);
+    m_tree->Branch("numTRTHtHits",&m_numberOfTRTHTHits);
+    m_tree->Branch("numTRTHTOutliers",&m_numberOfTRTHTOutliers);
+    m_tree->Branch("numTRTDeadStraw",&m_numberOfTRTDeadStraws);
+    m_tree->Branch("numTRTTubeHits",&m_numberOfTRTTubeHits);
+    m_tree->Branch("e237",&m_e237);
+    m_tree->Branch("e277",&m_e277);
+
+    sc = m_histos->regTree(Form("/AANT/%s",m_tree->GetName()),m_tree);
+    if (sc.isFailure())
     {
-        sc = m_histos->regHist("/AANT/hist/"+iter->first,iter->second);
-        if (sc.isFailure())
-        {
-            return sc;
-        }
+        return sc;
     }
 
-    //register TH2F
-    for(std::map<std::string,TH2F*>::iterator iter = m_h2_histMap.begin(); iter != m_h2_histMap.end(); ++iter)
-    {
-        sc = m_histos->regHist("/AANT/"+iter->first,iter->second);
-        if(sc.isFailure())
-        {
-            return sc;
-        }
-    }
-
+    return StatusCode::SUCCESS;
 }
 
 void SoftElectron::FindTruthParticle()
@@ -482,17 +505,17 @@ void SoftElectron::FillElectrons()
                         (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
                         std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
                 {
-                    m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
+                    //m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
                     
                     if(this->isBHadron(elParent))
                     {
                         mlog <<MSG::INFO<< "INSIDE BFill " <<endreq;
-                        m_h1_histMap.find("h1_bMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
+                        //m_h1_histMap.find("h1_bMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
                     }
                     if(this->isCHadron(elParent))
                     {
                         mlog <<MSG::INFO<< "INSIDE CFill " <<endreq;
-                        m_h1_histMap.find("h1_cMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
+                        //m_h1_histMap.find("h1_cMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
                     }
                 }
             }
@@ -551,11 +574,79 @@ void SoftElectron::BookNtupleContainers()
 {
     m_runNumber     = 0;
     m_lumiNumber    = 0;
+
+    m_numberOfbLayerHits            = new std::vector <float>();
+    m_numberOfbLayerOutliers        = new std::vector <float>(); 
+    m_numberOfbLayerSharedHits      = new std::vector <float>();
+    m_numberOfbLayerSplitHits       = new std::vector <float>();
+    m_numberOfexpectBLayerHit       = new std::vector <float>();
+    
+    m_numberOfPixelHits             = new std::vector <float>();
+    m_numberOfPixelOutliers         = new std::vector <float>();
+    m_numberOfPixelHoles            = new std::vector <float>();
+    m_numberOfPixelSharedHits       = new std::vector <float>();
+    m_numberOfPixelSplitHits        = new std::vector <float>();
+    m_numberOfGangedPixels          = new std::vector <float>();
+    m_numberOfGangedFlaggedFakes    = new std::vector <float>();
+    m_numberOfPixelDeadSensors      = new std::vector <float>();
+    m_numberOfPixelSpoiltHits       = new std::vector <float>();
+
+    
+    m_numberOfSCTHits               = new std::vector <float>();
+    m_numberOfSCTOutliers           = new std::vector <float>();
+    m_numberOfSCTHoles              = new std::vector <float>(); 
+    m_numberOfSCTDoubleHoles        = new std::vector <float>();    
+    m_numberOfSCTSharedHits         = new std::vector <float>();    
+    m_numberOfSCTDeadSensors        = new std::vector <float>();    
+    m_numberOfSCTSpoiltHits         = new std::vector <float>();    
+
+    m_numberOfTRTHits               = new std::vector <float>();    
+    m_numberOfTRTOutliers           = new std::vector <float>();    
+    m_numberOfTRTHoles              = new std::vector <float>();    
+    m_numberOfTRTHTHits             = new std::vector <float>();    
+    m_numberOfTRTHTOutliers         = new std::vector <float>();    
+    m_numberOfTRTDeadStraws         = new std::vector <float>();    
+    m_numberOfTRTTubeHits           = new std::vector <float>();    
+    
+    m_e237                          = new std::vector <float>();    
+    m_e277                          = new std::vector <float>();                                
+
 }
 
 void SoftElectron::ClearContainers()
 {
+    delete m_numberOfbLayerHits        ;
+    delete m_numberOfbLayerOutliers    ; 
+    delete m_numberOfbLayerSharedHits  ;
+    delete m_numberOfbLayerSplitHits   ;
+    delete m_numberOfexpectBLayerHit   ;
+    delete m_numberOfPixelHits         ;
+    delete m_numberOfPixelOutliers     ;
+    delete m_numberOfPixelHoles        ;
+    delete m_numberOfPixelSharedHits   ;
+    delete m_numberOfPixelSplitHits    ;
+    delete m_numberOfGangedPixels      ;
+    delete m_numberOfGangedFlaggedFakes;
+    delete m_numberOfPixelDeadSensors  ;
+    delete m_numberOfPixelSpoiltHits   ;
 
+    delete m_numberOfSCTHits           ;
+    delete m_numberOfSCTOutliers       ;
+    delete m_numberOfSCTHoles          ; 
+    delete m_numberOfSCTDoubleHoles    ;    
+    delete m_numberOfSCTSharedHits     ;    
+    delete m_numberOfSCTDeadSensors    ;    
+    delete m_numberOfSCTSpoiltHits     ;    
+
+    delete m_numberOfTRTHits           ;    
+    delete m_numberOfTRTOutliers       ;    
+    delete m_numberOfTRTHoles          ;    
+    delete m_numberOfTRTHTHits         ;    
+    delete m_numberOfTRTHTOutliers     ;    
+    delete m_numberOfTRTDeadStraws     ;    
+    delete m_numberOfTRTTubeHits       ;    
+    delete m_e237                      ;    
+    delete m_e277                      ;                                
 }
 
 const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)

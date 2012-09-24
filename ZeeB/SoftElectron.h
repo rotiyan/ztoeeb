@@ -58,13 +58,13 @@ class SoftElectron : public Algorithm
     private:
 
         /**
-         * Book the histograms at the 
+         * Creat Tree and branches
          * begining of the loop. 
          * The histograms are contained 
          * in an stl map which 
          * can be indexed by strings (names)
          */
-        StatusCode BookHistograms();
+        StatusCode BookTree();
 
         /**
          * Loop through the GenEvent 
@@ -172,7 +172,9 @@ class SoftElectron : public Algorithm
         ToolHandle< IMCTruthClassifier> m_mcTruthClassifier;
         ToolHandle< Trig::TrigDecisionTool > m_trigDec;
 
-        TTree* m_tree; 
+        //TTree
+        TTree*                  m_tree;
+
         unsigned int            m_runNumber;
         unsigned int            m_lumiNumber;
 
@@ -182,10 +184,47 @@ class SoftElectron : public Algorithm
         double                  m_elCrackEtaCutLow;
         double                  m_elCrackEtaCutHigh;
 
-        //Histograms
-        std::map<std::string,TH1F*> m_h1_histMap;
-        std::map<std::string,TH2F*> m_h2_histMap;
-        std::map<std::string,THnSparseD*> m_hn_histMap;
+        //Blayer
+        std::vector<float>*     m_numberOfbLayerHits;
+        std::vector<float>*     m_numberOfbLayerOutliers;
+        std::vector<float>*     m_numberOfbLayerSharedHits; //Hits shared by several tracks
+        std::vector<float>*     m_numberOfbLayerSplitHits;
+        std::vector<float>*     m_numberOfexpectBLayerHit; //Do we expect a b-layer hit
+
+        //Pixel
+        std::vector<float>*     m_numberOfPixelHits;
+        std::vector<float>*     m_numberOfPixelOutliers ;
+        std::vector<float>*     m_numberOfPixelHoles;  //number of pixel layers on track with absence of hits
+        std::vector<float>*     m_numberOfPixelSharedHits; //number of Pixel all-layer hits shared by several tracks.
+        std::vector<float>*     m_numberOfPixelSplitHits; //number of Pixel all-layer hits split by cluster splitting
+        std::vector<float>*     m_numberOfGangedPixels; //number of pixels which have a ganged ambiguity.
+        std::vector<float>*     m_numberOfGangedFlaggedFakes;//number of Ganged Pixels flagged as fakes
+        std::vector<float>*     m_numberOfPixelDeadSensors;//number of dead pixel sensors crossed
+        std::vector<float>*     m_numberOfPixelSpoiltHits;//number of pixel hits with broad errors (width/sqrt(12))
+
+        //SCT
+        std::vector<float>*     m_numberOfSCTHits;
+        std::vector<float>*     m_numberOfSCTOutliers; 
+        std::vector<float>*     m_numberOfSCTHoles;
+        std::vector<float>*     m_numberOfSCTDoubleHoles;  //number of Holes in both sides of a SCT module
+        std::vector<float>*     m_numberOfSCTSharedHits;
+        std::vector<float>*     m_numberOfSCTDeadSensors;
+        std::vector<float>*     m_numberOfSCTSpoiltHits; //number of SCT hits with broad errors (width/sqrt(12))
+
+
+        //TRT
+        std::vector<float>*     m_numberOfTRTHits;
+        std::vector<float>*     m_numberOfTRTOutliers;
+        std::vector<float>*     m_numberOfTRTHoles;
+        std::vector<float>*     m_numberOfTRTHTHits;
+        std::vector<float>*     m_numberOfTRTHTOutliers;
+        std::vector<float>*     m_numberOfTRTDeadStraws;
+        std::vector<float>*     m_numberOfTRTTubeHits;
+
+        //Shower
+        std::vector<float>*     m_e237;// E(3*7) in second sampling
+        std::vector<float>*     m_e277;// E(7*7) in second sampling
+
 };
   
 #endif // SoftElectron
