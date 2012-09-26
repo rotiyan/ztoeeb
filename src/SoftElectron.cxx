@@ -217,7 +217,7 @@ StatusCode SoftElectron::execute()
         {
             this->FillElectrons();
         }
-
+        m_tree->Fill();
         this->ClearContainers(); 
     }
     return sc;
@@ -240,13 +240,11 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("numBLayerHits", &m_numberOfbLayerHits);
     m_tree->Branch("numBLayerOutliers",&m_numberOfbLayerOutliers);  
     m_tree->Branch("numBLayerShared",&m_numberOfbLayerSharedHits);  
-    m_tree->Branch("numBLayerSplit",&m_numberOfbLayerSplitHits);
     m_tree->Branch("numBLayerExpect",&m_numberOfexpectBLayerHit);
     m_tree->Branch("numPixelHits",&m_numberOfPixelHits);
     m_tree->Branch("numPixelOutliers",&m_numberOfPixelOutliers);
     m_tree->Branch("numPixelHoles",&m_numberOfPixelHoles);
     m_tree->Branch("numPixelShared",&m_numberOfPixelSharedHits);   
-    m_tree->Branch("numPixelSplit",&m_numberOfPixelSplitHits);  
     m_tree->Branch("numGangedPixels",&m_numberOfGangedPixels);
     m_tree->Branch("numGangedFlaggedFakes",&m_numberOfGangedFlaggedFakes);
     m_tree->Branch("numPixelDeadSensors",&m_numberOfPixelDeadSensors);  
@@ -269,6 +267,23 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("numTRTTubeHits",&m_numberOfTRTTubeHits);
     m_tree->Branch("e237",&m_e237);
     m_tree->Branch("e277",&m_e277);
+    m_tree->Branch("cone30",&m_cone30);
+    m_tree->Branch("ethad",&m_ethad);
+    m_tree->Branch("ethad1",&m_ethad1);
+    m_tree->Branch("emax",&m_emax);
+    m_tree->Branch("emax2",&m_emax2);
+    m_tree->Branch("emin",&m_emin);
+    m_tree->Branch("isBMatch",&m_isBMatch);
+    m_tree->Branch("isCMatch",&m_isCMatch);
+    m_tree->Branch("isZMatch",&m_isZMatch);
+    m_tree->Branch("isAuthor",&m_isAuthor);
+    m_tree->Branch("isSofte",&m_isAuthorSofte);
+
+    m_tree->Branch("elPt",&m_pt);
+    m_tree->Branch("elEta",&m_eta);
+    m_tree->Branch("elPhi",&m_phi);
+    m_tree->Branch("elTrnsE",&m_et);
+
 
     sc = m_histos->regTree(Form("/AANT/%s",m_tree->GetName()),m_tree);
     if (sc.isFailure())
@@ -464,62 +479,220 @@ void SoftElectron::FillElectrons()
     
     for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
+        // initialize variables
+        float elClPt            = -100;
+        float elClEta           = -100;
+        float elClPhi           = -100;
+        float elClE             = -100;
+        float elTrkEta          = -100;
+        float elTrkPhi          = -100;
+        float elCharge          = -100;
+        float trnsE             = -100;
+
+        float nBLayerHits       = -100;
+        float nBLayerOutliers   = -100;
+        float nBLayerSharedHits = -100;
+        bool  expectBLayerHit   = false;
+
+        float nPixelHits        = -100;
+        float nPixelOutliers    = -100;
+        float nPixelHoles       = -100;
+        float nPixelSharedHits  = -100;
+        float nGangedPixel      = -100;
+        float nGangedFlagFakes  = -100;
+        float nPixelDeadSensor  = -100;
+        float nPixelSpoiltHits  = -100;
+       
+        float nSCTHits          = -100;
+        float nSCTOutliers      = -100;
+        float nSCTHoles         = -100;
+        float nSCTDoubleHoles   = -100;
+        float nSCTSharedHits    = -100;
+        float nSCTDeadSensors   = -100;
+        float nSCTSpoiltHits    = -100;
+       
+        float nTRTHits          = -100;
+        float nTRTOutliers      = -100;
+        float nTRTHoles         = -100;
+        float nTRTHTHits        = -100;
+        float nTRTHTOutliers    = -100;
+        float nTRTDeadStraw     = -100;
+        float nTRTTubeHits      = -100;
+
+        float e237              = -100;
+        float e277              = -100;
+        float cone30            = -100;
+        float ethad1            = -100;
+        float ethad             = -100;
+        float emax              = -100;
+        float emax2             = -100;
+        float emin              = -100;
+
+
+        bool isEmLoose          = false;
+        bool isEmLoosePP        = false;
+        bool isEmMedium         = false;
+        bool isEmMediumPP       = false;
+        bool isEmTight          = false;
+        bool isEmTightPP        = false;
+        bool isGoodOQ           = false;
+        bool isBMatch           = false;
+        bool isCMatch           = false;
+        bool isZMatch           = false;
+        bool isAuthor           = false;
+        bool isAuthorSofte      = false;
+
         const Analysis::Electron* Electron = m_electronCollection->at(i);
-        if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+        //if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+        m_mcTruthClassifier->particleTruthClassifier(Electron);
+        const HepMC::GenParticle* elParent    = m_mcTruthClassifier->getMother();
+        const CaloCluster* ElCluster = Electron->cluster();
+        const EMShower* Shower = Electron->detail<EMShower>();
+
+        if(ElCluster && Shower && elParent)
         {
-            m_mcTruthClassifier->particleTruthClassifier(Electron);
-            const HepMC::GenParticle* elParent    = m_mcTruthClassifier->getMother();
-            const CaloCluster* ElCluster = Electron->cluster();
-            const EMShower* Shower = Electron->detail<EMShower>();
 
-            if(ElCluster && Shower && elParent)
+            //shower
+            //https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/egamma/egammaPIDTools/trunk/src/egammaElectronCutIDTool.cxx#L593
+            e237            = Shower->e237();
+            e277            = Shower->e277();
+            ethad1          = Shower->ethad1();
+            ethad           = Shower->ethad();
+            emax            = Shower->emaxs1(); //E of fist max in strip
+            emax2           = Shower->e2tsts1();
+            emin            = Shower->emins1();
+
+
+            //track particle
+            if(Electron->trackParticle())
             {
-                double elClPt       = ElCluster->pt()/1000;
-                double elClEta      = ElCluster->eta();
-                double elClPhi      = ElCluster->phi();
-                double elClE        = ElCluster->e()/1000;
+                elTrkEta     = Electron->trackParticle()->eta();
+                elTrkPhi     = Electron->trackParticle()->phi();
 
-                double elTrkEta     = -100;
-                double elTrkPhi     = -100;
-
-                if(Electron->trackParticle())
+                const  Trk::TrackSummary* summary = Electron->trackParticle()->trackSummary();
+                if(summary)
                 {
-                    double elTrkEta     = Electron->trackParticle()->eta();
-                    double elTrkPhi     = Electron->trackParticle()->phi();
-                }
+                    nBLayerHits       = summary->get(Trk::numberOfBLayerHits);
+                    nBLayerOutliers   = summary->get(Trk::numberOfBLayerOutliers);
+                    nBLayerSharedHits = summary->get(Trk::numberOfBLayerSharedHits);
+                    expectBLayerHit   = summary->get(Trk::expectBLayerHit);
 
-                double elCharge     = Electron->charge();
-                bool isEmLoose      = Electron->passID(egammaPID::ElectronIDLoose);
-                bool isEmLoosePP    = Electron->passID(egammaPID::ElectronIDLoosePP);
-                bool isEmMedium     = Electron->passID(egammaPID::ElectronIDMedium);
-                bool isEmMediumPP   = Electron->passID(egammaPID::ElectronIDMediumPP);
-                bool isEmTight      = Electron->passID(egammaPID::ElectronIDTight);
-                bool isEmTightPP    = Electron->passID(egammaPID::ElectronIDTightPP);
-
-
-                
-                bool isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
-
-
-                if( isGoodOQ && 
-                        (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
-                        std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
-                {
-                    //m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
-                    
-                    if(this->isBHadron(elParent))
-                    {
-                        mlog <<MSG::INFO<< "INSIDE BFill " <<endreq;
-                        //m_h1_histMap.find("h1_bMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
-                    }
-                    if(this->isCHadron(elParent))
-                    {
-                        mlog <<MSG::INFO<< "INSIDE CFill " <<endreq;
-                        //m_h1_histMap.find("h1_cMatch_etcone30")->second->Fill(Shower->etcone30()/1000);
-                    }
+                    nPixelHits        = summary->get(Trk::numberOfPixelHits);
+                    nPixelOutliers    = summary->get(Trk::numberOfPixelOutliers);
+                    nPixelHoles       = summary->get(Trk::numberOfPixelHoles);
+                    nPixelSharedHits  = summary->get(Trk::numberOfPixelSharedHits);
+                    nGangedPixel      = summary->get(Trk::numberOfGangedPixels);
+                    nGangedFlagFakes  = summary->get(Trk::numberOfGangedFlaggedFakes);
+                    nPixelDeadSensor  = summary->get(Trk::numberOfPixelDeadSensors);
+                    nPixelSpoiltHits  = summary->get(Trk::numberOfPixelSpoiltHits);
+                   
+                    nSCTHits          = summary->get(Trk::numberOfSCTHits);
+                    nSCTOutliers      = summary->get(Trk::numberOfSCTOutliers);
+                    nSCTHoles         = summary->get(Trk::numberOfSCTHoles);
+                    nSCTDoubleHoles   = summary->get(Trk::numberOfSCTDoubleHoles);
+                    nSCTSharedHits    = summary->get(Trk::numberOfSCTSharedHits);
+                    nSCTDeadSensors   = summary->get(Trk::numberOfSCTDeadSensors);
+                    nSCTSpoiltHits    = summary->get(Trk::numberOfSCTSpoiltHits);
+                   
+                    nTRTHits          = summary->get(Trk::numberOfTRTHits);
+                    nTRTOutliers      = summary->get(Trk::numberOfTRTOutliers);
+                    nTRTHoles         = summary->get(Trk::numberOfTRTHoles);
+                    nTRTHTHits        = summary->get(Trk::numberOfTRTHighThresholdHits);
+                    nTRTHTOutliers    = summary->get(Trk::numberOfTRTHighThresholdOutliers);
+                    nTRTDeadStraw     = summary->get(Trk::numberOfTRTDeadStraws);
+                    nTRTTubeHits      = summary->get(Trk::numberOfTRTTubeHits);
                 }
             }
+
+            //Cluster
+            elClPt       = ElCluster->pt()/1000;
+            elClEta      = ElCluster->eta();
+            elClPhi      = ElCluster->phi();
+            elClE        = ElCluster->e()/1000;
+ 
+            //eta position in second sampling
+            double eta2     = fabs(ElCluster->etaBE(2));
+            // transverse energy in calorimeter (using eta position in second sampling)
+            if (fabs(eta2)<999.)
+                trnsE  = cosh(eta2)!=0. ? ElCluster->energy()/cosh(eta2) : 0.;
+
+
+            elCharge       = Electron->charge();
+            isEmLoose      = Electron->passID(egammaPID::ElectronIDLoose);
+            isEmLoosePP    = Electron->passID(egammaPID::ElectronIDLoosePP);
+            isEmMedium     = Electron->passID(egammaPID::ElectronIDMedium);
+            isEmMediumPP   = Electron->passID(egammaPID::ElectronIDMediumPP);
+            isEmTight      = Electron->passID(egammaPID::ElectronIDTight);
+            isEmTightPP    = Electron->passID(egammaPID::ElectronIDTightPP);
+            isAuthor       = Electron->author(egammaParameters::AuthorElectron);
+            isAuthorSofte  = Electron->author(egammaParameters::AuthorSofte);
+            
+            isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
+
+            if( isGoodOQ && 
+                    (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
+                    std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
+            {
+                //m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
+                
+                if(this->isBHadron(elParent))
+                    isBMatch = true;
+                
+                if(this->isCHadron(elParent))
+                    isCMatch = true;
+                if(elParent->pdg_id() == 23)
+                    isZMatch  = true;
+            }
         }
+        m_numberOfbLayerHits            -> push_back(nBLayerHits);
+        m_numberOfbLayerOutliers        -> push_back(nBLayerOutliers);
+        m_numberOfbLayerSharedHits      -> push_back(nBLayerSharedHits);
+        m_numberOfexpectBLayerHit       -> push_back(expectBLayerHit);
+        
+        m_numberOfPixelHits             -> push_back(nPixelHits);
+        m_numberOfPixelOutliers         -> push_back(nPixelOutliers);
+        m_numberOfPixelHoles            -> push_back(nPixelHoles);
+        m_numberOfPixelSharedHits       -> push_back(nPixelSharedHits);
+        m_numberOfGangedPixels          -> push_back(nGangedPixel);
+        m_numberOfGangedFlaggedFakes    -> push_back(nGangedFlagFakes);
+        m_numberOfPixelDeadSensors      -> push_back(nPixelDeadSensor);
+        m_numberOfPixelSpoiltHits       -> push_back(nPixelSpoiltHits);
+
+        m_numberOfSCTHits               -> push_back(nSCTHits);
+        m_numberOfSCTOutliers           -> push_back(nSCTOutliers);
+        m_numberOfSCTHoles              -> push_back(nSCTHoles); 
+        m_numberOfSCTDoubleHoles        -> push_back(nSCTDoubleHoles);    
+        m_numberOfSCTSharedHits         -> push_back(nSCTSharedHits);    
+        m_numberOfSCTDeadSensors        -> push_back(nSCTDeadSensors);    
+        m_numberOfSCTSpoiltHits         -> push_back(nSCTSpoiltHits);    
+
+        m_numberOfTRTHits               -> push_back(nTRTHits);    
+        m_numberOfTRTOutliers           -> push_back(nTRTOutliers);    
+        m_numberOfTRTHoles              -> push_back(nTRTHoles);    
+        m_numberOfTRTHTHits             -> push_back(nTRTHTHits);    
+        m_numberOfTRTHTOutliers         -> push_back(nTRTHTOutliers);    
+        m_numberOfTRTDeadStraws         -> push_back(nTRTDeadStraw);    
+        m_numberOfTRTTubeHits           -> push_back(nTRTTubeHits);    
+        
+        m_e237                          -> push_back(e237);    
+        m_e277                          -> push_back(e277);   
+        m_cone30                        -> push_back(cone30);
+        m_ethad                         -> push_back(ethad);
+        m_ethad1                        -> push_back(ethad1); 
+        m_emax                          -> push_back(emax); 
+        m_emax2                         -> push_back(emax2); 
+        m_emin                          -> push_back(emin); 
+     
+        m_isBMatch                      -> push_back(isBMatch);
+        m_isCMatch                      -> push_back(isCMatch);
+        m_isZMatch                      -> push_back(isZMatch);
+        m_isAuthor                      -> push_back(isAuthor);
+        m_isAuthorSofte                 -> push_back(isAuthorSofte);
+     
+        m_pt                            -> push_back(elClPt);
+        m_eta                           -> push_back(elClEta);
+        m_phi                           -> push_back(elClPhi);
+        m_et                            -> push_back(trnsE);
     }
 }
 
@@ -578,14 +751,12 @@ void SoftElectron::BookNtupleContainers()
     m_numberOfbLayerHits            = new std::vector <float>();
     m_numberOfbLayerOutliers        = new std::vector <float>(); 
     m_numberOfbLayerSharedHits      = new std::vector <float>();
-    m_numberOfbLayerSplitHits       = new std::vector <float>();
     m_numberOfexpectBLayerHit       = new std::vector <float>();
     
     m_numberOfPixelHits             = new std::vector <float>();
     m_numberOfPixelOutliers         = new std::vector <float>();
     m_numberOfPixelHoles            = new std::vector <float>();
     m_numberOfPixelSharedHits       = new std::vector <float>();
-    m_numberOfPixelSplitHits        = new std::vector <float>();
     m_numberOfGangedPixels          = new std::vector <float>();
     m_numberOfGangedFlaggedFakes    = new std::vector <float>();
     m_numberOfPixelDeadSensors      = new std::vector <float>();
@@ -609,7 +780,25 @@ void SoftElectron::BookNtupleContainers()
     m_numberOfTRTTubeHits           = new std::vector <float>();    
     
     m_e237                          = new std::vector <float>();    
-    m_e277                          = new std::vector <float>();                                
+    m_e277                          = new std::vector <float>();   
+    m_cone30                        = new std::vector <float>();
+    m_ethad                         = new std::vector <float>();
+    m_ethad1                        = new std::vector <float>(); 
+    m_emax                          = new std::vector <float>(); 
+    m_emax2                         = new std::vector <float>(); 
+    m_emin                          = new std::vector <float>(); 
+ 
+    m_isBMatch                      = new std::vector <bool>(); 
+    m_isCMatch                      = new std::vector <bool>(); 
+    m_isZMatch                      = new std::vector <bool>(); 
+    m_isAuthor                      = new std::vector <bool>(); 
+    m_isAuthorSofte                 = new std::vector <bool>(); 
+ 
+    m_pt                            = new std::vector <float>(); 
+    m_eta                           = new std::vector <float>(); 
+    m_phi                           = new std::vector <float>(); 
+    m_et                            = new std::vector <float>();
+
 
 }
 
@@ -618,13 +807,11 @@ void SoftElectron::ClearContainers()
     delete m_numberOfbLayerHits        ;
     delete m_numberOfbLayerOutliers    ; 
     delete m_numberOfbLayerSharedHits  ;
-    delete m_numberOfbLayerSplitHits   ;
     delete m_numberOfexpectBLayerHit   ;
     delete m_numberOfPixelHits         ;
     delete m_numberOfPixelOutliers     ;
     delete m_numberOfPixelHoles        ;
     delete m_numberOfPixelSharedHits   ;
-    delete m_numberOfPixelSplitHits    ;
     delete m_numberOfGangedPixels      ;
     delete m_numberOfGangedFlaggedFakes;
     delete m_numberOfPixelDeadSensors  ;
@@ -632,21 +819,38 @@ void SoftElectron::ClearContainers()
 
     delete m_numberOfSCTHits           ;
     delete m_numberOfSCTOutliers       ;
-    delete m_numberOfSCTHoles          ; 
-    delete m_numberOfSCTDoubleHoles    ;    
-    delete m_numberOfSCTSharedHits     ;    
-    delete m_numberOfSCTDeadSensors    ;    
-    delete m_numberOfSCTSpoiltHits     ;    
+    delete m_numberOfSCTHoles          ;
+    delete m_numberOfSCTDoubleHoles    ;
+    delete m_numberOfSCTSharedHits     ;
+    delete m_numberOfSCTDeadSensors    ;
+    delete m_numberOfSCTSpoiltHits     ;
 
-    delete m_numberOfTRTHits           ;    
-    delete m_numberOfTRTOutliers       ;    
-    delete m_numberOfTRTHoles          ;    
-    delete m_numberOfTRTHTHits         ;    
-    delete m_numberOfTRTHTOutliers     ;    
-    delete m_numberOfTRTDeadStraws     ;    
-    delete m_numberOfTRTTubeHits       ;    
-    delete m_e237                      ;    
-    delete m_e277                      ;                                
+    delete m_numberOfTRTHits           ;
+    delete m_numberOfTRTOutliers       ;
+    delete m_numberOfTRTHoles          ;
+    delete m_numberOfTRTHTHits         ;
+    delete m_numberOfTRTHTOutliers     ;
+    delete m_numberOfTRTDeadStraws     ;
+    delete m_numberOfTRTTubeHits       ;
+    delete m_e237                      ;
+    delete m_e277                      ;
+    delete m_cone30                    ;
+    delete m_ethad                     ;
+    delete m_ethad1                    ;
+    delete m_emax                      ;
+    delete m_emax2                     ;
+    delete m_emin                      ;
+ 
+    delete m_isBMatch                  ;
+    delete m_isCMatch                  ;
+    delete m_isZMatch                  ;
+    delete m_isAuthor                  ;
+    delete m_isAuthorSofte             ;
+ 
+    delete m_pt                        ;
+    delete m_eta                       ;
+    delete m_phi                       ;
+    delete m_et                         ;
 }
 
 const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)

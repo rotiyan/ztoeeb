@@ -188,7 +188,6 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_numberOfbLayerHits;
         std::vector<float>*     m_numberOfbLayerOutliers;
         std::vector<float>*     m_numberOfbLayerSharedHits; //Hits shared by several tracks
-        std::vector<float>*     m_numberOfbLayerSplitHits;
         std::vector<float>*     m_numberOfexpectBLayerHit; //Do we expect a b-layer hit
 
         //Pixel
@@ -196,7 +195,6 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_numberOfPixelOutliers ;
         std::vector<float>*     m_numberOfPixelHoles;  //number of pixel layers on track with absence of hits
         std::vector<float>*     m_numberOfPixelSharedHits; //number of Pixel all-layer hits shared by several tracks.
-        std::vector<float>*     m_numberOfPixelSplitHits; //number of Pixel all-layer hits split by cluster splitting
         std::vector<float>*     m_numberOfGangedPixels; //number of pixels which have a ganged ambiguity.
         std::vector<float>*     m_numberOfGangedFlaggedFakes;//number of Ganged Pixels flagged as fakes
         std::vector<float>*     m_numberOfPixelDeadSensors;//number of dead pixel sensors crossed
@@ -224,7 +222,25 @@ class SoftElectron : public Algorithm
         //Shower
         std::vector<float>*     m_e237;// E(3*7) in second sampling
         std::vector<float>*     m_e277;// E(7*7) in second sampling
+        std::vector<float>*     m_cone30;
+        std::vector<float>*     m_ethad1;
+        std::vector<float>*     m_ethad;
+        std::vector<float>*     m_emax;
+        std::vector<float>*     m_emax2;
+        std::vector<float>*     m_emin;
 
+
+        std::vector<bool>*      m_isBMatch;
+        std::vector<bool>*      m_isCMatch;
+        std::vector<bool>*      m_isZMatch;
+        std::vector<bool>*      m_isAuthor;
+        std::vector<bool>*      m_isAuthorSofte;
+
+        //kinematics
+        std::vector<float>*     m_pt;
+        std::vector<float>*     m_eta;
+        std::vector<float>*     m_phi;
+        std::vector<float>*     m_et;
 };
   
 #endif // SoftElectron
