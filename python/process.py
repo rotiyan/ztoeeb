@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import ROOT, sys,os,glob 
 from multiprocessing import Process,Queue,current_process
 from os.path import basename
@@ -28,6 +29,7 @@ def MultiProc(flist,scaleFactor=1):
 rawHistFname = 'rawHist.root'
 
 from DataInfo import DataInfo
+#Data luminosity in femto barn inverse
 myDataInfo  = DataInfo(4.639)
 sfDict      = myDataInfo.GetSigmaCalcSF()
 
