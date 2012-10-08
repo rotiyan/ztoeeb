@@ -240,7 +240,6 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("numBLayerHits", &m_numberOfbLayerHits);
     m_tree->Branch("numBLayerOutliers",&m_numberOfbLayerOutliers);  
     m_tree->Branch("numBLayerShared",&m_numberOfbLayerSharedHits);  
-    m_tree->Branch("numBLayerExpect",&m_numberOfexpectBLayerHit);
     m_tree->Branch("numPixelHits",&m_numberOfPixelHits);
     m_tree->Branch("numPixelOutliers",&m_numberOfPixelOutliers);
     m_tree->Branch("numPixelHoles",&m_numberOfPixelHoles);
@@ -258,6 +257,11 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("numSCTDeadSensors",&m_numberOfSCTDeadSensors);
     m_tree->Branch("numSCTSpoitHits",&m_numberOfSCTSpoiltHits);
 
+    m_tree->Branch("d0",&m_d0);
+    m_tree->Branch("d0Err",&m_d0Err);
+    m_tree->Branch("z0",&m_z0);
+    m_tree->Branch("z0Err",&m_z0Err);
+
     m_tree->Branch("numTRTHits",&m_numberOfTRTHits);
     m_tree->Branch("numTRTOutliers",&m_numberOfTRTOutliers);
     m_tree->Branch("numTRTHoles",&m_numberOfTRTHoles);
@@ -265,8 +269,6 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("numTRTHTOutliers",&m_numberOfTRTHTOutliers);
     m_tree->Branch("numTRTDeadStraw",&m_numberOfTRTDeadStraws);
     m_tree->Branch("numTRTTubeHits",&m_numberOfTRTTubeHits);
-    m_tree->Branch("e237",&m_e237);
-    m_tree->Branch("e277",&m_e277);
     m_tree->Branch("cone30",&m_cone30);
     m_tree->Branch("ethad",&m_ethad);
     m_tree->Branch("ethad1",&m_ethad1);
@@ -283,6 +285,32 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("elEta",&m_eta);
     m_tree->Branch("elPhi",&m_phi);
     m_tree->Branch("elTrnsE",&m_et);
+
+    m_tree->Branch("f1",&m_f1);
+    m_tree->Branch("f1core",&m_f1core);
+    m_tree->Branch("emins1",&m_emins1);
+    m_tree->Branch("fracs1",&m_fracs1);
+    m_tree->Branch("e2tsts1",&m_e2tsts1);
+    m_tree->Branch("weta1",&m_weta1);
+    m_tree->Branch("wtots1",&m_wtots1);
+    m_tree->Branch("emaxs1",&m_emaxs1);
+    m_tree->Branch("e233",&m_e233);
+    m_tree->Branch("e237",&m_e237);
+    m_tree->Branch("e277",&m_e277);
+    m_tree->Branch("weta2",&m_weta2);
+    m_tree->Branch("f3",&m_f3);
+    m_tree->Branch("f3core",&m_f3core);
+    m_tree->Branch("etcone",&m_etcone);
+    m_tree->Branch("etcone20",&m_etcone20);
+    m_tree->Branch("etcone30",&m_etcone30);
+    m_tree->Branch("etcone40",&m_etcone40);
+    m_tree->Branch("ptcone30",&m_ptcone30);
+    m_tree->Branch("deltaEta1",&m_deltaEta1);
+    m_tree->Branch("deltaEta2",&m_deltaEta2);
+    m_tree->Branch("deltaPhi2",&m_deltaPhi2);
+    m_tree->Branch("deltaPhiRescaled",&m_deltaPhiRescaled);
+    m_tree->Branch("expectHitInBLayer",&m_expectHitInBLayer);
+
 
 
     sc = m_histos->regTree(Form("/AANT/%s",m_tree->GetName()),m_tree);
@@ -519,28 +547,55 @@ void SoftElectron::FillElectrons()
         float nTRTDeadStraw     = -100;
         float nTRTTubeHits      = -100;
 
-        float e237              = -100;
-        float e277              = -100;
-        float cone30            = -100;
         float ethad1            = -100;
         float ethad             = -100;
         float emax              = -100;
         float emax2             = -100;
         float emin              = -100;
 
+        float eld0              = -100;
+        float elz0              = -100;
+        float eld0Err           = -100;
+        float elz0Err           = -100;
 
-        bool isEmLoose          = false;
-        bool isEmLoosePP        = false;
-        bool isEmMedium         = false;
-        bool isEmMediumPP       = false;
-        bool isEmTight          = false;
-        bool isEmTightPP        = false;
-        bool isGoodOQ           = false;
-        bool isBMatch           = false;
-        bool isCMatch           = false;
-        bool isZMatch           = false;
-        bool isAuthor           = false;
-        bool isAuthorSofte      = false;
+        bool isEmLoose          = -100;
+        bool isEmLoosePP        = -100;
+        bool isEmMedium         = -100;
+        bool isEmMediumPP       = -100;
+        bool isEmTight          = -100;
+        bool isEmTightPP        = -100;
+        bool isGoodOQ           = -100;
+        bool isBMatch           = -100;
+        bool isCMatch           = -100;
+        bool isZMatch           = -100;
+        bool isAuthor           = -100;
+        bool isAuthorSofte      = -100;
+
+        float f1              = -100;                          
+        float f1core          = -100;    
+        float emins1          = -100;    
+        float fracs1          = -100;    
+        float e2tsts1         = -100;    
+        float weta1           = -100;    
+        float wtots1          = -100;    
+        float emaxs1          = -100;    
+        float e233            = -100;    
+        float e237            = -100;    
+        float e277            = -100;    
+        float weta2           = -100;    
+        float f3              = -100;    
+        float f3core          = -100;    
+        float etcone          = -100;    
+        float etcone20        = -100;    
+        float etcone30        = -100;    
+        float etcone40        = -100;    
+        float ptcone30        = -100;    
+        float deltaEta1       = -100;    
+        float deltaEta2       = -100;    
+        float deltaPhi2       = -100;    
+        float deltaPhiRescaled= -100;    
+        bool  expectHitInBLayer=false;    
+
 
         const Analysis::Electron* Electron = m_electronCollection->at(i);
         //if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
@@ -551,7 +606,6 @@ void SoftElectron::FillElectrons()
 
         if(ElCluster && Shower && elParent)
         {
-
             //shower
             //https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/egamma/egammaPIDTools/trunk/src/egammaElectronCutIDTool.cxx#L593
             e237            = Shower->e237();
@@ -575,7 +629,6 @@ void SoftElectron::FillElectrons()
                     nBLayerHits       = summary->get(Trk::numberOfBLayerHits);
                     nBLayerOutliers   = summary->get(Trk::numberOfBLayerOutliers);
                     nBLayerSharedHits = summary->get(Trk::numberOfBLayerSharedHits);
-                    expectBLayerHit   = summary->get(Trk::expectBLayerHit);
 
                     nPixelHits        = summary->get(Trk::numberOfPixelHits);
                     nPixelOutliers    = summary->get(Trk::numberOfPixelOutliers);
@@ -602,6 +655,17 @@ void SoftElectron::FillElectrons()
                     nTRTDeadStraw     = summary->get(Trk::numberOfTRTDeadStraws);
                     nTRTTubeHits      = summary->get(Trk::numberOfTRTTubeHits);
                 }
+                /// access to the perigee parameters
+                const Trk::MeasuredPerigee* perigee = Electron->trackParticle()->measuredPerigee();
+                Trk::ErrorMatrix  errormatrix = perigee->localErrorMatrix();
+                if (perigee) 
+                {
+                    HepVector parameters= perigee->parameters();
+                    eld0                = parameters[Trk::d0];
+                    eld0Err             = errormatrix.error(Trk::z0);
+                    elz0                = parameters[Trk::z0];
+                    elz0Err             = errormatrix.error(Trk::z0);
+                }
             }
 
             //Cluster
@@ -617,16 +681,42 @@ void SoftElectron::FillElectrons()
                 trnsE  = cosh(eta2)!=0. ? ElCluster->energy()/cosh(eta2) : 0.;
 
 
-            elCharge       = Electron->charge();
-            isEmLoose      = Electron->passID(egammaPID::ElectronIDLoose);
-            isEmLoosePP    = Electron->passID(egammaPID::ElectronIDLoosePP);
-            isEmMedium     = Electron->passID(egammaPID::ElectronIDMedium);
-            isEmMediumPP   = Electron->passID(egammaPID::ElectronIDMediumPP);
-            isEmTight      = Electron->passID(egammaPID::ElectronIDTight);
-            isEmTightPP    = Electron->passID(egammaPID::ElectronIDTightPP);
-            isAuthor       = Electron->author(egammaParameters::AuthorElectron);
-            isAuthorSofte  = Electron->author(egammaParameters::AuthorSofte);
-            
+            elCharge        = Electron->charge();
+            isEmLoose       = Electron->passID(egammaPID::ElectronIDLoose);
+            isEmLoosePP     = Electron->passID(egammaPID::ElectronIDLoosePP);
+            isEmMedium      = Electron->passID(egammaPID::ElectronIDMedium);
+            isEmMediumPP    = Electron->passID(egammaPID::ElectronIDMediumPP);
+            isEmTight       = Electron->passID(egammaPID::ElectronIDTight);
+            isEmTightPP     = Electron->passID(egammaPID::ElectronIDTightPP);
+            isAuthor        = Electron->author(egammaParameters::AuthorElectron);
+            isAuthorSofte   = Electron->author(egammaParameters::AuthorSofte);
+
+            f1              = egammaParameters::f1;
+            f1core          = egammaParameters::f1core;
+            emins1          = egammaParameters::emins1;
+            fracs1          = egammaParameters::fracs1;
+            e2tsts1         = egammaParameters::e2tsts1;
+            weta1           = egammaParameters::weta1;
+            wtots1          = egammaParameters::wtots1;
+            emaxs1          = egammaParameters::emaxs1;
+            e233            = egammaParameters::e233;
+            e237            = egammaParameters::e237;
+            e277            = egammaParameters::e277;
+            weta2           = egammaParameters::weta2;
+            f3              = egammaParameters::f3;
+            f3core          = egammaParameters::f3core;
+            etcone          = egammaParameters::etcone;
+            etcone20        = egammaParameters::etcone20;
+            etcone30        = egammaParameters::etcone30;
+            etcone40        = egammaParameters::etcone40;
+            ptcone30        = egammaParameters::ptcone30;
+            deltaEta1       = egammaParameters::deltaEta1;
+            deltaEta2       = egammaParameters::deltaEta2;
+            deltaPhi2       = egammaParameters::deltaPhi2;
+            deltaPhiRescaled= egammaParameters::deltaPhiRescaled;
+            expectHitInBLayer= egammaParameters::expectHitInBLayer;
+
+
             isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
 
             if( isGoodOQ && 
@@ -647,7 +737,6 @@ void SoftElectron::FillElectrons()
         m_numberOfbLayerHits            -> push_back(nBLayerHits);
         m_numberOfbLayerOutliers        -> push_back(nBLayerOutliers);
         m_numberOfbLayerSharedHits      -> push_back(nBLayerSharedHits);
-        m_numberOfexpectBLayerHit       -> push_back(expectBLayerHit);
         
         m_numberOfPixelHits             -> push_back(nPixelHits);
         m_numberOfPixelOutliers         -> push_back(nPixelOutliers);
@@ -673,10 +762,14 @@ void SoftElectron::FillElectrons()
         m_numberOfTRTHTOutliers         -> push_back(nTRTHTOutliers);    
         m_numberOfTRTDeadStraws         -> push_back(nTRTDeadStraw);    
         m_numberOfTRTTubeHits           -> push_back(nTRTTubeHits);    
+
+        m_d0                            -> push_back(eld0);
+        m_d0Err                         -> push_back(eld0Err);
+        m_z0                            -> push_back(elz0);
+        m_z0Err                         -> push_back(elz0Err);
         
         m_e237                          -> push_back(e237);    
         m_e277                          -> push_back(e277);   
-        m_cone30                        -> push_back(cone30);
         m_ethad                         -> push_back(ethad);
         m_ethad1                        -> push_back(ethad1); 
         m_emax                          -> push_back(emax); 
@@ -693,6 +786,31 @@ void SoftElectron::FillElectrons()
         m_eta                           -> push_back(elClEta);
         m_phi                           -> push_back(elClPhi);
         m_et                            -> push_back(trnsE);
+
+        m_f1                            -> push_back(f1);                          
+        m_f1core                        -> push_back(f1core);
+        m_emins1                        -> push_back(emins1);
+        m_fracs1                        -> push_back(fracs1);
+        m_e2tsts1                       -> push_back(e2tsts1);
+        m_weta1                         -> push_back(weta1);
+        m_wtots1                        -> push_back(wtots1);
+        m_emaxs1                        -> push_back(emaxs1);
+        m_e233                          -> push_back(e233);
+        m_e237                          -> push_back(e237);
+        m_e277                          -> push_back(e277);
+        m_weta2                         -> push_back(weta2);
+        m_f3                            -> push_back(f3);
+        m_f3core                        -> push_back(f3core);
+        m_etcone                        -> push_back(etcone);
+        m_etcone20                      -> push_back(etcone20);
+        m_etcone30                      -> push_back(etcone30); 
+        m_etcone40                      -> push_back(etcone40);
+        m_ptcone30                      -> push_back(ptcone30);
+        m_deltaEta1                     -> push_back(deltaEta1);
+        m_deltaEta2                     -> push_back(deltaEta2);
+        m_deltaPhi2                     -> push_back(deltaPhi2);
+        m_deltaPhiRescaled              -> push_back(deltaPhiRescaled);
+        m_expectHitInBLayer             -> push_back(expectHitInBLayer);
     }
 }
 
@@ -751,7 +869,6 @@ void SoftElectron::BookNtupleContainers()
     m_numberOfbLayerHits            = new std::vector <float>();
     m_numberOfbLayerOutliers        = new std::vector <float>(); 
     m_numberOfbLayerSharedHits      = new std::vector <float>();
-    m_numberOfexpectBLayerHit       = new std::vector <float>();
     
     m_numberOfPixelHits             = new std::vector <float>();
     m_numberOfPixelOutliers         = new std::vector <float>();
@@ -771,6 +888,11 @@ void SoftElectron::BookNtupleContainers()
     m_numberOfSCTDeadSensors        = new std::vector <float>();    
     m_numberOfSCTSpoiltHits         = new std::vector <float>();    
 
+    m_d0                            = new std::vector <float>();
+    m_d0Err                         = new std::vector <float>();
+    m_z0                            = new std::vector <float>();
+    m_z0Err                         = new std::vector <float>();
+
     m_numberOfTRTHits               = new std::vector <float>();    
     m_numberOfTRTOutliers           = new std::vector <float>();    
     m_numberOfTRTHoles              = new std::vector <float>();    
@@ -779,8 +901,6 @@ void SoftElectron::BookNtupleContainers()
     m_numberOfTRTDeadStraws         = new std::vector <float>();    
     m_numberOfTRTTubeHits           = new std::vector <float>();    
     
-    m_e237                          = new std::vector <float>();    
-    m_e277                          = new std::vector <float>();   
     m_cone30                        = new std::vector <float>();
     m_ethad                         = new std::vector <float>();
     m_ethad1                        = new std::vector <float>(); 
@@ -799,6 +919,30 @@ void SoftElectron::BookNtupleContainers()
     m_phi                           = new std::vector <float>(); 
     m_et                            = new std::vector <float>();
 
+    m_f1                            = new std::vector <float>();
+    m_f1core                        = new std::vector <float>();
+    m_emins1                        = new std::vector <float>();
+    m_fracs1                        = new std::vector <float>(); 
+    m_e2tsts1                       = new std::vector <float>(); 
+    m_weta1                         = new std::vector <float>(); 
+    m_wtots1                        = new std::vector <float>(); 
+    m_emaxs1                        = new std::vector <float>(); 
+    m_e233                          = new std::vector <float>(); 
+    m_e237                          = new std::vector <float>();    
+    m_e277                          = new std::vector <float>();   
+    m_weta2                         = new std::vector <float>(); 
+    m_f3                            = new std::vector <float>(); 
+    m_f3core                        = new std::vector <float>(); 
+    m_etcone                        = new std::vector <float>(); 
+    m_etcone20                      = new std::vector <float>(); 
+    m_etcone30                      = new std::vector <float>(); 
+    m_etcone40                      = new std::vector <float>(); 
+    m_ptcone30                      = new std::vector <float>(); 
+    m_deltaEta1                     = new std::vector <float>(); 
+    m_deltaEta2                     = new std::vector <float>(); 
+    m_deltaPhi2                     = new std::vector <float>(); 
+    m_deltaPhiRescaled              = new std::vector <float>(); 
+    m_expectHitInBLayer             = new std::vector <bool>(); 
 
 }
 
@@ -807,7 +951,6 @@ void SoftElectron::ClearContainers()
     delete m_numberOfbLayerHits        ;
     delete m_numberOfbLayerOutliers    ; 
     delete m_numberOfbLayerSharedHits  ;
-    delete m_numberOfexpectBLayerHit   ;
     delete m_numberOfPixelHits         ;
     delete m_numberOfPixelOutliers     ;
     delete m_numberOfPixelHoles        ;
@@ -824,6 +967,11 @@ void SoftElectron::ClearContainers()
     delete m_numberOfSCTSharedHits     ;
     delete m_numberOfSCTDeadSensors    ;
     delete m_numberOfSCTSpoiltHits     ;
+    
+    delete m_d0                        ;
+    delete m_d0Err                     ;
+    delete m_z0                        ;
+    delete m_z0Err                     ;
 
     delete m_numberOfTRTHits           ;
     delete m_numberOfTRTOutliers       ;
@@ -832,8 +980,6 @@ void SoftElectron::ClearContainers()
     delete m_numberOfTRTHTOutliers     ;
     delete m_numberOfTRTDeadStraws     ;
     delete m_numberOfTRTTubeHits       ;
-    delete m_e237                      ;
-    delete m_e277                      ;
     delete m_cone30                    ;
     delete m_ethad                     ;
     delete m_ethad1                    ;
@@ -850,7 +996,32 @@ void SoftElectron::ClearContainers()
     delete m_pt                        ;
     delete m_eta                       ;
     delete m_phi                       ;
-    delete m_et                         ;
+    delete m_et                        ;
+
+    delete m_f1                        ;                          
+    delete m_f1core                    ;    
+    delete m_emins1                    ;    
+    delete m_fracs1                    ;    
+    delete m_e2tsts1                   ;    
+    delete m_weta1                     ;    
+    delete m_wtots1                    ;    
+    delete m_emaxs1                    ;    
+    delete m_e233                      ;    
+    delete m_e237                      ;    
+    delete m_e277                      ;    
+    delete m_weta2                     ;    
+    delete m_f3                        ;    
+    delete m_f3core                    ;    
+    delete m_etcone                    ;    
+    delete m_etcone20                  ;    
+    delete m_etcone30                  ;    
+    delete m_etcone40                  ;    
+    delete m_ptcone30                  ;    
+    delete m_deltaEta1                 ;    
+    delete m_deltaEta2                 ;    
+    delete m_deltaPhi2                 ;    
+    delete m_deltaPhiRescaled          ;    
+    delete m_expectHitInBLayer         ;    
 }
 
 const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)

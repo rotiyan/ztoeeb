@@ -188,7 +188,6 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_numberOfbLayerHits;
         std::vector<float>*     m_numberOfbLayerOutliers;
         std::vector<float>*     m_numberOfbLayerSharedHits; //Hits shared by several tracks
-        std::vector<float>*     m_numberOfexpectBLayerHit; //Do we expect a b-layer hit
 
         //Pixel
         std::vector<float>*     m_numberOfPixelHits;
@@ -209,6 +208,10 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_numberOfSCTDeadSensors;
         std::vector<float>*     m_numberOfSCTSpoiltHits; //number of SCT hits with broad errors (width/sqrt(12))
 
+        std::vector<float>*     m_d0;
+        std::vector<float>*     m_z0;
+        std::vector<float>*     m_d0Err;
+        std::vector<float>*     m_z0Err;
 
         //TRT
         std::vector<float>*     m_numberOfTRTHits;
@@ -220,8 +223,6 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_numberOfTRTTubeHits;
 
         //Shower
-        std::vector<float>*     m_e237;// E(3*7) in second sampling
-        std::vector<float>*     m_e277;// E(7*7) in second sampling
         std::vector<float>*     m_cone30;
         std::vector<float>*     m_ethad1;
         std::vector<float>*     m_ethad;
@@ -241,6 +242,33 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_eta;
         std::vector<float>*     m_phi;
         std::vector<float>*     m_et;
+
+        //egamma pid parameters
+        std::vector<float>*     m_f1;
+        std::vector<float>*     m_f1core;
+        std::vector<float>*     m_emins1;
+        std::vector<float>*     m_fracs1;
+        std::vector<float>*     m_e2tsts1; 
+        std::vector<float>*     m_weta1;
+        std::vector<float>*     m_wtots1; 
+        std::vector<float>*     m_emaxs1;
+        std::vector<float>*     m_e233; 
+        std::vector<float>*     m_e237;
+        std::vector<float>*     m_e277;  
+        std::vector<float>*     m_weta2;
+        std::vector<float>*     m_f3;   
+        std::vector<float>*     m_f3core;  
+        std::vector<float>*     m_etcone;    
+        std::vector<float>*     m_etcone20;   
+        std::vector<float>*     m_etcone30;  
+        std::vector<float>*     m_etcone40; 
+        std::vector<float>*     m_ptcone30;   
+        std::vector<float>*     m_deltaEta1;    
+        std::vector<float>*     m_deltaEta2;       
+        std::vector<float>*     m_deltaPhi2;   
+        std::vector<float>*     m_deltaPhiRescaled; 
+        std::vector<bool>*      m_expectHitInBLayer;
+
 };
   
 #endif // SoftElectron
