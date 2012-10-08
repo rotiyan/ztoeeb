@@ -27,6 +27,16 @@ class NtupleAna(NtupleAnaBase):
         self.regPhiHist("ElPhi")
         self.regTH1("ElEnrgy","",500,0,500)
         self.regTH1("ElMultplcty","",20,-0.5,19.5)
+        self.regTH1("ElMultplctyLoose","",10,-0.5,9.5)
+        self.regTH1("ElMultplctyLoosePP","",10,-0.5,9.5)
+        self.regTH1("ElMultplctyMedium","",10,-0.5,9.5)
+        self.regTH1("ElMultplctyMediumPP","",10,-0.5,0.5)
+        self.regTH1("ElMultplctyTight","",10,-0.5,9.5)
+        self.regTH1("ElMultplctyTightPP","",10,-0.5,9.5)
+        self.regTH1("ElMultplctyAuthor","",10,-0.5,9.5)
+        self.regTH1("ElMultplctySofte","",10,-0.5,9.5)
+        self.regTH1("ElMultplctyAuthorSofte","",10,-0.5,9.5)
+
 
         self.regPtHist("SlctdElPt")
         self.regEtaHist("SlctdElEta")
@@ -221,6 +231,15 @@ class NtupleAna(NtupleAnaBase):
 
         if(len(elList)>1):
             self.gethist("ElMultplcty").Fill(len(elList))
+            self.gethist("ElMultplctyLoose").Fill(len([x for x in elList if x.isLoose()]))
+            self.gethist("ElMultplctyLoosePP").Fill(len([x for x in elList if x.isLoosePP()]))
+            self.gethist("ElMultplctyMedium").Fill(len([x for x in elList if x.isMedium()]))
+            self.gethist("ElMultplctyMediumPP").Fill(len([x for x in elList if x.isMediumPP()]))
+            self.gethist("ElMultplctyAuthor").Fill(len([x for x in elList if x.isAuthor()]))
+            self.gethist("ElMultplctySofte").Fill(len([x for x in elList if x.isSofte()]))
+            self.gethist("ElMultplctyAuthorSofte").Fill(len([x for x in elList if x.isAuthor() and x.isSofte()]))
+
+
             self.gethist("BMtchElMultplcty").Fill(nBMtchEl)
             self.gethist("BGrndMtchElMultplcty").Fill(nBGrndMtchEl)
             
@@ -245,6 +264,7 @@ class NtupleAna(NtupleAnaBase):
                     #Make Electron selection if and only if we find Z-boson
                     elSelectList= [x for x in elList if x.isLoosePP() and (x.isAuthorSofte() or x.isAuthor()) ]
                     self.gethist("SlctdElMultplcty").Fill(len(elSelectList))
+
                     for el in elSelectList:
                         self.gethist("SlctdElPt").Fill(el.getPt())
                         self.gethist("SlctdElEta").Fill(el.getEta())
@@ -680,6 +700,42 @@ class plotscript:
         h_nSlctdEl = self.__getInHist("SlctdElMultplcty")
         h_nSlctdEl.GetXaxis().SetTitle("#")
         self.__saveHist(h_nSlctdEl)
+
+        h_nElLoose = self.__getInHist("ElMultplctyLoose")
+        h_nElLoose.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElLoose)
+
+        h_nElLoosePP = self.__getInHist("ElMultplctyLoosePP")
+        h_nElLoosePP.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElLoosePP)
+
+        h_nElMedium  = self.__getInHist("ElMultplctyMedium")
+        h_nElMedium.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElMedium)
+
+        h_nElMediumPP  = self.__getInHist("ElMultplctyMediumPP")
+        h_nElMediumPP.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElMediumPP)
+
+        h_nElTight     = self.__getInHist("ElMultplctyTight")
+        h_nElTight.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElTight)
+
+        h_nElTightPP   = self.__getInHist("ElMultplctyTightPP")
+        h_nElTightPP.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElTightPP)
+
+        h_nElAuthor    = self.__getInHist("ElMultplctyAuthor")
+        h_nElAuthor.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElAuthor)
+
+        h_nElSofte     = self.__getInHist("ElMultplctySofte")
+        h_nElSofte.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElSofte)
+
+        h_nElAuthorSofte   = self.__getInHist("ElMultplctyAuthorSofte")
+        h_nElAuthorSofte.GetXaxis().SetTitle("#")
+        self.__saveHist(h_nElAuthorSofte)
 
         """Truth Match Electrons"""
         self.__saveHist(self.__getInHist("ElParentPDG"))
