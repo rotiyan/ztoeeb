@@ -58,6 +58,11 @@ class SoftElectron : public Algorithm
     private:
 
         /**
+         * Checks if the current event is a Z boson event 
+         */
+        bool isZEvent();
+
+        /**
          * Creat Tree and branches
          * begining of the loop. 
          * The histograms are contained 

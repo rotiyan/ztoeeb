@@ -500,6 +500,22 @@ bool SoftElectron::isCHadron(const HepMC::GenParticle* part)
             ( 20400 < mpdg && mpdg < 20499 ) );
 }
 
+bool SoftElectron::isZEvent()
+{
+    for( unsigned int i =0 ; i < m_electronCollection->size(); ++i)
+    {
+        const Analysis::Electron* Electron = m_electronCollection->at(i);
+        if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+        {
+            const CaloCluster* ElCluster = Electron->cluster();
+            
+            float elClPt    = ElCluster->pt()/1000;
+            float elClEta   = ElCluster->eta();
+            float elPhi     = ElCluster->phi();
+        }
+    }
+}
+
 void SoftElectron::FillElectrons()
 {
     MsgStream mlog(msgSvc(), name());
