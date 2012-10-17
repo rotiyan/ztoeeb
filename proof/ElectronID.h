@@ -9,13 +9,86 @@
 #define ElectronID_h
 
 #include <TROOT.h>
+#include <TH1F.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TSelector.h>
+#include <vector>
+using namespace std;
 
 class ElectronID : public TSelector {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+
+   TH1F  *h_REta;
+   TH1F  *h_RPhi;
+   TH1F  *h_zMass;
+   TH1F  *h_nSofte;
+   TH1F  *h_nAuthor;
+   TH1F  *h_TRTRatio;
+
+   TH1F  *h_numBLayerHits;
+   TH1F  *h_numBLayerOutliers;
+   TH1F  *h_numBLayerShared;
+   TH1F  *h_numPixelHits;
+   TH1F  *h_numPixelOutliers;
+   TH1F  *h_numPixelHoles;
+   TH1F  *h_numPixelShared;
+   TH1F  *h_numGangedPixels;
+   TH1F  *h_numGangedFlaggedFakes;
+   TH1F  *h_numPixelDeadSensors;
+   TH1F  *h_numPixelSpoiltHits;
+   TH1F  *h_numSCTHits;
+   TH1F  *h_numSCTOutliers;
+   TH1F  *h_numSCTHoles;
+   TH1F  *h_numSCTDoubleHoles;
+   TH1F  *h_numSCTSharedHits;
+   TH1F  *h_numSCTDeadSensors;
+   TH1F  *h_numSCTSpoitHits;
+   TH1F  *h_d0;
+   TH1F  *h_d0Err;
+   TH1F  *h_z0;
+   TH1F  *h_z0Err;
+   TH1F  *h_numTRTHits;
+   TH1F  *h_numTRTOutliers;
+   TH1F  *h_numTRTHoles;
+   TH1F  *h_numTRTHtHits;
+   TH1F  *h_numTRTHTOutliers;
+   TH1F  *h_numTRTDeadStraw;
+   TH1F  *h_numTRTTubeHits;
+   TH1F  *h_cone30;
+   TH1F  *h_ethad;
+   TH1F  *h_ethad1;
+   TH1F  *h_emax;
+   TH1F  *h_emax2;
+   TH1F  *h_emin;
+   TH1F  *h_elPt;
+   TH1F  *h_elEta;
+   TH1F  *h_elPhi;
+   TH1F  *h_elTrnsE;
+   TH1F  *h_f1;
+   TH1F  *h_f1core;
+   TH1F  *h_emins1;
+   TH1F  *h_fracs1;
+   TH1F  *h_e2tsts1;
+   TH1F  *h_weta1;
+   TH1F  *h_wtots1;
+   TH1F  *h_emaxs1;
+   TH1F  *h_e233;
+   TH1F  *h_e237;
+   TH1F  *h_e277;
+   TH1F  *h_weta2;
+   TH1F  *h_f3;
+   TH1F  *h_f3core;
+   TH1F  *h_etcone;
+   TH1F  *h_etcone20;
+   TH1F  *h_etcone30;
+   TH1F  *h_etcone40;
+   TH1F  *h_ptcone30;
+   TH1F  *h_deltaEta1;
+   TH1F  *h_deltaEta2;
+   TH1F  *h_deltaPhi2;
+   TH1F  *h_deltaPhiRescaled;
 
    // Declaration of leaf types
    vector<float>   *numBLayerHits;
@@ -157,7 +230,78 @@ public :
    TBranch        *b_deltaPhiRescaled;   //!
    TBranch        *b_expectHitInBLayer;   //!
 
-   ElectronID(TTree * /*tree*/ =0) { }
+   ElectronID(TTree * /*tree*/ =0) 
+   {
+       h_REta                   =  0;
+       h_RPhi                   =  0;
+       h_zMass                  =  0;
+       h_nSofte                 =  0;
+       h_nAuthor                =  0;
+       h_TRTRatio               =  0; 
+
+       h_numBLayerHits	        =  0;
+       h_numBLayerOutliers	    =  0;
+       h_numBLayerShared	    =  0;
+       h_numPixelHits	        =  0;
+       h_numPixelOutliers	    =  0;
+       h_numPixelHoles	        =  0;
+       h_numPixelShared	        =  0;
+       h_numGangedPixels	    =  0;
+       h_numGangedFlaggedFakes	=  0;
+       h_numPixelDeadSensors	=  0;
+       h_numPixelSpoiltHits	    =  0;
+       h_numSCTHits	            =  0;
+       h_numSCTOutliers	        =  0;
+       h_numSCTHoles	        =  0;
+       h_numSCTDoubleHoles	    =  0;
+       h_numSCTSharedHits	    =  0;
+       h_numSCTDeadSensors	    =  0;
+       h_numSCTSpoitHits	    =  0;
+       h_d0	                    =  0;
+       h_d0Err	                =  0;
+       h_z0	                    =  0;
+       h_z0Err	                =  0;
+       h_numTRTHits	            =  0;
+       h_numTRTOutliers         =  0;
+       h_numTRTHoles            =  0;
+       h_numTRTHtHits           =  0;
+       h_numTRTHTOutliers       =  0;
+       h_numTRTDeadStraw        =  0;
+       h_numTRTTubeHits         =  0;
+       h_cone30	                =  0;
+       h_ethad	                =  0;  //energy leakage measure in the whole hcal
+       h_ethad1	                =  0;  //energy leakage measured in the first sampling of hcal
+       h_emax	                =  0;
+       h_emax2	                =  0;
+       h_emin                   =  0;
+       h_elPt                   =  0;
+       h_elEta                  =  0;
+       h_elPhi                  =  0;
+       h_elTrnsE                =  0;
+       h_f1	                    =  0;
+       h_f1core	                =  0;
+       h_emins1	                =  0;
+       h_fracs1	                =  0;
+       h_e2tsts1	            =  0;
+       h_weta1	                =  0; 
+       h_wtots1	                =  0;
+       h_emaxs1	                =  0;
+       h_e233	                =  0; //energy deposited in the second sampling of the em call in a DeltaEta*DeltaPhi=3x3
+       h_e237	                =  0; //energy deposited in the second sampling of the em cal in a DeltaEta*DeltaPhi=3x7
+       h_e277	                =  0; // energy deposited in the second sampling of the em cal in a DeltaEta*DeltaPhi=7x7
+       h_weta2	                =  0; //shower lateral width in the Ecal middle layer
+       h_f3	                    =  0;
+       h_f3core	                =  0;
+       h_etcone	                =  0;
+       h_etcone20               =  0;
+       h_etcone30               =  0;
+       h_etcone40               =  0;
+       h_ptcone30               =  0;
+       h_deltaEta1              =  0;
+       h_deltaEta2              =  0;
+       h_deltaPhi2              =  0;
+       h_deltaPhiRescaled       =  0;
+   }
    virtual ~ElectronID() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
@@ -172,6 +316,10 @@ public :
    virtual TList  *GetOutputList() const { return fOutput; }
    virtual void    SlaveTerminate();
    virtual void    Terminate();
+   void BookHistograms();
+   std::vector<float> getMaxPtList(std::vector<float>* vec);
+
+
 
    ClassDef(ElectronID,0);
 };
