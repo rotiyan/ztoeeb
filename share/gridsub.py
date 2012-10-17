@@ -95,17 +95,16 @@ singleTopDict = {\
 jf17Dict  = {\
         'jf17':'mc11_7TeV.105830.JF17_herwig_jet_filter.merge.AOD.e995_s1372_s1370_r3043_r2993/'}
 
-data    = {\
-        'PeriodD' : 'data11_7TeV.periodD.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodE' : 'data11_7TeV.periodE.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodF' : 'data11_7TeV.periodF.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodG' : 'data11_7TeV.periodG.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodH' : 'data11_7TeV.periodH.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodI' : 'data11_7TeV.periodI.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodJ' : 'data11_7TeV.periodJ.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodK' : 'data11_7TeV.periodK.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodL' : 'data11_7TeV.periodL.physics_Egamma.PhysCont.AOD.pro10_v01/',
-        'PeriodM' : 'data11_7TeV.periodM.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodD = {'PeriodD' :'data11_7TeV.periodD.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodE = {'PeriodE' :'data11_7TeV.periodE.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodF = {'PeriodF' : 'data11_7TeV.periodF.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodG = {'PeriodG' : 'data11_7TeV.periodG.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodH = {'PeriodH' : 'data11_7TeV.periodH.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodI = {'PeriodI' : 'data11_7TeV.periodI.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodJ = {'PeriodJ' : 'data11_7TeV.periodJ.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodK = {'PeriodK' : 'data11_7TeV.periodK.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodL = {'PeriodL' : 'data11_7TeV.periodL.physics_Egamma.PhysCont.AOD.pro10_v01/'}
+periodM = {'PeriodM' : 'data11_7TeV.periodM.physics_Egamma.PhysCont.AOD.pro10_v01/'}
 
 
 
@@ -126,7 +125,16 @@ dsDict      = {\
         "ttbar"     : ttbarDict,
         "singleTop" : singleTopDict,
         "jf17"      : jf17Dict,
-        "data"      : data}
+        "periodD"   : periodD,
+        "periodE"   : periodE,
+        "periodF"   : periodF,
+        "periodG"   : periodG,
+        "periodH"   : periodH,
+        "periodI"   : periodI,
+        "periodJ"   : periodJ,
+        "periodK"   : periodK,
+        "periodL"   : periodL,
+        "periodM"   : periodM}
 
 #Map the hfor type to each dataset
 hforDict    = {\
@@ -146,7 +154,16 @@ hforDict    = {\
         "ttbar"     : "",
         "singleTop" : "",
         "jf17"      : "",
-        "data"      : ""}
+        "periodD"   : "",
+        "periodE"   : "",
+        "periodF"   : "",
+        "periodG"   : "",
+        "periodH"   : "",
+        "periodI"   : "",
+        "periodJ"   : "",
+        "periodK"   : "",
+        "periodL"   : "",
+        "periodM"   : ""}
 #Hfor doens't work for Zcc sample !!
 
 def gangaSub(dsDictName,dsName,dslist):
