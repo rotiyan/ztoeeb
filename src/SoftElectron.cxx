@@ -55,8 +55,8 @@
 #include <iostream>
 #include <algorithm>
 
-bool cmp (const Analysis::Electron* a, const Analysis::Electron* b) {
-    return a->cluster()->pt() < b->cluster()->pt();
+bool sortDescend(const Analysis::Electron* a, const Analysis::Electron* b) {
+    return a->cluster()->pt() > b->cluster()->pt();
 }
 
 SoftElectron::SoftElectron(const std::string& name, ISvcLocator* pSvcLocator) 
@@ -199,23 +199,26 @@ StatusCode SoftElectron::execute()
     {
         //Book Ntuple Containers
         this->BookNtupleContainers();
-
-        if(m_fillGenInfo) //MC
+        if(this->isZEvent())
         {
-            // Heavy Flavor Overlap Removal 
-            std::string hfor_type ="";
-            //if ( m_hfor_tool->execute().isSuccess() )
-            //    hfor_type = m_hfor_tool->getDecision();
+            mlog <<MSG::INFO <<"It is ZEvent" << endreq;
+            if(m_fillGenInfo) //MC
+            {
+                // Heavy Flavor Overlap Removal 
+                std::string hfor_type ="";
+                //if ( m_hfor_tool->execute().isSuccess() )
+                //    hfor_type = m_hfor_tool->getDecision();
 
-            //if(hfor_type ==m_hforType)
+                //if(hfor_type ==m_hforType)
+                {
+                    this->FillElectrons();
+                    this->FindTruthParticle();
+                }
+            }
+            else //data
             {
                 this->FillElectrons();
-                this->FindTruthParticle();
             }
-        }
-        else //data
-        {
-            this->FillElectrons();
         }
         m_tree->Fill();
         this->ClearContainers(); 
@@ -502,18 +505,48 @@ bool SoftElectron::isCHadron(const HepMC::GenParticle* part)
 
 bool SoftElectron::isZEvent()
 {
-    for( unsigned int i =0 ; i < m_electronCollection->size(); ++i)
+    bool isZ    = false;
+    std::vector<const Analysis::Electron*> slctElectrons;
+
+    VxContainer::const_iterator vxIter = m_vxContainer->begin();
+    int nTracks = (*vxIter)->vxTrackAtVertex()->size();
+    if(nTracks>=3)
     {
-        const Analysis::Electron* Electron = m_electronCollection->at(i);
-        if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+        for( unsigned int i =0 ; i < m_electronCollection->size(); ++i)
         {
-            const CaloCluster* ElCluster = Electron->cluster();
-            
-            float elClPt    = ElCluster->pt()/1000;
-            float elClEta   = ElCluster->eta();
-            float elPhi     = ElCluster->phi();
+
+            const Analysis::Electron* Electron = m_electronCollection->at(i);
+            if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+            {
+                if( Electron->passID(egammaPID::ElectronIDMediumPP))
+                {
+                    const CaloCluster* ElCluster = Electron->cluster();
+                    
+                    float elClPt    = ElCluster->pt()/1000;
+                    float elClEta   = ElCluster->eta();
+                    float elPhi     = ElCluster->phi();
+                    if( elClPt > 20 && std::abs(elClEta) <2.47 && !(std::abs(elClEta)< 2.47 && std::abs(elClEta) > 1.52))
+                    {
+                        slctElectrons.push_back(Electron);                        
+                    }
+                }
+            }
         }
     }
+    if(slctElectrons.size() >1)
+    {
+        std::cout <<"IS Z Event: Selected electron container size greater than 1 " <<std::endl;
+        sort(slctElectrons.begin(), slctElectrons.end(),sortDescend);
+        const Analysis::Electron* leadingEl     = slctElectrons.at(0);
+        const Analysis::Electron* subleadingEl  = slctElectrons.at(1);
+        
+        if((leadingEl->hlv() + subleadingEl->hlv()).m()/1000 > 66 &&  (leadingEl->hlv() + subleadingEl->hlv()).m()/1000 <116)
+        {
+            isZ = true;
+            std::cout << "SETTING BOOL TO TRUE " << std::endl;
+        }
+    }
+    return isZ;
 }
 
 void SoftElectron::FillElectrons()
@@ -733,14 +766,10 @@ void SoftElectron::FillElectrons()
             expectHitInBLayer= egammaParameters::expectHitInBLayer;
 
 
-            isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
+            //isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
 
-            if( isGoodOQ && 
-                    (!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&
-                    std::abs(elClEta) < m_elEtaCut && elClPt > m_elPtCut )
+            if((!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&  std::abs(elClEta) < m_elEtaCut)
             {
-                //m_h1_histMap.find("h1_etcone30")->second->Fill(Shower->etcone30()/1000);
-                
                 if(this->isBHadron(elParent))
                     isBMatch = true;
                 
