@@ -197,11 +197,11 @@ StatusCode SoftElectron::execute()
     //
     if( vxPass)// && trigPass )
     {
+        mlog <<MSG::INFO<<"Inside Vertex pass " <<endreq;
         //Book Ntuple Containers
         this->BookNtupleContainers();
         if(this->isZEvent())
         {
-            mlog <<MSG::INFO <<"It is ZEvent" << endreq;
             if(m_fillGenInfo) //MC
             {
                 // Heavy Flavor Overlap Removal 
@@ -218,6 +218,7 @@ StatusCode SoftElectron::execute()
             else //data
             {
                 this->FillElectrons();
+                mlog <<MSG::INFO<<" MyData" <<endreq;
             }
         }
         m_tree->Fill();
@@ -508,27 +509,23 @@ bool SoftElectron::isZEvent()
     bool isZ    = false;
     std::vector<const Analysis::Electron*> slctElectrons;
 
-    VxContainer::const_iterator vxIter = m_vxContainer->begin();
-    int nTracks = (*vxIter)->vxTrackAtVertex()->size();
-    if(nTracks>=3)
+    for( unsigned int i =0 ; i < m_electronCollection->size(); ++i)
     {
-        for( unsigned int i =0 ; i < m_electronCollection->size(); ++i)
-        {
+        std::cout <<"Inside is Z Event" <<std::endl;
 
-            const Analysis::Electron* Electron = m_electronCollection->at(i);
-            if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+        const Analysis::Electron* Electron = m_electronCollection->at(i);
+        if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
+        {
+            if( Electron->passID(egammaPID::ElectronIDMediumPP))
             {
-                if( Electron->passID(egammaPID::ElectronIDMediumPP))
+                const CaloCluster* ElCluster = Electron->cluster();
+                
+                float elClPt    = ElCluster->pt()/1000;
+                float elClEta   = ElCluster->eta();
+                float elPhi     = ElCluster->phi();
+                if( elClPt > 20 && std::abs(elClEta) <2.47 && !(std::abs(elClEta)< 2.47 && std::abs(elClEta) > 1.52))
                 {
-                    const CaloCluster* ElCluster = Electron->cluster();
-                    
-                    float elClPt    = ElCluster->pt()/1000;
-                    float elClEta   = ElCluster->eta();
-                    float elPhi     = ElCluster->phi();
-                    if( elClPt > 20 && std::abs(elClEta) <2.47 && !(std::abs(elClEta)< 2.47 && std::abs(elClEta) > 1.52))
-                    {
-                        slctElectrons.push_back(Electron);                        
-                    }
+                    slctElectrons.push_back(Electron);                        
                 }
             }
         }
@@ -551,9 +548,6 @@ bool SoftElectron::isZEvent()
 
 void SoftElectron::FillElectrons()
 {
-    MsgStream mlog(msgSvc(), name());
-    std::vector<const Analysis::Electron*> SelectdElectrons;
-    
     for(unsigned int i = 0; i < m_electronCollection->size(); ++i)
     {
         // initialize variables
@@ -653,8 +647,9 @@ void SoftElectron::FillElectrons()
         const CaloCluster* ElCluster = Electron->cluster();
         const EMShower* Shower = Electron->detail<EMShower>();
 
-        if(ElCluster && Shower && elParent)
+        if(ElCluster && Shower)
         {
+            std::cout<<"MyShower"<<std::endl;
             //shower
             //https://svnweb.cern.ch/trac/atlasoff/browser/Reconstruction/egamma/egammaPIDTools/trunk/src/egammaElectronCutIDTool.cxx#L593
             e237            = Shower->e237();
@@ -768,7 +763,8 @@ void SoftElectron::FillElectrons()
 
             //isGoodOQ       = Electron->isgoodoq(egammaPID::BADCLUSELECTRON) ==0 ? true: false;
 
-            if((!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&  std::abs(elClEta) < m_elEtaCut)
+            if((!(std::abs(elClEta) < m_elCrackEtaCutHigh && std::abs(elClEta) > m_elCrackEtaCutLow)) &&  std::abs(elClEta) < m_elEtaCut
+                    &&elParent)
             {
                 if(this->isBHadron(elParent))
                     isBMatch = true;
