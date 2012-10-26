@@ -1,10 +1,9 @@
 import user
 import glob
 import ROOT
+import sys
 import PyCintex
 import AthenaROOTAccess.transientTree
-t = [AthenaROOTAccess.transientTree.makeTree(ROOT.TFile.Open(x)) for x in glob.glob('/tmp/narayan/mc11_7TeV.107650.AlpgenJimmyZeeNp0_pt20.merge.AOD.e835_s1299_s1300_r3043_r2993_tid640128_00/*root*')]
-
 
 def toIter(beg,end):
     while beg != end:
@@ -12,7 +11,16 @@ def toIter(beg,end):
         beg.__preinc__()
     return
 
+
+ds = sys.argv[1]
+if(ds):
+    print glob.glob(ds+"*root*/")
+    #treeList    = [AthenaROOTAccess.transientTree.makeTree(ROOT.TFile.Open(x)) for x in glob.glob(ds)]
+    #chain       = ROOT.TChain("CollectionTree_trans")
+    #[chain.Add(x) for x in treeList]
+
+
 #for tranTree in t:
-#    elColl = tranTree.ElectronAODCollection
-#    for el in toIter(elColl.begin(),elColl.end()):
-#        print el
+    #elColl = tranTree.ElectronAODCollection
+    #for el in toIter(elColl.begin(),elColl.end()):
+        #print el
