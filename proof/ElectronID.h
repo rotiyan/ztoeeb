@@ -20,12 +20,20 @@ class ElectronID : public TSelector {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
+   TH1F  *h_truthRecoPt;
+   TH1F  *h_truthRecoEnrgy;
+   TH1F  *h_truthRecoEta;
+   TH1F  *h_truthRecoPhi;
+
    TH1F  *h_REta;
    TH1F  *h_RPhi;
    TH1F  *h_zMass;
    TH1F  *h_nSofte;
+   TH1F  *h_truthMatchNSofte;
    TH1F  *h_nAuthor;
+   TH1F  *h_truthMatchNAuthor;
    TH1F  *h_TRTRatio;
+   TH1F  *h_truthMatchTRTRatio;
 
    TH1F  *h_numBLayerHits;
    TH1F  *h_numBLayerOutliers;
@@ -46,6 +54,7 @@ public :
    TH1F  *h_numSCTDeadSensors;
    TH1F  *h_numSCTSpoitHits;
    TH1F  *h_d0;
+   TH1F  *h_truthMatchd0;
    TH1F  *h_d0Err;
    TH1F  *h_z0;
    TH1F  *h_z0Err;
@@ -63,6 +72,7 @@ public :
    TH1F  *h_emax2;
    TH1F  *h_emin;
    TH1F  *h_elPt;
+   TH1F  *h_truthMatchElPt;
    TH1F  *h_elEta;
    TH1F  *h_elPhi;
    TH1F  *h_elTrnsE;
@@ -159,6 +169,11 @@ public :
    vector<float>   *deltaPhi2;
    vector<float>   *deltaPhiRescaled;
    vector<bool>    *expectHitInBLayer;
+   vector<int>     *truthPDG;
+   vector<float>   *truthPt;
+   vector<float>   *truthEta;
+   vector<float>   *truthPhi;
+   vector<float>   *truthEnrgy;
 
    // List of branches
    TBranch        *b_numBLayerHits;   //!
@@ -229,15 +244,28 @@ public :
    TBranch        *b_deltaPhi2;   //!
    TBranch        *b_deltaPhiRescaled;   //!
    TBranch        *b_expectHitInBLayer;   //!
+   TBranch        *b_truthPDG;   //!
+   TBranch        *b_truthPt;   //!
+   TBranch        *b_truthEta;   //!
+   TBranch        *b_truthPhi;   //!
+   TBranch        *b_truthEnrgy;   //!
 
    ElectronID(TTree * /*tree*/ =0) 
    {
+       h_truthRecoEnrgy         =  0;
+       h_truthRecoPt            =  0;
+       h_truthRecoEta           =  0;
+       h_truthRecoPhi           =  0;
+
        h_REta                   =  0;
        h_RPhi                   =  0;
        h_zMass                  =  0;
        h_nSofte                 =  0;
+       h_truthMatchNSofte       =  0;
        h_nAuthor                =  0;
+       h_truthMatchNAuthor      =  0;
        h_TRTRatio               =  0; 
+       h_truthMatchTRTRatio     =  0;
 
        h_numBLayerHits	        =  0;
        h_numBLayerOutliers	    =  0;
@@ -258,6 +286,7 @@ public :
        h_numSCTDeadSensors	    =  0;
        h_numSCTSpoitHits	    =  0;
        h_d0	                    =  0;
+       h_truthMatchd0           =  0;
        h_d0Err	                =  0;
        h_z0	                    =  0;
        h_z0Err	                =  0;
@@ -275,6 +304,7 @@ public :
        h_emax2	                =  0;
        h_emin                   =  0;
        h_elPt                   =  0;
+       h_truthMatchElPt         =  0;
        h_elEta                  =  0;
        h_elPhi                  =  0;
        h_elTrnsE                =  0;
@@ -317,6 +347,7 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
    void BookHistograms();
+   void FillTrivialHists(int );
    std::vector<float> getMaxPtList(std::vector<float>* vec);
 
 
@@ -329,6 +360,7 @@ public :
 #ifdef ElectronID_cxx
 void ElectronID::Init(TTree *tree)
 {
+
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
    // pointers of the tree will be set.
@@ -406,6 +438,11 @@ void ElectronID::Init(TTree *tree)
    deltaPhi2 = 0;
    deltaPhiRescaled = 0;
    expectHitInBLayer = 0;
+   truthPDG = 0;
+   truthPt = 0;
+   truthEta = 0;
+   truthPhi = 0;
+   truthEnrgy = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -479,6 +516,11 @@ void ElectronID::Init(TTree *tree)
    fChain->SetBranchAddress("deltaPhi2", &deltaPhi2, &b_deltaPhi2);
    fChain->SetBranchAddress("deltaPhiRescaled", &deltaPhiRescaled, &b_deltaPhiRescaled);
    fChain->SetBranchAddress("expectHitInBLayer", &expectHitInBLayer, &b_expectHitInBLayer);
+   fChain->SetBranchAddress("truthPDG", &truthPDG, &b_truthPDG);
+   fChain->SetBranchAddress("truthPt", &truthPt, &b_truthPt);
+   fChain->SetBranchAddress("truthEta", &truthEta, &b_truthEta);
+   fChain->SetBranchAddress("truthPhi", &truthPhi, &b_truthPhi);
+   fChain->SetBranchAddress("truthEnrgy", &truthEnrgy, &b_truthEnrgy);
 }
 
 Bool_t ElectronID::Notify()
