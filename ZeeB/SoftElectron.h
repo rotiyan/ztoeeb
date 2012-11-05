@@ -274,6 +274,13 @@ class SoftElectron : public Algorithm
         std::vector<float>*     m_deltaPhiRescaled; 
         std::vector<bool>*      m_expectHitInBLayer;
 
+        //Truth particles
+        std::vector<int>*       m_truthPDG;
+        std::vector<float>*     m_truthPt;
+        std::vector<float>*     m_truthEta;
+        std::vector<float>*     m_truthPhi;
+        std::vector<float>*     m_truthEnrgy;
+
 };
   
 #endif // SoftElectron

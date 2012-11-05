@@ -315,6 +315,12 @@ StatusCode SoftElectron::BookTree()
     m_tree->Branch("deltaPhiRescaled",&m_deltaPhiRescaled);
     m_tree->Branch("expectHitInBLayer",&m_expectHitInBLayer);
 
+    m_tree->Branch("truthPDG",&m_truthPDG);
+    m_tree->Branch("truthPt",&m_truthPt);
+    m_tree->Branch("truthEta",&m_truthEta);
+    m_tree->Branch("truthPhi",&m_truthPhi);
+    m_tree->Branch("truthEnrgy",&m_truthEnrgy);
+
 
 
     sc = m_histos->regTree(Form("/AANT/%s",m_tree->GetName()),m_tree);
@@ -639,11 +645,18 @@ void SoftElectron::FillElectrons()
         float deltaPhiRescaled= -100;    
         bool  expectHitInBLayer=false;    
 
+        int   truthPDG        = -100;
+        float truthPt         = -100;
+        float truthEta        = -100;
+        float truthPhi        = -100;
+        float truthEnrgy      = -100;
+
 
         const Analysis::Electron* Electron = m_electronCollection->at(i);
         //if((Electron->author(egammaParameters::AuthorSofte) && Electron->author(egammaParameters::AuthorElectron)) || Electron->author(egammaParameters::AuthorElectron))
         m_mcTruthClassifier->particleTruthClassifier(Electron);
         const HepMC::GenParticle* elParent    = m_mcTruthClassifier->getMother();
+        const HepMC::GenParticle* truthPart   = m_mcTruthClassifier->getGenPart();
         const CaloCluster* ElCluster = Electron->cluster();
         const EMShower* Shower = Electron->detail<EMShower>();
 
@@ -773,6 +786,15 @@ void SoftElectron::FillElectrons()
                     isCMatch = true;
                 if(elParent->pdg_id() == 23)
                     isZMatch  = true;
+
+                if(truthPart)
+                {
+                    truthPDG    = truthPart->pdg_id();
+                    truthPt     = truthPart->momentum().perp()/1000;
+                    truthEta    = truthPart->momentum().eta();
+                    truthPhi    = truthPart->momentum().phi();
+                    truthEnrgy  = truthPart->momentum().e()/1000;
+                }
             }
         }
         m_numberOfbLayerHits            -> push_back(nBLayerHits);
@@ -852,6 +874,12 @@ void SoftElectron::FillElectrons()
         m_deltaPhi2                     -> push_back(deltaPhi2);
         m_deltaPhiRescaled              -> push_back(deltaPhiRescaled);
         m_expectHitInBLayer             -> push_back(expectHitInBLayer);
+
+        m_truthPDG                      -> push_back(truthPDG);
+        m_truthPt                       -> push_back(truthPt);
+        m_truthEta                      -> push_back(truthEta);
+        m_truthPhi                      -> push_back(truthPhi);
+        m_truthEnrgy                    -> push_back(truthEnrgy);
     }
 }
 
@@ -985,6 +1013,12 @@ void SoftElectron::BookNtupleContainers()
     m_deltaPhiRescaled              = new std::vector <float>(); 
     m_expectHitInBLayer             = new std::vector <bool>(); 
 
+    m_truthPDG                      = new std::vector <int>();
+    m_truthPt                       = new std::vector <float>();
+    m_truthEta                      = new std::vector <float>();
+    m_truthPhi                      = new std::vector <float>();
+    m_truthEnrgy                    = new std::vector <float>();
+
 }
 
 void SoftElectron::ClearContainers()
@@ -1063,6 +1097,12 @@ void SoftElectron::ClearContainers()
     delete m_deltaPhi2                 ;    
     delete m_deltaPhiRescaled          ;    
     delete m_expectHitInBLayer         ;    
+
+    delete m_truthPDG                  ;
+    delete m_truthPt                   ;
+    delete m_truthEta                  ;
+    delete m_truthPhi                  ;
+    delete m_truthEnrgy                ;
 }
 
 const HepMC::GenParticle* SoftElectron::GetElectronParent(const Analysis::Electron* Electron)
