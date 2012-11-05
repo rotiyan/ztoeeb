@@ -11,7 +11,7 @@ if len(sys.argv)> 1 :
     #initialize proof
     proof = TProof.Open("")
     #proof.Load("histManager/HistManager.cxx")
-    proof.SetParallel(12)
+    proof.SetParallel(16)
     mgr = TProof.Mgr("")
     testChain = TChain("elId")
     chain = TChain("elId")
