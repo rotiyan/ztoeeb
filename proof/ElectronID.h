@@ -14,6 +14,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TSelector.h>
 #include <vector>
 using namespace std;
@@ -46,7 +47,6 @@ public :
    TProfile * h_elnTRTHits;
    TProfile * h_elnTRTHighTHits;
    TProfile * h_elnSiHits;
-   TProfile * h_elPixeldEdx;
    TProfile * h_el_E233;
    TProfile * h_el_E237;
    TProfile * h_el_E277;
@@ -56,7 +56,14 @@ public :
    TProfile * h_el_trackd0pv;
    TProfile * h_el_trackd0pvunbiased;
    TProfile * h_el_trackd0_physics;
+   
+   TProfile * h_el_weight;
+   TProfile * h_el_bgweight;
+   TProfile * h_el_softeweight;
+   TProfile * h_el_softebgweight;
+   TProfile * h_el_likelihoodsPixeldEdx;
 
+   TH2F * h_elPixeldEdx;
 
    TH1F * h_vxp_nTracks;
    TH1F * h_vxp_Tracks_n;
@@ -19963,6 +19970,14 @@ public :
        h_elnPixHits         =  0 ;
        h_elnSCTHits         =  0 ;
        h_elnSiHits          =  0 ; 
+
+       h_el_weight          =  0 ;
+       h_el_bgweight        =  0 ;
+       h_el_softeweight     =  0 ;
+       h_el_softebgweight   =  0 ;
+       h_el_likelihoodsPixeldEdx = 0;
+
+
        h_elPixeldEdx        =  0 ;
        h_el_E233            =  0 ;
        h_el_E237            =  0 ;

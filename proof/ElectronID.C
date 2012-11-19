@@ -144,65 +144,81 @@ void ElectronID::BookHistograms()
     fOutput->Add(h_neMinus);
 
     //Electron ID variables
-    h_trtHits               = new TProfile("trtHits","trtHits",400,0,400);
+    h_trtHits               = new TProfile("trtHits","trtHits",200,0,400);
     fOutput->Add(h_trtHits);
 
-    h_trtHtHits             = new TProfile("trtHtHits","trtHtHits",100,0,30);
+    h_trtHtHits             = new TProfile("trtHtHits","trtHtHits",200,0,400);
     fOutput->Add(h_trtHtHits);
 
-    h_trtHtHitRatio         = new TProfile("trtHtHitRatio","trtHtHitRatio",400,0,1);
+    h_trtHtHitRatio         = new TProfile("trtHtHitRatio","trtHtHitRatio",200,0,400);
     fOutput->Add(h_trtHtHitRatio);
 
-    h_trtHtOutlierRatio     = new TProfile("trtHtOutlierRatio","trtHtOutlierRatio",400,0,1);
+    h_trtHtOutlierRatio     = new TProfile("trtHtOutlierRatio","trtHtOutlierRatio",200,0,400);
     fOutput->Add(h_trtHtOutlierRatio);
     
-    h_elReta                =  new TProfile("h_elReta","h_elReta",100,0,1);
+    h_elReta                =  new TProfile("h_elReta","h_elReta",200,0,400);
     fOutput->Add(h_elReta);
 
-    h_elRPhi                =  new TProfile("h_elRPhi","h_elRPhi",100,0,1);
+    h_elRPhi                =  new TProfile("h_elRPhi","h_elRPhi",200,0,400);
     fOutput->Add(h_elRPhi);
 
-    h_elnBLHits             =  new TProfile("h_elnBLHits","h_elnBLHits",10,-0.5,9.5);
+    h_elnBLHits             =  new TProfile("h_elnBLHits","h_elnBLHits",200,0,400);
     fOutput->Add(h_elnBLHits);
 
-    h_elnPixHits            =  new TProfile("h_elnPixHits","h_elnPixHits",20,-0.5,19.5);
+    h_elnPixHits            =  new TProfile("h_elnPixHits","h_elnPixHits",200,0,400);
     fOutput->Add(h_elnPixHits);
 
-    h_elnSCTHits            =  new TProfile("h_elnSCTHits","h_elnSCTHits",20,-0.5,19.5);
+    h_elnSCTHits            =  new TProfile("h_elnSCTHits","h_elnSCTHits",200,0,400);
     fOutput->Add(h_elnSCTHits);
 
-    h_elnSiHits             =  new TProfile("h_elnSiHits","h_elnSiHits",20,-0.5,19.5);
+    h_elnSiHits             =  new TProfile("h_elnSiHits","h_elnSiHits",200,0,400);
     fOutput->Add(h_elnSiHits);
 
-    h_elPixeldEdx           =  new TProfile("h_elPixeldEdx","h_elPixeldEdx",600,-2,25);
+    h_elPixeldEdx           =  new TH2F("h_elPixeldEdx","h_elPixeldEdx;qp[GeV];dE/dx(MeVg^{-1}cm^2",600,-200,200,100,-1,10);
     fOutput->Add(h_elPixeldEdx);
 
-    h_el_E233               =  new TProfile("h_el_E233","h_el_E233",1000,0,500);
+    h_el_E233               =  new TProfile("h_el_E233","h_el_E233",200,0,400);
     fOutput->Add(h_el_E233);
 
-    h_el_E237               =  new TProfile("h_el_E237","h_el_E237",1000,0,500);
+    h_el_E237               =  new TProfile("h_el_E237","h_el_E237",200,0,400);
     fOutput->Add(h_el_E237);
 
-    h_el_E277               =  new TProfile("h_el_E277","h_el_E277",1000,0,500);
+    h_el_E277               =  new TProfile("h_el_E277","h_el_E277",200,0,400);
     fOutput->Add(h_el_E277);
 
-    h_el_weta2              =  new TProfile("h_el_weta2","h_el_weta2",100,-0.4,1);
+    h_el_weta2              =  new TProfile("h_el_weta2","h_el_weta2",200,0,400);
     fOutput->Add(h_el_weta2);
 
-    h_el_trackd0            =  new TProfile("h_el_trackd0","h_el_trackd0",1000,-5,5);
+    h_el_trackd0            =  new TProfile("h_el_trackd0","h_el_trackd0",200,0,400);
     fOutput->Add(h_el_trackd0);
 
-    h_el_trackd0beam        =  new TProfile("h_el_trackd0beam","h_el_trackd0beam",1000,-5,5);
+    h_el_trackd0beam        =  new TProfile("h_el_trackd0beam","h_el_trackd0beam",200,0,400);
     fOutput->Add(h_el_trackd0beam);
 
-    h_el_trackd0pv          =  new TProfile("h_el_trackd0pv","h_el_trackd0pv",1000,-5,5);
+    h_el_trackd0pv          =  new TProfile("h_el_trackd0pv","h_el_trackd0pv",200,0,400);
     fOutput->Add(h_el_trackd0pv);
 
-    h_el_trackd0pvunbiased  =  new TProfile("h_el_trackd0pvunbiased","h_el_trackd0pvunbiased",1000,-5,5);
+    h_el_trackd0pvunbiased  =  new TProfile("h_el_trackd0pvunbiased","h_el_trackd0pvunbiased",200,0,400);
     fOutput->Add(h_el_trackd0pvunbiased);
 
-    h_el_trackd0_physics    =  new TProfile("h_el_trackd0_physics","h_el_trackd0_physics",1000,-5,5);
+    h_el_trackd0_physics    =  new TProfile("h_el_trackd0_physics","h_el_trackd0_physics",200,0,400);
     fOutput->Add(h_el_trackd0_physics);
+
+    h_el_weight             =  new TProfile("h_el_weight","h_el_weight",200,0,400);
+    fOutput->Add(h_el_weight);
+
+    h_el_bgweight           =  new TProfile("h_el_bgweight","h_el_bgweight",200,0,400);  
+    fOutput->Add(h_el_bgweight);
+
+    h_el_softeweight        =  new TProfile("h_el_softeweight","h_el_softeweight",200,0,400);
+    fOutput->Add(h_el_softeweight);
+
+    h_el_softebgweight      =  new TProfile("h_el_softebgweight","h_el_softebgweight",200,0,400);
+    fOutput->Add(h_el_softebgweight);
+
+    h_el_likelihoodsPixeldEdx = new TProfile("h_el_likelihoodsPixeldEdx","h_el_likelihoodsPixeldEdx",200,0,400);
+    fOutput->Add(h_el_likelihoodsPixeldEdx);
+
 
     //Vertex
     h_vxp_nTracks           = new TH1F("vxp_nTracks","vxp_nTracks",100,-0.5,99.5);
@@ -287,6 +303,11 @@ void ElectronID::LoadBranches(Long64_t entry )
     b_el_trackd0pvunbiased->GetEntry(entry);
     b_el_trackd0_physics->GetEntry(entry);
 
+    b_el_electronweight->GetEntry(entry);
+    b_el_electronbgweight->GetEntry(entry);
+    b_el_softeweight->GetEntry(entry);
+    b_el_softebgweight->GetEntry(entry);
+    b_el_likelihoodsPixeldEdx->GetEntry(entry);
 
     b_el_truth_pt->GetEntry(entry);
     b_el_truth_E->GetEntry(entry);
@@ -442,6 +463,7 @@ void ElectronID::DoRecoAna()
                float elClPt             = el_cl_pt->at(i);
                float elClEta            = el_cl_eta->at(i);
                float elClPhi            = el_cl_phi->at(i);
+               float elCharge           = el_charge->at(i);
                
                int trtHits              = el_nTRTHits->at(i);
                int trtHTHits            = el_nTRTHighTHits->at(i);
@@ -464,11 +486,17 @@ void ElectronID::DoRecoAna()
                float trackd0pv          = el_trackd0pv->at(i);
                float trackd0pvunbiased  = el_trackd0pvunbiased->at(i);
                float trackd0_physics    = el_trackd0_physics->at(i);
+               float elWeight           = el_electronweight->at(i);
+               float elbgWeight         = el_electronbgweight->at(i);
+               float elsofteWeight      = el_softeweight->at(i);
+               float elsoftebgWeight    = el_softebgweight->at(i);
+
+               std::vector<float> ellikelihooddEdx   = el_likelihoodsPixeldEdx->at(i);
                
                int  my_vxp_nTracks      = vxp_nTracks->at(0);
                int  my_vxp_Tracks_n     = vxp_trk_n->at(0);
 
-               if((fabs(elClEta)< 2.5) &&(!( fabs(elClEta)<1.52 && fabs(elClEta) > 1.37 )) &&  myelPt/1000 > 2)
+               if((fabs(elClEta)< 2.5) &&(!( fabs(elClEta)<1.52 && fabs(elClEta) > 1.37 )) )
                {
                    //Remove the Z Electrons
                    if(myelPt!= leadPt && myelPt!= subleadPt)
@@ -477,26 +505,32 @@ void ElectronID::DoRecoAna()
                        h_elEta->Fill(elClEta);
                        h_elPhi->Fill(elClPhi);
 
-                       h_trtHits->Fill(myelPt/100,trtHits);
-                       h_trtHtHits->Fill(myelPt/100,trtHTHits);
-                       h_trtHtHitRatio->Fill(myelPt/100,trtHTHitRatio);
-                       h_trtHtOutlierRatio->Fill(myelPt/100,trtHtOutlierRatio);
-                       h_elReta->Fill(myelPt/100,reta);
-                       h_elRPhi->Fill(myelPt/100,rphi);
-                       h_elnBLHits->Fill(myelPt/100,nBLhits);
-                       h_elnPixHits->Fill(myelPt/100,nPixHits);
-                       h_elnSCTHits->Fill(myelPt/100,nSCTHits);
-                       h_elnSiHits->Fill(myelPt/100,nSiHits);
-                       h_elPixeldEdx->Fill(myelPt/100,pixeldEdx);
-                       h_el_E233->Fill(myelPt/100,e233);
-                       h_el_E237->Fill(myelPt/100,e237);
-                       h_el_E277->Fill(myelPt/100,e277);
-                       h_el_weta2->Fill(myelPt/100,weta2);
-                       h_el_trackd0->Fill(myelPt/100,trackd0);
-                       h_el_trackd0beam->Fill(myelPt/100,trackd0beam);
-                       h_el_trackd0pv->Fill(myelPt/100,trackd0pv);
-                       h_el_trackd0pvunbiased->Fill(myelPt/100,trackd0pvunbiased);
-                       h_el_trackd0_physics->Fill(myelPt/100,trackd0_physics);
+                       h_trtHits->Fill(myelPt/1000,trtHits);
+                       h_trtHtHits->Fill(myelPt/1000,trtHTHits);
+                       h_trtHtHitRatio->Fill(myelPt/1000,trtHTHitRatio);
+                       h_trtHtOutlierRatio->Fill(myelPt/1000,trtHtOutlierRatio);
+                       h_elReta->Fill(myelPt/1000,reta);
+                       h_elRPhi->Fill(myelPt/1000,rphi);
+                       h_elnBLHits->Fill(myelPt/1000,nBLhits);
+                       h_elnPixHits->Fill(myelPt/1000,nPixHits);
+                       h_elnSCTHits->Fill(myelPt/1000,nSCTHits);
+                       h_elnSiHits->Fill(myelPt/1000,nSiHits);
+                       h_elPixeldEdx->Fill(elCharge*myelPt/1000,pixeldEdx);
+                       h_el_E233->Fill(myelPt/1000,e233);
+                       h_el_E237->Fill(myelPt/1000,e237);
+                       h_el_E277->Fill(myelPt/1000,e277);
+                       h_el_weta2->Fill(myelPt/1000,weta2);
+                       h_el_trackd0->Fill(myelPt/1000,trackd0);
+                       h_el_trackd0beam->Fill(myelPt/1000,trackd0beam);
+                       h_el_trackd0pv->Fill(myelPt/1000,trackd0pv);
+                       h_el_trackd0pvunbiased->Fill(myelPt/1000,trackd0pvunbiased);
+                       h_el_trackd0_physics->Fill(myelPt/1000,trackd0_physics);
+
+                       h_el_weight->Fill(myelPt/1000,elWeight);
+                       h_el_bgweight->Fill(myelPt/1000,elbgWeight);
+                       h_el_softeweight->Fill(myelPt/1000, elsoftebgWeight);
+                       h_el_softebgweight->Fill(myelPt/1000,elsoftebgWeight);
+                       h_el_likelihoodsPixeldEdx->Fill(myelPt/1000,ellikelihooddEdx.size());
 
                        h_elPtVsClpt->Fill(myelPt/100,myelPt/1000,elClPt/1000);
 
