@@ -13,7 +13,7 @@ if len(sys.argv)> 1 :
     poolFiles = getProofFiles(sys.argv[1])
     #initialize proof
     proof = TProof.Open("")
-    proof.SetParallel(6)
+    proof.SetParallel(16)
     mgr = TProof.Mgr("")
     testChain = TChain("physics")
     chain = TChain("physics")
@@ -25,5 +25,4 @@ if len(sys.argv)> 1 :
 
 else:
     print "Give path to the files: "
-
 
