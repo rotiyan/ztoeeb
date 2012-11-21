@@ -143,82 +143,92 @@ void ElectronID::BookHistograms()
     h_neMinus               = new TH1F("neMinus","neMinus",50,-0.5,49.5);
     fOutput->Add(h_neMinus);
 
-    //Electron ID variables
-    h_trtHits               = new TProfile("trtHits","trtHits",200,0,400);
-    fOutput->Add(h_trtHits);
-
-    h_trtHtHits             = new TProfile("trtHtHits","trtHtHits",200,0,400);
-    fOutput->Add(h_trtHtHits);
-
-    h_trtHtHitRatio         = new TProfile("trtHtHitRatio","trtHtHitRatio",200,0,400);
-    fOutput->Add(h_trtHtHitRatio);
-
-    h_trtHtOutlierRatio     = new TProfile("trtHtOutlierRatio","trtHtOutlierRatio",200,0,400);
-    fOutput->Add(h_trtHtOutlierRatio);
-    
-    h_elReta                =  new TProfile("h_elReta","h_elReta",200,0,400);
-    fOutput->Add(h_elReta);
-
-    h_elRPhi                =  new TProfile("h_elRPhi","h_elRPhi",200,0,400);
-    fOutput->Add(h_elRPhi);
-
-    h_elnBLHits             =  new TProfile("h_elnBLHits","h_elnBLHits",200,0,400);
-    fOutput->Add(h_elnBLHits);
-
-    h_elnPixHits            =  new TProfile("h_elnPixHits","h_elnPixHits",200,0,400);
-    fOutput->Add(h_elnPixHits);
-
-    h_elnSCTHits            =  new TProfile("h_elnSCTHits","h_elnSCTHits",200,0,400);
-    fOutput->Add(h_elnSCTHits);
-
-    h_elnSiHits             =  new TProfile("h_elnSiHits","h_elnSiHits",200,0,400);
-    fOutput->Add(h_elnSiHits);
-
     h_elPixeldEdx           =  new TH2F("h_elPixeldEdx","h_elPixeldEdx;qp[GeV];dE/dx(MeVg^{-1}cm^2",600,-200,200,100,-1,10);
     fOutput->Add(h_elPixeldEdx);
 
-    h_el_E233               =  new TProfile("h_el_E233","h_el_E233",200,0,400);
-    fOutput->Add(h_el_E233);
 
-    h_el_E237               =  new TProfile("h_el_E237","h_el_E237",200,0,400);
-    fOutput->Add(h_el_E237);
+    //Electron ID variables
+    hp_trtHits               = new TProfile("trtHits","trtHits",200,0,400);
+    fOutput->Add(hp_trtHits);
 
-    h_el_E277               =  new TProfile("h_el_E277","h_el_E277",200,0,400);
-    fOutput->Add(h_el_E277);
+    hp_trtHtHits             = new TProfile("trtHtHits","trtHtHits",200,0,400);
+    fOutput->Add(hp_trtHtHits);
 
-    h_el_weta2              =  new TProfile("h_el_weta2","h_el_weta2",200,0,400);
-    fOutput->Add(h_el_weta2);
+    hp_trtHtHitRatio         = new TProfile("trtHtHitRatio","trtHtHitRatio",200,0,400);
+    fOutput->Add(hp_trtHtHitRatio);
 
-    h_el_trackd0            =  new TProfile("h_el_trackd0","h_el_trackd0",200,0,400);
-    fOutput->Add(h_el_trackd0);
+    hp_trtHtOutlierRatio     = new TProfile("trtHtOutlierRatio","trtHtOutlierRatio",200,0,400);
+    fOutput->Add(hp_trtHtOutlierRatio);
+    
+    hp_elReta                =  new TProfile("hp_elReta","hp_elReta",200,0,400);
+    fOutput->Add(hp_elReta);
 
-    h_el_trackd0beam        =  new TProfile("h_el_trackd0beam","h_el_trackd0beam",200,0,400);
-    fOutput->Add(h_el_trackd0beam);
+    hp_elRPhi                =  new TProfile("hp_elRPhi","hp_elRPhi",200,0,400);
+    fOutput->Add(hp_elRPhi);
 
-    h_el_trackd0pv          =  new TProfile("h_el_trackd0pv","h_el_trackd0pv",200,0,400);
-    fOutput->Add(h_el_trackd0pv);
+    hp_elnBLHits             =  new TProfile("hp_elnBLHits","hp_elnBLHits",200,0,400);
+    fOutput->Add(hp_elnBLHits);
 
-    h_el_trackd0pvunbiased  =  new TProfile("h_el_trackd0pvunbiased","h_el_trackd0pvunbiased",200,0,400);
-    fOutput->Add(h_el_trackd0pvunbiased);
+    hp_elnPixHits            =  new TProfile("hp_elnPixHits","hp_elnPixHits",200,0,400);
+    fOutput->Add(hp_elnPixHits);
 
-    h_el_trackd0_physics    =  new TProfile("h_el_trackd0_physics","h_el_trackd0_physics",200,0,400);
-    fOutput->Add(h_el_trackd0_physics);
+    hp_elnSCTHits            =  new TProfile("hp_elnSCTHits","hp_elnSCTHits",200,0,400);
+    fOutput->Add(hp_elnSCTHits);
 
-    h_el_weight             =  new TProfile("h_el_weight","h_el_weight",200,0,400);
-    fOutput->Add(h_el_weight);
+    hp_elnSiHits             =  new TProfile("hp_elnSiHits","hp_elnSiHits",200,0,400);
+    fOutput->Add(hp_elnSiHits);
 
-    h_el_bgweight           =  new TProfile("h_el_bgweight","h_el_bgweight",200,0,400);  
-    fOutput->Add(h_el_bgweight);
 
-    h_el_softeweight        =  new TProfile("h_el_softeweight","h_el_softeweight",200,0,400);
-    fOutput->Add(h_el_softeweight);
+    hp_el_E233               =  new TProfile("hp_el_E233","hp_el_E233",200,0,400);
+    fOutput->Add(hp_el_E233);
 
-    h_el_softebgweight      =  new TProfile("h_el_softebgweight","h_el_softebgweight",200,0,400);
-    fOutput->Add(h_el_softebgweight);
+    hp_el_E237               =  new TProfile("hp_el_E237","hp_el_E237",200,0,400);
+    fOutput->Add(hp_el_E237);
 
-    h_el_likelihoodsPixeldEdx = new TProfile("h_el_likelihoodsPixeldEdx","h_el_likelihoodsPixeldEdx",200,0,400);
-    fOutput->Add(h_el_likelihoodsPixeldEdx);
+    hp_el_E277               =  new TProfile("hp_el_E277","hp_el_E277",200,0,400);
+    fOutput->Add(hp_el_E277);
 
+    hp_el_weta2              =  new TProfile("hp_el_weta2","hp_el_weta2",200,0,400);
+    fOutput->Add(hp_el_weta2);
+
+    hp_el_trackd0            =  new TProfile("hp_el_trackd0","hp_el_trackd0",200,0,400);
+    fOutput->Add(hp_el_trackd0);
+
+    hp_el_trackd0beam        =  new TProfile("hp_el_trackd0beam","hp_el_trackd0beam",200,0,400);
+    fOutput->Add(hp_el_trackd0beam);
+
+    hp_el_trackd0pv          =  new TProfile("hp_el_trackd0pv","hp_el_trackd0pv",200,0,400);
+    fOutput->Add(hp_el_trackd0pv);
+
+    hp_el_trackd0pvunbiased  =  new TProfile("hp_el_trackd0pvunbiased","hp_el_trackd0pvunbiased",200,0,400);
+    fOutput->Add(hp_el_trackd0pvunbiased);
+
+    hp_el_trackd0_physics    =  new TProfile("hp_el_trackd0_physics","hp_el_trackd0_physics",200,0,400);
+    fOutput->Add(hp_el_trackd0_physics);
+
+    hp_el_weight             =  new TProfile("hp_el_weight","hp_el_weight",200,0,400);
+    fOutput->Add(hp_el_weight);
+
+    hp_el_bgweight           =  new TProfile("hp_el_bgweight","hp_el_bgweight",200,0,400);  
+    fOutput->Add(hp_el_bgweight);
+
+    hp_el_softeweight        =  new TProfile("hp_el_softeweight","hp_el_softeweight",200,0,400);
+    fOutput->Add(hp_el_softeweight);
+
+    hp_el_softebgweight      =  new TProfile("hp_el_softebgweight","hp_el_softebgweight",200,0,400);
+    fOutput->Add(hp_el_softebgweight);
+
+    hp_el_likelihoodsPixeldEdx = new TProfile("hp_el_likelihoodsPixeldEdx","hp_el_likelihoodsPixeldEdx",200,0,400);
+    fOutput->Add(hp_el_likelihoodsPixeldEdx);
+
+    hp_elE_trthRecoRatioVsPt= new TProfile("elETrthRecoRatioVsPt","elETrthRecoRatioVsPt; pt [GeV];trthE/RecoE",1000,0,500);
+    fOutput->Add(hp_elE_trthRecoRatioVsPt);
+
+    hp_elE_trthRecoRatioVsEta= new TProfile("elETrthRecoRatioVsEta","elETrthRecoRatioVsEta; #eta;trthE/RecoE ",200,-5,5);
+    fOutput->Add(hp_elE_trthRecoRatioVsEta);
+
+    hp_elE_trthRecoRatioVsPhi= new TProfile("elETrthRecoRatioVsPhi","elETrthRecoRatioVsPhi; #varphi;trthE/RecoE",200,-5,5);
+    fOutput->Add(hp_elE_trthRecoRatioVsPhi);
 
     //Vertex
     h_vxp_nTracks           = new TH1F("vxp_nTracks","vxp_nTracks",100,-0.5,99.5);
@@ -229,16 +239,6 @@ void ElectronID::BookHistograms()
 
     h_elPtVsClpt            = new TH2F("elptVsClPt","elptVsClPt",500,0,500,500,0,500);
     fOutput->Add(h_elPtVsClpt);
-
-    //Truth Reco Energy ratio
-    h_elE_trthRecoRatioVsPt= new TProfile("elETrthRecoRatioVsPt","elETrthRecoRatioVsPt; pt [GeV];trthE/RecoE",1000,0,500);
-    fOutput->Add(h_elE_trthRecoRatioVsPt);
-
-    h_elE_trthRecoRatioVsEta= new TProfile("elETrthRecoRatioVsEta","elETrthRecoRatioVsEta; #eta;trthE/RecoE ",200,-5,5);
-    fOutput->Add(h_elE_trthRecoRatioVsEta);
-
-    h_elE_trthRecoRatioVsPhi= new TProfile("elETrthRecoRatioVsPhi","elETrthRecoRatioVsPhi; #varphi;trthE/RecoE",200,-5,5);
-    fOutput->Add(h_elE_trthRecoRatioVsPhi);
 }
 
 void ElectronID::LoadBranches(Long64_t entry )
@@ -250,11 +250,14 @@ void ElectronID::LoadBranches(Long64_t entry )
     b_el_cl_eta->GetEntry(entry);
     b_el_cl_phi->GetEntry(entry);
     b_el_charge->GetEntry(entry);
+    b_el_goodOQ->GetEntry(entry);
 
 
     b_vxp_nTracks->GetEntry(entry);
     b_vxp_trk_n->GetEntry(entry);
 
+    b_el_OQ->GetEntry(entry);
+    b_el_hastrack->GetEntry(entry);
     b_el_author->GetEntry(entry);
     b_el_mediumPP->GetEntry(entry);
     b_el_mediumPPIso->GetEntry(entry);
@@ -309,6 +312,7 @@ void ElectronID::LoadBranches(Long64_t entry )
     b_el_softebgweight->GetEntry(entry);
     b_el_likelihoodsPixeldEdx->GetEntry(entry);
 
+    b_el_truth_matched->GetEntry(entry);
     b_el_truth_pt->GetEntry(entry);
     b_el_truth_E->GetEntry(entry);
     b_el_truth_matched->GetEntry();
@@ -352,9 +356,9 @@ void ElectronID::DoTruthAna()
 
         if(trthE != 0) 
         {
-            h_elE_trthRecoRatioVsPt->Fill(recoPt/1000,trthE/recoE);
-            h_elE_trthRecoRatioVsEta->Fill(recoEta,trthE/recoE);
-            h_elE_trthRecoRatioVsPhi->Fill(recoPhi,trthE/recoE);
+            hp_elE_trthRecoRatioVsPt->Fill(recoPt/1000,trthE/recoE);
+            hp_elE_trthRecoRatioVsEta->Fill(recoEta,trthE/recoE);
+            hp_elE_trthRecoRatioVsPhi->Fill(recoPhi,trthE/recoE);
         }
     }
 }
@@ -464,6 +468,10 @@ void ElectronID::DoRecoAna()
                float elClEta            = el_cl_eta->at(i);
                float elClPhi            = el_cl_phi->at(i);
                float elCharge           = el_charge->at(i);
+               int  elHasTrack          = el_hastrack->at(i);
+               int  elgoodOQ            = el_goodOQ->at(i);
+               int  elAuthor            = el_author->at(i);
+
                
                int trtHits              = el_nTRTHits->at(i);
                int trtHTHits            = el_nTRTHighTHits->at(i);
@@ -496,7 +504,8 @@ void ElectronID::DoRecoAna()
                int  my_vxp_nTracks      = vxp_nTracks->at(0);
                int  my_vxp_Tracks_n     = vxp_trk_n->at(0);
 
-               if((fabs(elClEta)< 2.5) &&(!( fabs(elClEta)<1.52 && fabs(elClEta) > 1.37 )) )
+               if((fabs(elClEta)< 2.5) &&(!( fabs(elClEta)<1.52 && fabs(elClEta) > 1.37 ))
+                      && my_vxp_nTracks >3 && elHasTrack && my_vxp_nTracks && elgoodOQ && elAuthor ==1)
                {
                    //Remove the Z Electrons
                    if(myelPt!= leadPt && myelPt!= subleadPt)
@@ -505,32 +514,32 @@ void ElectronID::DoRecoAna()
                        h_elEta->Fill(elClEta);
                        h_elPhi->Fill(elClPhi);
 
-                       h_trtHits->Fill(myelPt/1000,trtHits);
-                       h_trtHtHits->Fill(myelPt/1000,trtHTHits);
-                       h_trtHtHitRatio->Fill(myelPt/1000,trtHTHitRatio);
-                       h_trtHtOutlierRatio->Fill(myelPt/1000,trtHtOutlierRatio);
-                       h_elReta->Fill(myelPt/1000,reta);
-                       h_elRPhi->Fill(myelPt/1000,rphi);
-                       h_elnBLHits->Fill(myelPt/1000,nBLhits);
-                       h_elnPixHits->Fill(myelPt/1000,nPixHits);
-                       h_elnSCTHits->Fill(myelPt/1000,nSCTHits);
-                       h_elnSiHits->Fill(myelPt/1000,nSiHits);
+                       hp_trtHits->Fill(myelPt/1000,trtHits);
+                       hp_trtHtHits->Fill(myelPt/1000,trtHTHits);
+                       hp_trtHtHitRatio->Fill(myelPt/1000,trtHTHitRatio);
+                       hp_trtHtOutlierRatio->Fill(myelPt/1000,trtHtOutlierRatio);
+                       hp_elReta->Fill(myelPt/1000,reta);
+                       hp_elRPhi->Fill(myelPt/1000,rphi);
+                       hp_elnBLHits->Fill(myelPt/1000,nBLhits);
+                       hp_elnPixHits->Fill(myelPt/1000,nPixHits);
+                       hp_elnSCTHits->Fill(myelPt/1000,nSCTHits);
+                       hp_elnSiHits->Fill(myelPt/1000,nSiHits);
                        h_elPixeldEdx->Fill(elCharge*myelPt/1000,pixeldEdx);
-                       h_el_E233->Fill(myelPt/1000,e233);
-                       h_el_E237->Fill(myelPt/1000,e237);
-                       h_el_E277->Fill(myelPt/1000,e277);
-                       h_el_weta2->Fill(myelPt/1000,weta2);
-                       h_el_trackd0->Fill(myelPt/1000,trackd0);
-                       h_el_trackd0beam->Fill(myelPt/1000,trackd0beam);
-                       h_el_trackd0pv->Fill(myelPt/1000,trackd0pv);
-                       h_el_trackd0pvunbiased->Fill(myelPt/1000,trackd0pvunbiased);
-                       h_el_trackd0_physics->Fill(myelPt/1000,trackd0_physics);
+                       hp_el_E233->Fill(myelPt/1000,e233);
+                       hp_el_E237->Fill(myelPt/1000,e237);
+                       hp_el_E277->Fill(myelPt/1000,e277);
+                       hp_el_weta2->Fill(myelPt/1000,weta2);
+                       hp_el_trackd0->Fill(myelPt/1000,trackd0);
+                       hp_el_trackd0beam->Fill(myelPt/1000,trackd0beam);
+                       hp_el_trackd0pv->Fill(myelPt/1000,trackd0pv);
+                       hp_el_trackd0pvunbiased->Fill(myelPt/1000,trackd0pvunbiased);
+                       hp_el_trackd0_physics->Fill(myelPt/1000,trackd0_physics);
 
-                       h_el_weight->Fill(myelPt/1000,elWeight);
-                       h_el_bgweight->Fill(myelPt/1000,elbgWeight);
-                       h_el_softeweight->Fill(myelPt/1000, elsoftebgWeight);
-                       h_el_softebgweight->Fill(myelPt/1000,elsoftebgWeight);
-                       h_el_likelihoodsPixeldEdx->Fill(myelPt/1000,ellikelihooddEdx.size());
+                       hp_el_weight->Fill(myelPt/1000,elWeight);
+                       hp_el_bgweight->Fill(myelPt/1000,elbgWeight);
+                       hp_el_softeweight->Fill(myelPt/1000, elsoftebgWeight);
+                       hp_el_softebgweight->Fill(myelPt/1000,elsoftebgWeight);
+                       hp_el_likelihoodsPixeldEdx->Fill(myelPt/1000,ellikelihooddEdx.at(0));
 
                        h_elPtVsClpt->Fill(myelPt/100,myelPt/1000,elClPt/1000);
 

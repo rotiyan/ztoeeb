@@ -26,53 +26,53 @@ public :
    TH1F     * h_zElPt; 
    TH1F     * h_zElEta;
    TH1F     * h_zElPhi;
-
    TH1F     * h_elPt;
    TH1F     * h_elEta;
    TH1F     * h_elPhi;
    TH1F     * h_elCharge;
    TH1F     * h_nePlus;
    TH1F     * h_neMinus;
-
-   TProfile * h_trtHtHits;
-   TProfile * h_trtHits;
-   TProfile * h_trtHtHitRatio;
-   TProfile * h_trtHtOutlierRatio;
-   
-   TProfile * h_elReta;
-   TProfile * h_elRPhi;
-   TProfile * h_elnBLHits;
-   TProfile * h_elnPixHits;
-   TProfile * h_elnSCTHits;
-   TProfile * h_elnTRTHits;
-   TProfile * h_elnTRTHighTHits;
-   TProfile * h_elnSiHits;
-   TProfile * h_el_E233;
-   TProfile * h_el_E237;
-   TProfile * h_el_E277;
-   TProfile * h_el_weta2;
-   TProfile * h_el_trackd0;
-   TProfile * h_el_trackd0beam;
-   TProfile * h_el_trackd0pv;
-   TProfile * h_el_trackd0pvunbiased;
-   TProfile * h_el_trackd0_physics;
-   
-   TProfile * h_el_weight;
-   TProfile * h_el_bgweight;
-   TProfile * h_el_softeweight;
-   TProfile * h_el_softebgweight;
-   TProfile * h_el_likelihoodsPixeldEdx;
-
-   TH2F * h_elPixeldEdx;
-
-   TH1F * h_vxp_nTracks;
-   TH1F * h_vxp_Tracks_n;
+   TH1F     * h_vxp_nTracks;
+   TH1F     * h_vxp_Tracks_n;
 
    TH2F     * h_elPtVsClpt;
+   TH2F     * h_elPixeldEdx;
 
-   TProfile * h_elE_trthRecoRatioVsPt;
-   TProfile * h_elE_trthRecoRatioVsEta;
-   TProfile * h_elE_trthRecoRatioVsPhi;
+   TProfile * hp_trtHtHits;
+   TProfile * hp_trtHits;
+   TProfile * hp_trtHtHitRatio;
+   TProfile * hp_trtHtOutlierRatio;
+   
+   TProfile * hp_elReta;
+   TProfile * hp_elRPhi;
+   TProfile * hp_elnBLHits;
+   TProfile * hp_elnPixHits;
+   TProfile * hp_elnSCTHits;
+   TProfile * hp_elnTRTHits;
+   TProfile * hp_elnTRTHighTHits;
+   TProfile * hp_elnSiHits;
+   TProfile * hp_el_E233;
+   TProfile * hp_el_E237;
+   TProfile * hp_el_E277;
+   TProfile * hp_el_weta2;
+   TProfile * hp_el_trackd0;
+   TProfile * hp_el_trackd0beam;
+   TProfile * hp_el_trackd0pv;
+   TProfile * hp_el_trackd0pvunbiased;
+   TProfile * hp_el_trackd0_physics;
+   
+   TProfile * hp_el_weight;
+   TProfile * hp_el_bgweight;
+   TProfile * hp_el_softeweight;
+   TProfile * hp_el_softebgweight;
+   TProfile * hp_el_likelihoodsPixeldEdx;
+
+   TProfile * hp_elE_trthRecoRatioVsPt;
+   TProfile * hp_elE_trthRecoRatioVsEta;
+   TProfile * hp_elE_trthRecoRatioVsPhi;
+
+
+
 
    // Declaration of leaf types
    Bool_t          EF_2MUL1_l2j30_HV;
@@ -19959,44 +19959,41 @@ public :
        h_elCharge           =  0 ;
        h_nePlus             =  0 ;
        h_neMinus            =  0 ;
-
-       h_trtHtHits          =  0 ;
-       h_trtHits            =  0 ;
-       h_trtHtHitRatio      =  0 ;
-       h_trtHtOutlierRatio  =  0 ;
-       h_elReta             =  0 ;
-       h_elRPhi             =  0 ;
-       h_elnBLHits          =  0 ;
-       h_elnPixHits         =  0 ;
-       h_elnSCTHits         =  0 ;
-       h_elnSiHits          =  0 ; 
-
-       h_el_weight          =  0 ;
-       h_el_bgweight        =  0 ;
-       h_el_softeweight     =  0 ;
-       h_el_softebgweight   =  0 ;
-       h_el_likelihoodsPixeldEdx = 0;
-
-
-       h_elPixeldEdx        =  0 ;
-       h_el_E233            =  0 ;
-       h_el_E237            =  0 ;
-       h_el_E277            =  0 ;
-       h_el_weta2           =  0 ;
-       h_el_trackd0         =  0 ;
-       h_el_trackd0beam     =  0 ;
-       h_el_trackd0pv       =  0 ;
-       h_el_trackd0pvunbiased= 0 ;
-       h_el_trackd0_physics =  0 ;
-
        h_vxp_nTracks        =  0 ;
        h_vxp_Tracks_n       =  0 ;
-
        h_elPtVsClpt         =  0 ;
+       h_elPixeldEdx        =  0 ;
 
-       h_elE_trthRecoRatioVsEta =  0 ;
-       h_elE_trthRecoRatioVsPt  =  0 ;
-       h_elE_trthRecoRatioVsPhi =  0 ;   
+
+       hp_trtHtHits         =  0 ;
+       hp_trtHits           =  0 ;
+       hp_trtHtHitRatio     =  0 ;
+       hp_trtHtOutlierRatio =  0 ;
+       hp_elReta            =  0 ;
+       hp_elRPhi            =  0 ;
+       hp_elnBLHits         =  0 ;
+       hp_elnPixHits        =  0 ;
+       hp_elnSCTHits        =  0 ;
+       hp_elnSiHits         =  0 ; 
+       hp_el_weight         =  0 ;
+       hp_el_bgweight       =  0 ;
+       hp_el_softeweight    =  0 ;
+       hp_el_softebgweight  =  0 ;
+       hp_el_likelihoodsPixeldEdx = 0;
+       hp_el_E233           =  0 ;
+       hp_el_E237           =  0 ;
+       hp_el_E277           =  0 ;
+       hp_el_weta2          =  0 ;
+       hp_el_trackd0        =  0 ;
+       hp_el_trackd0beam    =  0 ;
+       hp_el_trackd0pv      =  0 ;
+       hp_el_trackd0pvunbiased= 0 ;
+       hp_el_trackd0_physics =  0 ;
+       hp_elE_trthRecoRatioVsEta =  0 ;
+       hp_elE_trthRecoRatioVsPt  =  0 ;
+       hp_elE_trthRecoRatioVsPhi =  0 ;   
+
+
    }
    virtual ~ElectronID() { }
    virtual Int_t   Version() const { return 2; }
